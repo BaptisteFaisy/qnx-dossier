@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Éclat — WebAssembly (WAMR) — Dossier QNX</title>
+<style>
+:root{--fg:#e6e6e6;--bg:#12141a;--card:#1b1f28;--acc:#7fd1c1;--mut:#9aa3b2;--bd:#2a3040}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+ font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{padding:1.4rem 1.2rem;border-bottom:1px solid var(--bd);background:var(--card)}
+header h1{margin:0;font-size:1.25rem}
+header p{margin:.3rem 0 0;color:var(--mut);font-size:.9rem}
+nav{display:flex;flex-wrap:wrap;gap:.4rem;padding:.8rem 1.2rem;border-bottom:1px solid var(--bd)}
+nav a{color:var(--mut);text-decoration:none;font-size:.85rem;padding:.3rem .6rem;
+ border:1px solid var(--bd);border-radius:999px}
+nav a:hover{color:var(--fg)}
+nav a.actif{color:#12141a;background:var(--acc);border-color:var(--acc);font-weight:600}
+main{padding:1.2rem;max-width:60rem;margin:0 auto}
+main h1{font-size:1.6rem;border-bottom:1px solid var(--bd);padding-bottom:.4rem}
+main h2{font-size:1.25rem;margin-top:2rem;color:var(--acc)}
+main h3{font-size:1.05rem;margin-top:1.6rem}
+a{color:var(--acc)}
+code{background:#0d0f14;padding:.1rem .35rem;border-radius:4px;font-size:.88em}
+pre{background:#0d0f14;padding:.9rem;border-radius:8px;overflow-x:auto;border:1px solid var(--bd)}
+pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.9rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--bd);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--card);white-space:nowrap}
+blockquote{border-left:3px solid var(--acc);margin:1rem 0;padding:.2rem 1rem;color:var(--mut)}
+footer{padding:1.2rem;color:var(--mut);font-size:.85rem;border-top:1px solid var(--bd);text-align:center}
+</style>
+</head>
+<body>
+<header>
+<h1>Dossier QNX — Global Hackathon 2026</h1>
+<p>Inventaire documenté des manques de QNX SDP 8.0, classement de 140 idées, trois cahiers des charges.</p>
+</header>
+<nav>
+<a href="index.html">Accueil</a>
+<a href="tamis.html">Tamis — politiques de sécurité</a>
+<a href="glane.html">Glane — capteurs et publication</a>
+<a href="eclat.html" class="actif">Éclat — WebAssembly (WAMR)</a>
+<a href="classement.html">Classement des 140 idées</a>
+<a href="inventaire.html">Inventaire : ce que QNX fournit déjà</a>
+<a href="idees.html">100 idées détaillées</a>
+</nav>
+<main>
+<h1 id="eclat-webassembly-wamr-et-courtier-de-capacites-sur-qnx-80">Éclat — WebAssembly (WAMR) et courtier de capacités sur QNX 8.0</h1>
+<p><strong>Nom de travail : « Éclat »</strong> (un fragment de code tiers qui brille sans pouvoir brûler la maison).
+Version 0.1 — 11 novembre 2026 — projet candidat au QNX Global Hackathon, catégorie <strong>Open-Source Contribution &amp; Ports</strong>.
+Classement interne : 2ᵉ sur 140 idées notées (15/16). Calendrier : <strong>5 semaines</strong> (concours) ou <strong>3 mois</strong> (produit).</p>
+<hr>
+<h2 id="0-lecture-rapide">0. Lecture rapide</h2>
+<p><strong>Ce que c'est.</strong> Le portage de <strong>WAMR</strong> (WebAssembly Micro Runtime, <code>bytecodealliance/wamr</code>) sur QNX 8.0, enrichi d'un <strong>courtier de capacités</strong> : un module WebAssembly tiers s'exécute dans un processus sans privilèges, et chacun de ses accès au monde extérieur (capteur, actionneur, fichier, socket) devient un message synchrone vers un gestionnaire de ressources qui décide selon une politique.</p>
+<p><strong>La promesse, en une phrase.</strong> Du code tiers non certifié s'exécute sur un calculateur QNX critique, il ne peut rien faire d'autre que ce que la politique autorise, et la boucle de contrôle temps réel <strong>ne bouge pas</strong> pendant qu'il tourne.</p>
+<p><strong>Trois idées qui portent le projet.</strong></p>
+<ol>
+<li><strong>Trois couches d'isolation indépendantes.</strong> Le bac à sable WebAssembly (mémoire linéaire bornée, pas d'appel système direct), le processus QNX sans abilities, et la politique de sécurité appliquée par le noyau. Aucune des trois ne suffit seule ; leur superposition est l'argument.</li>
+<li><strong>Le courtier est un gestionnaire de ressources, donc un citoyen QNX de première classe.</strong> Il a un nom dans l'espace de chemins, des priorités, un journal, et il est testable seul — indépendamment du runtime WebAssembly.</li>
+<li><strong>La latence de la boucle critique est une mesure, pas une promesse.</strong> Le module tiers est chargé à chaud, on le fait boucler, on le tue, et l'histogramme de la boucle critique est affiché avant/pendant/après.</li>
+</ol>
+<p><strong>Trois niveaux d'ambition.</strong> <strong>S</strong> (socle), <strong>C</strong> (complet), <strong>X</strong> (extrême), comme dans les autres cahiers.</p>
+<p><strong>À valider avant d'écrire la moindre ligne de produit</strong> (section 10) : cinq essais. Le plus critique est E2 — WAMR compile-t-il pour QNX avec la couche plateforme POSIX existante, ou faut-il écrire une couche dédiée ?</p>
+<p><strong>Statut des affirmations.</strong> Section 14 : ce qui est vérifié, ce qui reste hypothèse.</p>
+<hr>
+<h2 id="1-contexte-et-cas-dusage">1. Contexte et cas d'usage</h2>
+<h3 id="11-qui-a-ce-probleme">1.1 Qui a ce problème</h3>
+<table>
+<thead>
+<tr>
+<th>Acteur</th>
+<th>Besoin</th>
+<th>Coût actuel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Équipementier automobile</td>
+<td>Exécuter une application de partenaire (service de recharge, diagnostic, infotainment tiers) sur un ECU critique</td>
+<td>Certification ISO 26262 du code tiers : plusieurs mois, ou calculateur séparé</td>
+</tr>
+<tr>
+<td>Fabricant de dispositifs médicaux</td>
+<td>Ajouter une fonction d'un fournisseur sur un appareil déjà homologué</td>
+<td>Requalification IEC 62304 complète, ou refus du fournisseur</td>
+</tr>
+<tr>
+<td>Opérateur de flotte / atelier</td>
+<td>Déployer un script de diagnostic sans mettre à jour l'image</td>
+<td>Accès physique, ou outil propriétaire</td>
+</tr>
+<tr>
+<td>Intégrateur industriel</td>
+<td>Charger une logique métier spécifique client sur un automate</td>
+<td>Fork du firmware par client</td>
+</tr>
+<tr>
+<td>Développeur QNX</td>
+<td>Tester une extension sans recompiler ni reflasher</td>
+<td>Cycle complet image + flash</td>
+</tr>
+</tbody>
+</table>
+<h3 id="12-pourquoi-webassembly-plutot-quun-scripteur">1.2 Pourquoi WebAssembly plutôt qu'un scripteur</h3>
+<p>Un interpréteur scripté (Lua, Python, déjà portés sur QNX) donne un langage, pas une frontière : le code appelle la bibliothèque C sous-jacente et hérite de ses privilèges. WebAssembly donne une <strong>mémoire linéaire bornée</strong>, des imports <strong>explicitement déclarés</strong>, et un modèle où chaque interaction avec l'hôte passe par une fonction d'import que l'on contrôle. C'est cette propriété qui rend le courtier de capacités possible et démontrable.</p>
+<h3 id="13-pourquoi-maintenant">1.3 Pourquoi maintenant</h3>
+<p>WAMR est absent de l'écosystème QNX (section 2.2, vérifié), alors que presque tout le reste y est déjà porté : la fenêtre de contribution est ouverte et la demande de fusion a une vraie chance d'être acceptée.</p>
+<hr>
+<h2 id="2-ancrage-documentaire">2. Ancrage documentaire</h2>
+<h3 id="21-ce-que-qnx-fournit-deja">2.1 Ce que QNX fournit déjà</h3>
+<table>
+<thead>
+<tr>
+<th>Élément</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Passage de messages synchrone (<code>MsgSend</code>/<code>MsgReceive</code>/<code>MsgReply</code>), pulses, canaux, connexions, donneur de priorité</td>
+<td>System Architecture</td>
+</tr>
+<tr>
+<td>Gestionnaires de ressources (<code>resmgr_attach</code>, <code>io_funcs</code>, <code>msg_funcs</code>)</td>
+<td>Writing a Resource Manager</td>
+</tr>
+<tr>
+<td>Abilities du gestionnaire de processus (<code>procmgr_ability</code>), politiques de sécurité, Pathtrust, fonctions fortifiées</td>
+<td>System Security Guide</td>
+</tr>
+<tr>
+<td>HAM (supervision, battement de cœur, relance), PPS (pub/sub), <code>ionotify</code>, <code>TimerPulse</code></td>
+<td>guides OS Components</td>
+</tr>
+<tr>
+<td><code>qcrypto</code> (primitives cryptographiques, donc signature de modules possible)</td>
+<td><code>com.qnx.doc.qnxos.qcrypto</code></td>
+</tr>
+<tr>
+<td>Chaîne de build pour ports open source : dépôt <code>qnx-ports/build-files</code>, un dossier par port avec <code>README.md</code>, environnement Docker de construction</td>
+<td><code>github.com/qnx-ports</code> (README lu)</td>
+</tr>
+<tr>
+<td>POSIX conforme : « many open-source projects can be compiled for QNX with little or no modification »</td>
+<td>qnx.software — QNX Everywhere (lu)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-absence-verifiee-le-filon">2.2 Absence vérifiée (le filon)</h3>
+<ul>
+<li>L'index officiel des ports <code>github.com/qnx-ports/build-files/ports</code> (~150 entrées lues) ne contient <strong>aucune</strong> entrée <code>wasm</code>, <code>wamr</code>, <code>wasi</code>, <code>wasmtime</code>, <code>wasmer</code>.</li>
+<li><code>https://github.com/qnx-ports/wamr</code> renvoie <strong>404</strong>.</li>
+<li>Sont en revanche déjà portés (donc inutilisables comme sujet) : <code>rust</code>, <code>cargo</code>, <code>lua</code>, <code>perl5</code>, <code>numpy</code>, <code>pandas</code>, <code>protobuf</code>, <code>grpc</code>, <code>ros2</code>, <code>Fast-DDS</code>, <code>opencv</code>, <code>onnxruntime</code>, <code>tensorflow</code>, <code>pytorch</code>, <code>qt</code>, <code>gtk</code>, <code>wayland</code>, <code>weston</code>, <code>SDL</code>, <code>zlib</code>, <code>zstd</code>, <code>gnutls</code>, <code>s2n-tls</code>, <code>sqlite</code>, <code>curl</code>, <code>mosquitto</code>, <code>epoll</code>, <code>gdal</code>, <code>ode</code>, <code>gz-sim</code>.</li>
+<li><strong>Réserve honnête</strong> : le tableau de bord <code>oss.qnx.com</code> annonce ~2 500 ports et n'est pas interrogeable sans JavaScript. L'absence est certaine dans <code>qnx-ports/build-files</code>, pas absolument certaine ailleurs. À re-vérifier avec un vrai navigateur avant de soumettre.</li>
+</ul>
+<h3 id="23-regles-de-la-categorie-a-respecter-a-la-lettre">2.3 Règles de la catégorie (à respecter à la lettre)</h3>
+<p>Nouveau dépôt créé pendant la période de soumission, contenant le travail de portage (patches ou couche de portage, fichiers de construction QNX, instructions de build et d'exécution, documentation). Le projet amont est référencé <strong>par URL</strong>, son historique n'est <strong>pas</strong> copié. <strong>Interdiction de soumettre un fork.</strong> Fournir l'URL amont <strong>et</strong> l'URL de la demande de fusion si elle est ouverte.</p>
+<hr>
+<h2 id="3-perimetre">3. Périmètre</h2>
+<h3 id="31-dans-le-perimetre">3.1 Dans le périmètre</h3>
+<ul>
+<li>Couche plateforme QNX pour WAMR (threads, horloge, mémoire, sortie, verrous) et fichiers de construction.</li>
+<li>Exécution d'un module <code>.wasm</code> compilé en dehors du projet, chargé depuis le système de fichiers.</li>
+<li><strong>Courtier de capacités</strong> : gestionnaire de ressources QNX, politique déclarative, journal des décisions.</li>
+<li>Bibliothèque d'imports de référence : <code>cap_read_sensor</code>, <code>cap_write_actuator</code>, <code>cap_log</code>, <code>cap_time_ns</code>, <code>cap_kv_get/put</code>, <code>cap_net_send</code> (chacun soumis à politique).</li>
+<li>Isolation : budget CPU, plafond mémoire, tuer le module en cas de dépassement, relance par HAM.</li>
+<li>Signature et vérification d'un module avant chargement (via <code>qcrypto</code> ou <code>minisign</code> côté hôte).</li>
+<li>Charge utile de démonstration : 3 modules (un honnête, un gourmand, un hostile).</li>
+<li>Demande de fusion amont.</li>
+</ul>
+<h3 id="32-hors-perimetre">3.2 Hors périmètre</h3>
+<p>Compilateur vers WebAssembly (on utilise <code>clang --target=wasm32</code> ou <code>wasi-sdk</code> existants) ; WASI complet ; threads WebAssembly et mémoire partagée ; support du JIT (interprète et AOT seulement) ; exécution de code natif ; système de paquets de modules ; tout usage réseau non soumis au courtier.</p>
+<hr>
+<h2 id="4-architecture">4. Architecture</h2>
+<pre><code>eclat/
+├── CONTRACT.md              # contrat gelé : ABI des imports, format de politique, codes de décision
+├── core/                    # C11 portable PUR : politique, décisions, journal, budget — ni horloge ni fichier ni socket
+│   ├── include/eclat/       #   cap_policy.h cap_decision.h cap_budget.h cap_log.h
+│   ├── src/                 #   policy.c decision.c budget.c log.c
+│   └── tests/               #   test_policy.c test_decision.c test_budget.c test_util.c
+├── platform/qnx/            # couche plateforme WAMR pour QNX : os_thread, os_time, os_mem, os_mutex, libc_builtin
+├── platform/posix/          # couche homologue pour Linux — permet de TOUT tester sur PC
+├── broker/                  # le courtier : resmgr QNX, table de capacités, file de décisions
+│   └── *_qnx.c              # glue isolée (#ifdef __QNX__)
+├── runtime/                 # intégration WAMR : instantiation, résolution des imports, appels
+├── modules/                 # les 3 modules de démonstration (source C/Rust + .wasm précompilé + empreinte)
+├── target/                  # binaires QNX : eclatd (courtier), eclat-run (chargeur), eclatctl
+├── host/                    # Python 3 stdlib : cappoint (politique), capsim (simulateur de décisions), capbench
+├── upstream/                # patches formatés pour WAMR + pour qnx-ports/build-files, lettre d'accompagnement
+├── tests/                   # différentiels, fuzz du parseur de politique, banque de politiques fautives
+├── image/                   # fragment de buildfile d'image + politique de sécurité QNX
+├── codelab/                 # 4 chapitres : « exécuter du code tiers en sécurité sur QNX »
+└── docs/                    # spec-fr.md, spec-en.md, PORTING.md, DECISIONS.md, VALIDATION.md
+</code></pre>
+<p><strong>Règle de portabilité.</strong> La décision de politique vit dans <code>core/</code> et ne connaît ni QNX ni WAMR. Le même moteur de décision est donc testé sur Linux avec la couche <code>platform/posix/</code>, ce qui permet de valider <strong>toute la logique</strong> avant d'avoir le SDP. C'est le point qui rend ce projet livrable même si la licence tarde.</p>
+<hr>
+<h2 id="5-contrat">5. Contrat</h2>
+<h3 id="51-abi-des-imports-authoritative-contractmd">5.1 ABI des imports (authoritative : <code>CONTRACT.md</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Import</th>
+<th>Signature</th>
+<th>Sémantique</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cap_time_ns</code></td>
+<td><code>(void) -&gt; i64</code></td>
+<td>Instant monotone en nanosecondes, fourni par l'hôte</td>
+</tr>
+<tr>
+<td><code>cap_log</code></td>
+<td><code>(ptr:i32, len:i32, level:i32) -&gt; i32</code></td>
+<td>Journalisation ; retour 0 ou code d'erreur</td>
+</tr>
+<tr>
+<td><code>cap_read_sensor</code></td>
+<td><code>(id:i32, out_ptr:i32, out_len:i32) -&gt; i32</code></td>
+<td>Lecture soumise à politique ; remplit un tampon borné</td>
+</tr>
+<tr>
+<td><code>cap_write_actuator</code></td>
+<td><code>(id:i32, value_milli:i32) -&gt; i32</code></td>
+<td>Écriture soumise à politique, valeur entière en milli-unités</td>
+</tr>
+<tr>
+<td><code>cap_kv_get</code> / <code>cap_kv_put</code></td>
+<td><code>(key_ptr:i32, key_len:i32, val_ptr:i32, val_len:i32) -&gt; i32</code></td>
+<td>Stockage clés-valeurs borné</td>
+</tr>
+<tr>
+<td><code>cap_net_send</code></td>
+<td><code>(chan:i32, ptr:i32, len:i32) -&gt; i32</code></td>
+<td>Envoi sur un canal déclaré, soumis à politique</td>
+</tr>
+</tbody>
+</table>
+<p>Règles : aucune chaîne terminée par zéro admise (pointeur + longueur systématiques) ; toute longueur est vérifiée contre la taille du tampon déclaré avant copie ; tout import inconnu est refusé à l'instantiation, jamais à l'exécution.</p>
+<h3 id="52-politique-policytoml-validee-par-cappoint">5.2 Politique (<code>policy/*.toml</code>, validée par <code>cappoint</code>)</h3>
+<pre><code class="language-toml">[module &quot;diag-partner&quot;]
+sha256 = &quot;…&quot;                 # empreinte obligatoire du .wasm
+cpu_budget_ms_per_s = 50     # budget CPU par seconde glissante
+mem_max_kib = 2048
+calls_per_s = 200
+
+[[allow]]
+cap = &quot;read_sensor&quot;
+ids = [1, 2, 7]
+
+[[allow]]
+cap = &quot;write_actuator&quot;
+ids = [3]
+value_milli_range = [-1000, 1000]
+
+[[deny]]
+cap = &quot;net_send&quot;
+</code></pre>
+<p>Décision par défaut : <strong>tout refuser</strong>. Une capacité non listée explicitement en <code>allow</code> est refusée.</p>
+<h3 id="53-codes-de-decision-et-journal">5.3 Codes de décision et journal</h3>
+<p><code>CAP_OK</code>, <code>CAP_DENIED_POLICY</code>, <code>CAP_DENIED_RANGE</code>, <code>CAP_DENIED_BUDGET</code>, <code>CAP_DENIED_UNKNOWN</code>, <code>CAP_BAD_ARG</code>, <code>CAP_KILLED_CPU</code>, <code>CAP_KILLED_MEM</code>.
+Journal : une ligne JSON par décision refusée ou par dépassement de budget (les décisions accordées ne sont journalisées qu'en mode audit).</p>
+<hr>
+<h2 id="6-exigences">6. Exigences</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Niveau</th>
+<th>Exigence</th>
+<th>Vérification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ECL-01</td>
+<td>S</td>
+<td>Le moteur de décision (<code>core/</code>) compile en C11 strict sur Linux, sans QNX ni WAMR, et passe ses tests</td>
+<td><code>make core</code>, ≥ 300 vérifications</td>
+</tr>
+<tr>
+<td>ECL-02</td>
+<td>S</td>
+<td>La politique est analysée et validée ; politique invalide refusée avec champ et cause ; <strong>tout refus par défaut</strong></td>
+<td>banque de 30 politiques fautives</td>
+</tr>
+<tr>
+<td>ECL-03</td>
+<td>S</td>
+<td>Le jumeau Python rejoue les mêmes décisions ; test différentiel par graine avec réduction dichotomique du premier désaccord</td>
+<td>10 000 décisions comparées</td>
+</tr>
+<tr>
+<td>ECL-04</td>
+<td>S</td>
+<td>Un module <code>.wasm</code> s'exécute sous la couche POSIX sur Linux et appelle les imports de référence</td>
+<td>test d'intégration hôte</td>
+</tr>
+<tr>
+<td>ECL-05</td>
+<td>S</td>
+<td>Le module hostile (accès non autorisé) reçoit <code>CAP_DENIED_POLICY</code> et le refus est journalisé</td>
+<td>test dirigé + capture</td>
+</tr>
+<tr>
+<td>ECL-06</td>
+<td>S</td>
+<td>Le budget CPU est respecté : un module qui boucle est tué, et le dépassement est journalisé</td>
+<td>test avec boucle infinie</td>
+</tr>
+<tr>
+<td>ECL-07</td>
+<td>S</td>
+<td>L'empreinte du module est vérifiée avant chargement ; un octet modifié refuse le chargement</td>
+<td>test de falsification</td>
+</tr>
+<tr>
+<td>ECL-08</td>
+<td>S</td>
+<td>Aucune copie hors bornes : tout import avec longueur excessive est refusé, fuzzé sous ASan sans crash ni fuite</td>
+<td>fuzz 100 000 entrées</td>
+</tr>
+<tr>
+<td>ECL-09</td>
+<td>S</td>
+<td>CI ≤ 5 min par job, <code>fetch-depth: 1</code>, <code>concurrency</code> ; gardes de taille et de licence</td>
+<td>garde <code>ci-budget</code>, <code>sizecheck.py</code></td>
+</tr>
+<tr>
+<td>ECL-10</td>
+<td>C</td>
+<td>WAMR compile pour QNX 8.0 (cible <code>aarch64</code> et/ou <code>x86_64</code>) avec la couche <code>platform/qnx/</code></td>
+<td>essai E2, puis build réel</td>
+</tr>
+<tr>
+<td>ECL-11</td>
+<td>C</td>
+<td>Le courtier tourne sur QNX comme gestionnaire de ressources et sert les imports par message synchrone</td>
+<td>essai E4, capture vidéo</td>
+</tr>
+<tr>
+<td>ECL-12</td>
+<td>C</td>
+<td>Chargement <strong>à chaud</strong> d'un module pendant qu'une boucle de contrôle à 1 kHz tourne, sans échéance manquée</td>
+<td>banc de latence, chiffres publiés</td>
+</tr>
+<tr>
+<td>ECL-13</td>
+<td>C</td>
+<td>La boucle critique reste dans sa borne pendant qu'un module hostile sature son budget, et pendant son exécution par HAM</td>
+<td>histogramme avant/pendant/après</td>
+</tr>
+<tr>
+<td>ECL-14</td>
+<td>C</td>
+<td>Une politique de sécurité QNX interdit au processus du runtime tout accès hors courtier ; test de refus à l'appui</td>
+<td><code>secpolcompile</code> + essai</td>
+</tr>
+<tr>
+<td>ECL-15</td>
+<td>C</td>
+<td>Le parseur de politique est fuzzé ; le runtime est fuzzé avec des <code>.wasm</code> malformés</td>
+<td>campagne ASan/UBSan</td>
+</tr>
+<tr>
+<td>ECL-16</td>
+<td>C</td>
+<td>Demande de fusion amont ouverte (WAMR et/ou <code>qnx-ports/build-files</code>) avec lettre d'accompagnement et instructions de build</td>
+<td>URL dans la soumission</td>
+</tr>
+<tr>
+<td>ECL-17</td>
+<td>C</td>
+<td><code>PORTING.md</code> documente chaque écart POSIX rencontré et sa résolution — c'est la valeur pour la communauté</td>
+<td>relecture à froid</td>
+</tr>
+<tr>
+<td>ECL-18</td>
+<td>X</td>
+<td>Mode AOT : compilation ahead-of-time du module, mesure du gain et du pire temps d'exécution</td>
+<td>comparaison chiffrée</td>
+</tr>
+<tr>
+<td>ECL-19</td>
+<td>X</td>
+<td>Isolation multi-modules : plusieurs modules simultanés, budgets indépendants, aucun effet croisé</td>
+<td>test de cohabitation</td>
+</tr>
+<tr>
+<td>ECL-20</td>
+<td>X</td>
+<td>Migration assistée : exécuter un plugin Lua existant comme module Wasm, à comportement identique</td>
+<td>test de bascule</td>
+</tr>
+<tr>
+<td>ECL-21</td>
+<td>X</td>
+<td>Attestation : le courtier signe chaque décision critique, journal vérifiable par un tiers</td>
+<td>vérificateur indépendant</td>
+</tr>
+<tr>
+<td>ECL-22</td>
+<td>X</td>
+<td>Contribution amont fusionnée (pas seulement ouverte)</td>
+<td>URL de fusion</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="7-plan-de-verification">7. Plan de vérification</h2>
+<ol>
+<li><strong>Unitaires C</strong> sur <code>core/</code> : politique, décision, budget, journal. Binaires autonomes, <code>OK &lt;n&gt; checks</code>.</li>
+<li><strong>Différentiel C ↔ Python</strong> : deux implémentations indépendantes du moteur de décision, comparaison par graine, réduction dichotomique du premier désaccord (méthode éprouvée sur Ambre et Passerelle).</li>
+<li><strong>Banque de cas hostiles</strong> : 30 politiques fautives, 12 modules malformés, 8 séquences d'imports interdites.</li>
+<li><strong>Fuzz</strong> : parseur de politique et instanciation de modules, sous ASan/UBSan.</li>
+<li><strong>Mutants</strong> : au moins 8 mutations du moteur de décision (ordre des règles, défaut du refus, comparaison de plage, compteur de budget) — chacune doit être tuée.</li>
+<li><strong>Banc de latence</strong> : boucle de contrôle à 1 kHz mesurée sans module, avec module honnête, avec module hostile tué. Trois histogrammes publiés, aucune valeur inventée.</li>
+<li><strong>Gardes maison</strong> : <code>sizecheck.py</code>, <code>spdx-guard</code>, <code>ci-budget</code>.</li>
+</ol>
+<hr>
+<h2 id="8-ci">8. CI</h2>
+<ul>
+<li>Deux jobs parallèles, <code>timeout-minutes: 5</code> chacun, <code>fetch-depth: 1</code>, <code>concurrency</code> avec annulation.</li>
+<li><code>host</code> : <code>core/</code> + couche POSIX + WAMR sur Linux + tests différentiels + fuzz court.</li>
+<li><code>python</code> : <code>cappoint</code>, <code>capsim</code>, <code>capbench</code>, jumeau de décision.</li>
+<li>Job <code>qnx</code> hors PR, sur déclenchement manuel, dès qu'un runner a le SDP.</li>
+<li>Un job <code>wasm</code> compile les modules de démonstration avec <code>wasi-sdk</code> épinglé (version figée dans le dépôt).</li>
+</ul>
+<hr>
+<h2 id="9-jalons">9. Jalons</h2>
+<h3 id="91-option-5-semaines">9.1 Option 5 semaines</h3>
+<table>
+<thead>
+<tr>
+<th>Semaine</th>
+<th>Livrable</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S1</td>
+<td>Essais E1–E5 tranchés ; <code>CONTRACT.md</code> gelé ; <code>core/</code> politique + décision + tests ; jumeau Python</td>
+</tr>
+<tr>
+<td>S2</td>
+<td>Couche <code>platform/posix</code> + WAMR sur Linux : un module s'exécute et appelle les imports ; banque de cas hostiles</td>
+</tr>
+<tr>
+<td>S3</td>
+<td>Couche <code>platform/qnx</code> + build pour QNX (nécessite le SDP) ; courtier en gestionnaire de ressources</td>
+</tr>
+<tr>
+<td>S4</td>
+<td>Banc de latence, chargement à chaud, politique de sécurité QNX, fuzz et mutants ; demande de fusion amont ouverte</td>
+</tr>
+<tr>
+<td>S5</td>
+<td><code>PORTING.md</code>, codelab, docs EN, vidéo 3 min, dépôt public, formulaire Devpost, marge</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Repli si le SDP manque en S3</strong> : livrer S1–S2 comme « couche de portage validée sur POSIX + moteur de capacité prouvé », publier les patches QNX non exécutés en le disant explicitement. Soumission plus faible : le règlement exige la preuve que le projet construit ou tourne réellement sous QNX 8.0.</p>
+<h3 id="92-option-3-mois">9.2 Option 3 mois</h3>
+<p>M1 = moteur de capacité prouvé + WAMR sur POSIX + modules de démonstration. M2 = portage QNX complet, courtier, politique de sécurité, mesures de latence, AOT. M3 = multi-modules, attestation, codelab étendu, contribution amont suivie jusqu'à fusion, dossier de validation.</p>
+<hr>
+<h2 id="10-essais-de-faisabilite-semaine-1">10. Essais de faisabilité (semaine 1)</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Question</th>
+<th>Comment trancher</th>
+<th>Bloquant si</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>E1</td>
+<td>Le SDP 8.0 s'installe-t-il ?</td>
+<td>myQNX → QNX Everywhere → licence (~1 h) → QNX Software Center</td>
+<td>non (repli POSIX)</td>
+</tr>
+<tr>
+<td>E2</td>
+<td>WAMR compile-t-il pour QNX avec la couche POSIX existante ?</td>
+<td>Cloner WAMR, lire <code>core/shared/platform/</code> : existe-t-il une couche générique POSIX réutilisable ? Tester d'abord une compilation croisée minimale (<code>qcc</code>) d'un fichier de la plateforme</td>
+<td><strong>oui</strong> : si aucune couche POSIX n'est réutilisable, le portage dépasse 5 semaines → basculer sur un runtime plus petit ou sur Tamis</td>
+</tr>
+<tr>
+<td>E3</td>
+<td><code>clang --target=wasm32</code> ou <code>wasi-sdk</code> produit-il des modules que WAMR accepte ?</td>
+<td>Compiler les 3 modules de démonstration, les charger sous Linux</td>
+<td>oui pour la démo</td>
+</tr>
+<tr>
+<td>E4</td>
+<td>Un gestionnaire de ressources peut-il servir un import en moins de 100 µs aller-retour ?</td>
+<td>Micro-banc <code>MsgSend</code>/<code>MsgReply</code> sur QEMU ; à défaut, mesurer sous Linux avec un tube et annoncer l'écart</td>
+<td>non : publier la mesure réelle</td>
+</tr>
+<tr>
+<td>E5</td>
+<td>Existe-t-il déjà un port WebAssembly pour QNX hors <code>qnx-ports</code> ?</td>
+<td>Chercher « wasm » et « webassembly » sur oss.qnx.com avec un navigateur réel, sur <code>gitlab.com/qnx</code>, et sur le Discord QNX</td>
+<td><strong>oui</strong> : changer de sujet</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="11-risques">11. Risques</h2>
+<table>
+<thead>
+<tr>
+<th>Risque</th>
+<th>Probabilité</th>
+<th>Impact</th>
+<th>Parade</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>E2 échoue : la couche plateforme exige trop d'adaptation</td>
+<td>moyenne</td>
+<td>fort</td>
+<td>Limiter le périmètre à l'interprète sans threads ; ou porter un runtime plus petit ; décision en fin de S1</td>
+</tr>
+<tr>
+<td>Le SDP tarde</td>
+<td>moyenne</td>
+<td>moyen</td>
+<td>Toute la logique est validée sur POSIX ; la couche QNX est isolée dans <code>platform/qnx/</code> et <code>broker/*_qnx.c</code></td>
+</tr>
+<tr>
+<td>Performance de l'interprète sur Raspberry Pi 5</td>
+<td>moyenne</td>
+<td>moyen</td>
+<td>Mode AOT (ECL-18) ; mesurer et publier, ne pas promettre</td>
+</tr>
+<tr>
+<td>La demande de fusion amont n'aboutit pas avant le 15/12</td>
+<td>forte</td>
+<td>faible</td>
+<td>Le règlement demande l'URL de la demande <strong>si</strong> elle est ouverte, pas sa fusion</td>
+</tr>
+<tr>
+<td>Un port Wasm existe déjà ailleurs</td>
+<td>faible</td>
+<td>fort</td>
+<td>Essai E5 avant tout code</td>
+</tr>
+<tr>
+<td>Le juge trouve « bac à sable Wasm » banal</td>
+<td>moyenne</td>
+<td>moyen</td>
+<td>Insister sur les <strong>trois couches</strong> et sur la mesure de non-perturbation de la boucle critique, pas sur le runtime</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="12-script-video-3-minutes">12. Script vidéo (3 minutes)</h2>
+<table>
+<thead>
+<tr>
+<th>Temps</th>
+<th>Plan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0:00–0:20</td>
+<td>« Aucun runtime WebAssembly n'est porté sur QNX » — capture de l'index officiel des ports et du 404</td>
+</tr>
+<tr>
+<td>0:20–0:50</td>
+<td>Le courtier : <code>/dev/cap</code> visible, politique affichée, module chargé après vérification d'empreinte</td>
+</tr>
+<tr>
+<td>0:50–1:35</td>
+<td>Module honnête : lit un capteur autorisé, écrit un actionneur dans la plage autorisée, journal</td>
+</tr>
+<tr>
+<td>1:35–2:10</td>
+<td>Module hostile : accès refusé (<code>CAP_DENIED_POLICY</code>), puis boucle infinie → tué par le budget CPU, HAM le relance</td>
+</tr>
+<tr>
+<td>2:10–2:40</td>
+<td>La preuve qui compte : histogramme de la boucle de contrôle à 1 kHz, avant / pendant / après — aucune échéance manquée</td>
+</tr>
+<tr>
+<td>2:40–3:00</td>
+<td>Les trois couches d'isolation, la demande de fusion amont, les tests (nombre de vérifications, mutants tués)</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="13-dossier-de-soumission-devpost">13. Dossier de soumission Devpost</h2>
+<ol>
+<li><strong>Dépôt public</strong> créé pendant la période de soumission, licence ouverte visible (Apache-2.0, compatible WAMR).</li>
+<li><strong>Catégorie</strong> : Open-Source Contribution &amp; Ports.</li>
+<li><strong>URL amont</strong> : <code>https://github.com/bytecodealliance/wamr</code> — <strong>ne pas soumettre un fork</strong> : le dépôt contient la couche de portage, les patches formatés dans <code>upstream/</code>, les fichiers de construction QNX et la documentation.</li>
+<li><strong>URL de la demande de fusion</strong> : à renseigner (WAMR pour la couche plateforme QNX ; et/ou <code>qnx-ports/build-files</code> pour l'entrée de port).</li>
+<li><strong>Preuve d'usage de QNX</strong> : <code>platform/qnx/*</code>, <code>broker/*_qnx.c</code>, <code>target/eclatd.c</code>, <code>image/</code> (buildfile + politique), captures sur QNX 8.0 avec version du SDP et cible.</li>
+<li><strong>Description</strong> : trou (aucun runtime Wasm porté) → contribution (couche plateforme + courtier + politique + mesures) → preuve (tests, fuzz, mutants, histogrammes) → reproductibilité.</li>
+<li><strong>Instructions de build et d'exécution</strong> : version QNX, cible, toolchain, version de WAMR épinglée, version de <code>wasi-sdk</code>.</li>
+<li><strong>Bonus Codelab</strong> : URL du codelab (4 chapitres).</li>
+<li><strong>Langue</strong> : anglais, ou traduction fournie.</li>
+</ol>
+<hr>
+<h2 id="14-statut-des-affirmations">14. Statut des affirmations</h2>
+<p><strong>Vérifié</strong> : absence de WAMR/wasm/wasi/wasmtime/wasmer dans l'index officiel <code>qnx-ports/build-files/ports</code> (lecture directe de la liste des ~150 entrées) ; <code>github.com/qnx-ports/wamr</code> renvoie 404 ; existence de la chaîne de portage <code>qnx-ports/build-files</code> avec un dossier par port et un environnement Docker de construction ; QNX se déclare conforme POSIX et annonce que de nombreux projets open source compilent avec peu ou pas de modification ; existence de <code>qcrypto</code> ; mécanismes QNX cités (messages, gestionnaires de ressources, abilities, politiques, HAM, PPS).</p>
+<p><strong>Hypothèses de conception</strong> : qu'une couche plateforme POSIX de WAMR soit réutilisable pour QNX (E2) ; que la latence aller-retour du courtier soit compatible avec une boucle à 1 kHz (E4) ; que le mode AOT soit disponible pour les cibles QNX ; que l'empreinte de module puisse être vérifiée avec <code>qcrypto</code> sans dépendance supplémentaire.</p>
+<p><strong>Non vérifié</strong> : l'absence d'un port WebAssembly ailleurs que dans <code>qnx-ports</code> (le tableau de bord oss.qnx.com n'est pas interrogeable sans JavaScript) — essai E5 obligatoire.</p>
+<p><strong>Volontairement non affirmé</strong> : aucun chiffre de latence avant mesure ; aucune affirmation de sécurité au sens certification (le projet fournit une isolation et une politique, pas une qualification).</p>
+<hr>
+<h2 id="15-regles-de-code-et-delegation">15. Règles de code et délégation</h2>
+<p><strong>Règles maison</strong> : C11, <code>-std=c11 -O2 -Wall -Wextra -Werror</code> ; <code>core/</code> pur (ni horloge, ni fichier, ni socket, ni allocation, ni état global mutable) ; code QNX confiné dans <code>platform/qnx/</code>, <code>broker/*_qnx.c</code>, <code>target/</code>, gardé par <code>#ifdef __QNX__</code> ; moins de 500 lignes par fichier, moins de 50 lignes par fonction ; aucune duplication — la couche <code>platform/posix/</code> et la couche <code>platform/qnx/</code> partagent le même contrat d'interface, jamais du code copié ; Python 3 standard uniquement ; chaque exigence citée en commentaire au-dessus du code et dans le nom du test.</p>
+<p><strong>Découpage en lots pour sous-agents</strong> :</p>
+<table>
+<thead>
+<tr>
+<th>Lot</th>
+<th>Contenu</th>
+<th>Dépend de</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L1</td>
+<td><code>core/</code> politique : parseur TOML restreint, validation, banque de cas fautifs</td>
+<td>CONTRAT gelé</td>
+</tr>
+<tr>
+<td>L2</td>
+<td><code>core/</code> décision + budget + journal</td>
+<td>L1</td>
+</tr>
+<tr>
+<td>L3</td>
+<td>Jumeau Python + test différentiel avec réduction dichotomique</td>
+<td>L2</td>
+</tr>
+<tr>
+<td>L4</td>
+<td><code>platform/posix/</code> + intégration WAMR sur Linux + résolution des imports</td>
+<td>L2</td>
+</tr>
+<tr>
+<td>L5</td>
+<td>Modules de démonstration (honnête, gourmand, hostile) + empreintes</td>
+<td>L4</td>
+</tr>
+<tr>
+<td>L6</td>
+<td>Fuzz (politique + <code>.wasm</code> malformés) + mutants + gardes</td>
+<td>L1–L5</td>
+</tr>
+<tr>
+<td>L7</td>
+<td><code>platform/qnx/</code> + build croisé (nécessite le SDP)</td>
+<td>E1, E2</td>
+</tr>
+<tr>
+<td>L8</td>
+<td>Courtier QNX (<code>broker/</code>, <code>target/eclatd</code>) + politique de sécurité + <code>image/</code></td>
+<td>L7, E4</td>
+</tr>
+<tr>
+<td>L9</td>
+<td>Banc de latence + campagne de mesures + <code>host/capbench</code></td>
+<td>L8</td>
+</tr>
+<tr>
+<td>L10</td>
+<td><code>upstream/</code> (patches formatés, lettre d'accompagnement) + demande de fusion</td>
+<td>L7</td>
+</tr>
+<tr>
+<td>L11</td>
+<td><code>PORTING.md</code> + codelab + docs EN/FR + script vidéo</td>
+<td>L1–L9</td>
+</tr>
+</tbody>
+</table>
+<p>Chaque brief de sous-agent rappelle : contexte complet, critère de succès mesurable, bornes (temps, essais, comportement en cas d'échec), règles shell, et « fais-le toi-même, sans déléguer ».</p>
+</main>
+<footer>Généré depuis les sources Markdown du dépôt. Licence MIT.</footer>
+</body>
+</html>

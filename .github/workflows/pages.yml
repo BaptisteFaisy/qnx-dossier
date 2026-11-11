@@ -1,21 +1,22 @@
-name: pages
+name: verif-site
+
+# Le site est publié depuis docs/ (source GitHub Pages « branche »), sans dépendre
+# d'Actions pour être en ligne. Ce workflow vérifie seulement que docs/ correspond
+# exactement à ce que le générateur produit à partir des sources Markdown : une seule
+# implémentation (tools/build_site.py), aucune dérive possible entre texte et site.
 
 on:
+  pull_request:
   push:
     branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
 concurrency:
-  group: pages-${{ github.ref }}
+  group: verif-site-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build:
+  site-a-jour:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -27,27 +28,18 @@ jobs:
           python-version: '3.12'
       - name: Installer python-markdown
         run: python -m pip install --quiet markdown
-      - name: Construire le site
-        run: python tools/build_site.py site/
-      - name: Vérifier les pages produites
+      - name: Régénérer le site
+        run: python tools/build_site.py /tmp/site-attendu
+      - name: docs/ doit correspondre à la génération
         run: |
-          test -s site/index.html
-          for p in tamis glane eclat classement inventaire idees; do
-            test -s "site/$p.html" || { echo "page manquante : $p"; exit 1; }
+          if ! diff -r --brief docs /tmp/site-attendu; then
+            echo "::error::docs/ n'est pas à jour. Relancer : python3 tools/build_site.py docs/"
+            exit 1
+          fi
+          echo "docs/ correspond à la génération."
+      - name: Aucune page vide
+        run: |
+          for p in index tamis glane eclat classement inventaire idees; do
+            test -s "docs/$p.html" || { echo "page vide ou absente : $p"; exit 1; }
           done
-          grep -q '<table' site/inventaire.html
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: site/
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+          grep -q '<table' docs/inventaire.html

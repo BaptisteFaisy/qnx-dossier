@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Glane — capteurs et publication — Dossier QNX</title>
+<style>
+:root{--fg:#e6e6e6;--bg:#12141a;--card:#1b1f28;--acc:#7fd1c1;--mut:#9aa3b2;--bd:#2a3040}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+ font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{padding:1.4rem 1.2rem;border-bottom:1px solid var(--bd);background:var(--card)}
+header h1{margin:0;font-size:1.25rem}
+header p{margin:.3rem 0 0;color:var(--mut);font-size:.9rem}
+nav{display:flex;flex-wrap:wrap;gap:.4rem;padding:.8rem 1.2rem;border-bottom:1px solid var(--bd)}
+nav a{color:var(--mut);text-decoration:none;font-size:.85rem;padding:.3rem .6rem;
+ border:1px solid var(--bd);border-radius:999px}
+nav a:hover{color:var(--fg)}
+nav a.actif{color:#12141a;background:var(--acc);border-color:var(--acc);font-weight:600}
+main{padding:1.2rem;max-width:60rem;margin:0 auto}
+main h1{font-size:1.6rem;border-bottom:1px solid var(--bd);padding-bottom:.4rem}
+main h2{font-size:1.25rem;margin-top:2rem;color:var(--acc)}
+main h3{font-size:1.05rem;margin-top:1.6rem}
+a{color:var(--acc)}
+code{background:#0d0f14;padding:.1rem .35rem;border-radius:4px;font-size:.88em}
+pre{background:#0d0f14;padding:.9rem;border-radius:8px;overflow-x:auto;border:1px solid var(--bd)}
+pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.9rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--bd);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--card);white-space:nowrap}
+blockquote{border-left:3px solid var(--acc);margin:1rem 0;padding:.2rem 1rem;color:var(--mut)}
+footer{padding:1.2rem;color:var(--mut);font-size:.85rem;border-top:1px solid var(--bd);text-align:center}
+</style>
+</head>
+<body>
+<header>
+<h1>Dossier QNX — Global Hackathon 2026</h1>
+<p>Inventaire documenté des manques de QNX SDP 8.0, classement de 140 idées, trois cahiers des charges.</p>
+</header>
+<nav>
+<a href="index.html">Accueil</a>
+<a href="tamis.html">Tamis — politiques de sécurité</a>
+<a href="glane.html" class="actif">Glane — capteurs et publication</a>
+<a href="eclat.html">Éclat — WebAssembly (WAMR)</a>
+<a href="classement.html">Classement des 140 idées</a>
+<a href="inventaire.html">Inventaire : ce que QNX fournit déjà</a>
+<a href="idees.html">100 idées détaillées</a>
+</nav>
+<main>
+<h1 id="glane-couche-capteurs-et-publication-de-peripheriques-pour-qnx-80">Glane — couche capteurs et publication de périphériques pour QNX 8.0</h1>
+<p><strong>Nom de travail : « Glane »</strong> (récolter ce que les capteurs donnent, sans rien perdre).
+Version 0.1 — 11 novembre 2026 — projet candidat au QNX Global Hackathon, catégorie <strong>Low-level Software</strong>.
+Classement interne : 1er sur 140 idées notées (15/16), et 1er aussi quand on retire le critère « sans SDP ».
+Deux calendriers possibles : <strong>5 semaines</strong> (soumission au concours, deadline 15/12/2026 à 20 h de Paris) ou <strong>3 mois</strong> (produit complet).</p>
+<hr>
+<h2 id="0-lecture-rapide">0. Lecture rapide</h2>
+<p><strong>Ce que c'est.</strong> Une couche d'abstraction capteurs pour QNX 8.0 : au-dessus des frameworks GPIO et SPI déjà fournis, elle offre (a) une bibliothèque portable de description, découverte et calibration de capteurs, (b) un SDK pour écrire un <em>publisher</em> de périphériques, (c) cinq publishers de référence, (d) un <strong>publisher virtuel</strong> qui injecte des mesures synthétiques sous QEMU sans aucun matériel, (e) un validateur de schéma des objets publiés, (f) un banc de mesure de la latence de publication.</p>
+<p><strong>La promesse, en une phrase.</strong> Un capteur — réel sur Raspberry Pi 5 ou simulé sous QEMU — est décrit dans un fichier, découvert, calibré, publié dans l'arborescence du système avec horodatage à la source, et sa latence de publication est <strong>mesurée et bornée</strong>, sans écrire un gestionnaire de ressources à la main.</p>
+<p><strong>Trois idées qui portent le projet.</strong></p>
+<ol>
+<li><strong>Le framework existe, l'écosystème n'existe pas.</strong> QNX livre un mécanisme de publication de périphériques et <strong>un seul</strong> publisher (<code>usblauncher_otg</code>, orienté USB/stockage/média). Rien pour les capteurs. On ne réinvente pas le mécanisme : on fournit ce qui manque pour s'en servir.</li>
+<li><strong>Tout doit être simulable.</strong> Aucune simulation sans matériel n'est documentée dans le guide. Le publisher virtuel devient donc à la fois l'outil de démonstration, le harnais de test en CI, et la raison pour laquelle le projet est vérifiable <strong>avant</strong> d'avoir une carte.</li>
+<li><strong>Mesurer plutôt qu'affirmer.</strong> Rien n'est dit sur la latence de publication ni sur l'horodatage des notifications. Le banc horodaté (attachement → objet publié → abonné servi) transforme une affirmation en chiffre.</li>
+</ol>
+<p><strong>Trois niveaux d'ambition.</strong> Chaque exigence porte un niveau : <strong>S</strong> (socle, indispensable à une soumission), <strong>C</strong> (complet, la version visée), <strong>X</strong> (extrême, ce qui pousse l'idée au bout).</p>
+<p><strong>À valider avant d'écrire la moindre ligne de produit</strong> (section 10) : quatre essais de faisabilité. Le plus critique vérifie qu'un processus tiers peut créer et publier ses propres objets dans l'arborescence du service de publication, sans code propriétaire ni licence commerciale.</p>
+<p><strong>Statut des affirmations.</strong> La section 14 sépare ce qui est vérifié dans la documentation de ce qui reste une hypothèse de conception.</p>
+<hr>
+<h2 id="1-contexte-et-cas-dusage">1. Contexte et cas d'usage</h2>
+<h3 id="11-qui-a-ce-probleme">1.1 Qui a ce problème</h3>
+<table>
+<thead>
+<tr>
+<th>Acteur</th>
+<th>Besoin</th>
+<th>Pourquoi QNX</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fabricant de dispositifs médicaux</td>
+<td>Remonter température, pression, débit, position, batterie d'un appareil certifiable, avec horodatage fiable et traçable</td>
+<td>Déterminisme + cloisonnement par politique de sécurité (IEC 62304)</td>
+</tr>
+<tr>
+<td>Équipementier automobile / ECU</td>
+<td>Capteurs de batterie, thermique, courant, position sur une plateforme zonale</td>
+<td>QNX équipe déjà le parc ; les capteurs arrivent par I2C/SPI/CAN</td>
+</tr>
+<tr>
+<td>Intégrateur industriel</td>
+<td>Supervision de capteurs d'une machine (vibration, courant, température) pour la maintenance prédictive</td>
+<td>Cadence garantie et isolation des bus lents</td>
+</tr>
+<tr>
+<td>Roboticien</td>
+<td>Fusion de mesures hétérogènes à cadences différentes, sans perte ni réordonnancement</td>
+<td>Passage de messages synchrone, priorités</td>
+</tr>
+<tr>
+<td>Enseignement / prototypage</td>
+<td>Raspberry Pi 5 + QNX 8.0 : image Quick Start officielle, capteurs à 5 €</td>
+<td>Cible explicitement supportée par le concours</td>
+</tr>
+</tbody>
+</table>
+<h3 id="12-pourquoi-maintenant">1.2 Pourquoi maintenant</h3>
+<ul>
+<li>QNX 8.0 est gratuit en usage non commercial (QNX Everywhere, licence obtenue en ~1 h).</li>
+<li>Une image Quick Start pour Raspberry Pi 5 est publiée officiellement : le matériel du concours est le matériel réel du projet.</li>
+<li>Le framework de publication de périphériques est documenté mais <strong>presque vide</strong> : un seul publisher livré, aucune API de rédaction documentée, aucun exemple de capteur. C'est le genre de trou qu'un concours existe pour combler.</li>
+</ul>
+<h3 id="13-ce-que-le-projet-nest-pas">1.3 Ce que le projet n'est pas</h3>
+<p>Ni un framework de fusion de capteurs, ni un SLAM, ni un bus de terrain. Glane s'arrête à la publication fiable et mesurée d'une mesure horodatée.</p>
+<hr>
+<h2 id="2-ancrage-documentaire">2. Ancrage documentaire</h2>
+<h3 id="21-ce-que-qnx-fournit-deja-a-ne-pas-reinventer">2.1 Ce que QNX fournit déjà (à ne pas réinventer)</h3>
+<table>
+<thead>
+<tr>
+<th>Élément</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Framework de publication de périphériques, objets publiés dans une arborescence à <strong>emplacements fixes</strong>, modèle de données orienté média/stockage (mountpoint, partitions, TOC, température et mécanisme du disque)</td>
+<td><code>com.qnx.doc.dev_pub/topic/about.html</code>, <code>overview.html</code>, <code>rmps_objects.html</code></td>
+</tr>
+<tr>
+<td><strong>Un</strong> publisher livré : <code>usblauncher_otg</code> (USB, stockage, média), montage automatique via <code>rules.mnt</code></td>
+<td><code>dev_pub/usblauncher_otg.html</code></td>
+</tr>
+<tr>
+<td>Mécanisme de plugins (generic, ipod, mediafs, audiocd, dvd) avec manager et système de <em>ratings</em> auto-déclarés</td>
+<td><code>dev_pub/plugins.html</code></td>
+</tr>
+<tr>
+<td>Framework <strong>GPIO</strong> documenté</td>
+<td><code>com.qnx.doc.gpio_framework/topic/overview.html</code></td>
+</tr>
+<tr>
+<td>Framework <strong>SPI</strong> documenté (technote)</td>
+<td><code>com.qnx.doc.neutrino.spi_framework/topic/about.html</code></td>
+</tr>
+<tr>
+<td>Exemple officiel <code>rpi-gpio</code> (gestionnaire de ressources GPIO + modules Python)</td>
+<td><code>gitlab.com/qnx/projects</code></td>
+</tr>
+<tr>
+<td><code>libusb</code> porté ; <code>libcamera</code> porté</td>
+<td>index <code>github.com/qnx-ports/build-files/ports</code></td>
+</tr>
+<tr>
+<td>HAM, PPS, <code>ionotify</code>, <code>TimerPulse</code>, politiques de sécurité</td>
+<td>System Architecture, System Security Guide</td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-les-trous-exploites-tous-sources">2.2 Les trous exploités (tous sourcés)</h3>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Trou</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PUB-SDK</td>
+<td>Aucune API ni SDK « écrire un publisher » : le guide ne décrit que le contenu des objets et les options en ligne de commande</td>
+<td><code>dev_pub/about.html</code> (lu)</td>
+</tr>
+<tr>
+<td>PUB-SENS</td>
+<td>Un seul publisher livré ; rien pour capteurs, I2C/SPI, BLE, batterie, thermique</td>
+<td><code>dev_pub/overview.html</code> (lu)</td>
+</tr>
+<tr>
+<td>PUB-SIM</td>
+<td>Aucune simulation ni test sans matériel mentionné dans tout le guide ; pas de publisher virtuel pour QEMU</td>
+<td><code>dev_pub/about.html</code> (lu, sommaire complet)</td>
+</tr>
+<tr>
+<td>PUB-CONF</td>
+<td>Aucun validateur de conformité des objets publiés, alors que l'arborescence à emplacements fixes est imposée</td>
+<td><code>dev_pub/rmps_objects.html</code> (lu)</td>
+</tr>
+<tr>
+<td>PUB-LAT</td>
+<td>Rien sur la latence de publication, l'horodatage des notifications, la qualité de service</td>
+<td><code>dev_pub/rmps_objects.html</code> (lu)</td>
+</tr>
+<tr>
+<td>PUB-META</td>
+<td>Modèle de données sans unités, plages, calibration ni horodatage de capteur</td>
+<td><code>dev_pub/rmps_objects.html</code> (lu)</td>
+</tr>
+<tr>
+<td>PUB-LIFE</td>
+<td>Publishers décrits comme processus persistants redémarrables, mais aucune intégration HAM/cycle de vie documentée</td>
+<td><code>dev_pub/overview.html</code> (lu)</td>
+</tr>
+<tr>
+<td>PUB-SEC</td>
+<td>Aucune permission ni politique de sécurité mentionnée pour les objets publiés, y compris l'objet de commande</td>
+<td><code>dev_pub/rmps_objects.html</code> (lu)</td>
+</tr>
+<tr>
+<td>SENS-ABS</td>
+<td>GPIO et SPI ont des frameworks, mais aucune abstraction capteur au-dessus (fusion, calibration, découverte)</td>
+<td><code>references.html</code> (lu)</td>
+</tr>
+<tr>
+<td>HID-DOC</td>
+<td>Aucune documentation HID/entrée dans le nav SDP</td>
+<td><code>guides.html</code>, <code>references.html</code> (lus)</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="3-perimetre">3. Périmètre</h2>
+<h3 id="31-dans-le-perimetre">3.1 Dans le périmètre</h3>
+<ul>
+<li>Capteurs <strong>numériques</strong> à lecture périodique sur I2C, SPI, GPIO (compteur/impulsion) et sur fichier (thermique sysfs-like).</li>
+<li>Description déclarative d'un capteur : type, bus, adresse, période, unité, plage, calibration (offset/gain/polynôme), seuils.</li>
+<li>Découverte, calibration, horodatage à la source, publication, notification aux abonnés.</li>
+<li>Publisher <strong>virtuel</strong> (mesures synthétiques scriptables : sinusoïde, rampe, bruit, panne, dérive, saturation).</li>
+<li>Validateur de schéma des objets publiés + banc de latence.</li>
+<li>Cinq publishers de référence : température, IMU 6 axes, courant/tension, batterie, encodeur/impulsion.</li>
+<li>Politique de sécurité type pour l'ensemble (objet de commande protégé).</li>
+</ul>
+<h3 id="32-hors-perimetre-assume">3.2 Hors périmètre (assumé)</h3>
+<p>Capteurs analogiques nécessitant un CAN externe non documenté ; BLE (pile absente du périmètre vérifié) ; fusion multi-capteurs et filtrage avancé (Kalman) ; caméra et <code>libcamera</code> ; audio ; tout ce qui exige du matériel non disponible sur Raspberry Pi 5 ou QEMU.</p>
+<hr>
+<h2 id="4-architecture">4. Architecture</h2>
+<pre><code>glane/
+├── CONTRACT.md              # contrat gelé : en-têtes et formats, non modifiables par les agents
+├── core/                    # C11 portable, PUR : ni horloge, ni fichier, ni socket, ni malloc, ni état global
+│   ├── include/glane/       #   glane_desc.h glane_sample.h glane_calib.h glane_schema.h glane_bus.h
+│   ├── src/                 #   desc.c sample.c calib.c schema.c ring.c deadline.c
+│   └── tests/               #   test_desc.c test_calib.c test_schema.c test_ring.c test_util.c
+├── bus/                     # adaptateurs de bus : i2c.c spi.c gpio.c file.c virtuel.c (+ stub PC)
+├── sensors/                 # drivers de capteurs : tmp.c imu.c ina.c batt.c encoder.c
+├── publish/                 # couche publication : objet, arborescence, notification, commande
+│   └── qnx/                 # glue QNX isolée (#ifdef __QNX__), jamais compilée sur PC
+├── target/                  # binaires QNX : glaned (publisher), glanectl (CLI), glane-sim
+├── host/                    # outils hôte Python 3 stdlib : gschema (validateur), glat (banc latence),
+│                            # gsim (générateur de scénarios), gplot (rapport HTML)
+├── image/                   # fragment de buildfile d'image + politique de sécurité type
+├── scenarios/               # *.json : scénarios de mesures et de pannes injectées
+├── tests/                   # différentiels, fuzz du parseur, banque de descriptions fautives
+├── codelab/                 # 4 chapitres : « publier un capteur sous QNX 8.0 »
+└── docs/                    # spec-fr.md, spec-en.md, ARCHITECTURE.md, DECISIONS.md, VALIDATION.md
+</code></pre>
+<p><strong>Règle de portabilité</strong> (identique à <code>relais</code>) : <code>core/</code> ne connaît ni QNX ni le temps. L'horloge, les fichiers et les sockets sont injectés par l'appelant via des pointeurs de fonction. Tout <code>core/</code> compile et se teste sur Linux avec <code>gcc -std=c11 -O2 -Wall -Wextra -Werror</code>, y compris sous ASan/UBSan.</p>
+<hr>
+<h2 id="5-contrat">5. Contrat</h2>
+<h3 id="51-abi-de-la-mesure-authoritative-coreincludeglaneglane_sampleh">5.1 ABI de la mesure (authoritative : <code>core/include/glane/glane_sample.h</code>)</h3>
+<pre><code class="language-c">typedef struct {
+  uint32_t sensor_id;     /* identifiant issu de la description          */
+  uint32_t seq;           /* numéro de séquence monotone, jamais réinitialisé */
+  int64_t  ts_ns;         /* horodatage à la source, CLOCK_MONOTONIC     */
+  int32_t  value_milli;   /* valeur en milli-unités (échelle entière)    */
+  uint16_t unit;          /* GLANE_UNIT_* : C, K, V, mA, deg_s, g, rpm…  */
+  uint8_t  quality;       /* GLANE_Q_OK|STALE|SATURATED|FAULT|UNCERTAIN  */
+  uint8_t  flags;         /* GLANE_F_FIRST|CALIBRATED|INJECTED|SIMULATED */
+} glane_sample;           /* 24 octets, alignement naturel, aucun pointeur */
+</code></pre>
+<p>Choix à ne pas perdre : <strong>échelle entière en milli-unités</strong> (pas de <code>float</code>) pour que le jumeau de vérification en Python rejoue bit à bit ; <code>seq</code> monotone pour détecter pertes et réordonnancements ; <code>quality</code> distinct de <code>flags</code> (la qualité décrit la mesure, les drapeaux décrivent son origine).</p>
+<h3 id="52-description-dun-capteur-sensorsdjson-valide-aussi-pour-le-simulateur">5.2 Description d'un capteur (<code>sensors.d/*.json</code>, valide aussi pour le simulateur)</h3>
+<pre><code class="language-json">{&quot;id&quot;: 1, &quot;name&quot;: &quot;temp-chassis&quot;, &quot;driver&quot;: &quot;tmp&quot;, &quot;bus&quot;: {&quot;kind&quot;: &quot;i2c&quot;, &quot;dev&quot;: &quot;/dev/i2c0&quot;, &quot;addr&quot;: &quot;0x48&quot;},
+ &quot;period_ms&quot;: 100, &quot;unit&quot;: &quot;C&quot;, &quot;range&quot;: [-40.0, 125.0],
+ &quot;calib&quot;: {&quot;kind&quot;: &quot;poly&quot;, &quot;coef&quot;: [0.0, 1.0]},
+ &quot;thresholds&quot;: {&quot;warn&quot;: 85.0, &quot;crit&quot;: 105.0},
+ &quot;deadline_ms&quot;: 150, &quot;stale_after_ms&quot;: 500}
+</code></pre>
+<p><code>kind</code> ∈ <code>i2c|spi|gpio|file|virtuel</code>. <code>deadline_ms</code> = borne au-delà de laquelle la mesure est publiée en <code>STALE</code> au lieu d'être jetée.</p>
+<h3 id="53-arborescence-publiee-a-figer-apres-lessai-e2">5.3 Arborescence publiée (à figer après l'essai E2)</h3>
+<pre><code>/dev/sensors/&lt;name&gt;/{value,quality,seq,ts_ns,unit,info}
+/dev/sensors/&lt;name&gt;/command/{period,calibrate,inject,selftest}
+</code></pre>
+<h3 id="54-journal-de-mesures-une-ligne-json-par-mesure-ascii-flottants-6g">5.4 Journal de mesures (une ligne JSON par mesure, ASCII, flottants <code>%.6g</code>)</h3>
+<pre><code>{&quot;s&quot;:&quot;temp-chassis&quot;,&quot;id&quot;:1,&quot;seq&quot;:4182,&quot;ts_ns&quot;:18423390122,&quot;v_m&quot;:43125,&quot;u&quot;:&quot;C&quot;,&quot;q&quot;:&quot;ok&quot;,&quot;f&quot;:&quot;calibrated&quot;}
+</code></pre>
+<hr>
+<h2 id="6-exigences">6. Exigences</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Niveau</th>
+<th>Exigence</th>
+<th>Vérification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GLA-01</td>
+<td>S</td>
+<td><code>core/</code> compile sur Linux en C11 strict sans avertissement et sans dépendre de QNX</td>
+<td><code>make core</code> + garde de compilation croisée</td>
+</tr>
+<tr>
+<td>GLA-02</td>
+<td>S</td>
+<td>Une description JSON est analysée et validée ; toute description invalide est refusée avec un message précis (champ, ligne, cause)</td>
+<td><code>test_desc</code> + banque de 40 descriptions fautives</td>
+</tr>
+<tr>
+<td>GLA-03</td>
+<td>S</td>
+<td>Un capteur virtuel produit des mesures à la période déclarée, avec <code>seq</code> monotone et horodatage à la source</td>
+<td><code>test_ring</code>, <code>test_deadline</code></td>
+</tr>
+<tr>
+<td>GLA-04</td>
+<td>S</td>
+<td>Le publisher virtuel rejoue un scénario de fichier de manière déterministe : deux exécutions donnent le même journal octet pour octet</td>
+<td>test de rejeu avec graine fixe</td>
+</tr>
+<tr>
+<td>GLA-05</td>
+<td>S</td>
+<td>La calibration (offset, gain, polynôme degré ≤ 3) est appliquée dans <code>core/</code> en arithmétique entière, identique au jumeau Python</td>
+<td>test différentiel C ↔ Python sur 10 000 valeurs</td>
+</tr>
+<tr>
+<td>GLA-06</td>
+<td>S</td>
+<td>Une mesure plus vieille que <code>stale_after_ms</code> est publiée avec <code>quality=STALE</code>, jamais jetée silencieusement</td>
+<td><code>test_deadline</code></td>
+</tr>
+<tr>
+<td>GLA-07</td>
+<td>S</td>
+<td>Un capteur qui ne répond plus est signalé <code>FAULT</code> après N périodes manquantes, et le passage est journalisé</td>
+<td>injection de panne dans le scénario</td>
+</tr>
+<tr>
+<td>GLA-08</td>
+<td>S</td>
+<td>Le validateur de schéma hôte (<code>gschema</code>) vérifie l'arborescence publiée et rend un code de retour non nul en cas d'écart</td>
+<td>test sur arborescence de référence + 12 variantes cassées</td>
+</tr>
+<tr>
+<td>GLA-09</td>
+<td>S</td>
+<td>Le banc de latence (<code>glat</code>) mesure attachement → publication → abonné, et produit p50/p99/p99.9/max en JSON et en HTML</td>
+<td>exécution sur le publisher virtuel</td>
+</tr>
+<tr>
+<td>GLA-10</td>
+<td>S</td>
+<td>La CI tient en moins de 5 minutes par job, <code>fetch-depth: 1</code>, <code>concurrency</code> posé</td>
+<td>garde <code>ci-budget</code></td>
+</tr>
+<tr>
+<td>GLA-11</td>
+<td>S</td>
+<td>Tout fichier fait moins de 500 lignes, toute fonction moins de 50 lignes, aucune duplication de logique</td>
+<td><code>scripts/sizecheck.py</code></td>
+</tr>
+<tr>
+<td>GLA-12</td>
+<td>C</td>
+<td>Un publisher réel tourne sur QNX 8.0 (Raspberry Pi 5 ou QEMU) et publie dans <code>/dev/sensors</code></td>
+<td>essai E2 puis E4, capture vidéo</td>
+</tr>
+<tr>
+<td>GLA-13</td>
+<td>C</td>
+<td>Au moins deux capteurs réels sur Raspberry Pi 5 (thermique + un capteur I2C à 5 €)</td>
+<td>vidéo, journal horodaté</td>
+</tr>
+<tr>
+<td>GLA-14</td>
+<td>C</td>
+<td>Les publishers sont supervisés par HAM : un publisher tué est relancé et la reprise est mesurée</td>
+<td>essai de reprise, chiffre publié</td>
+</tr>
+<tr>
+<td>GLA-15</td>
+<td>C</td>
+<td>Une politique de sécurité type est fournie et vérifiée : l'objet <code>command</code> n'est accessible qu'aux types autorisés</td>
+<td><code>secpolcompile</code> + test de refus</td>
+</tr>
+<tr>
+<td>GLA-16</td>
+<td>C</td>
+<td>Notification aux abonnés sans perte sous charge : aucun <code>seq</code> manquant sur 60 s à 1 kHz cumulé</td>
+<td>test de charge, compteur de pertes</td>
+</tr>
+<tr>
+<td>GLA-17</td>
+<td>C</td>
+<td>Le parseur de description est fuzzé (entrées déterministes par graine) sans crash ni fuite</td>
+<td>fuzz ASan, 100 000 entrées</td>
+</tr>
+<tr>
+<td>GLA-18</td>
+<td>C</td>
+<td>Un codelab de 4 chapitres permet à un débutant de publier un capteur virtuel puis réel</td>
+<td>relecture à froid par un agent neuf</td>
+</tr>
+<tr>
+<td>GLA-19</td>
+<td>X</td>
+<td>Découverte automatique : balayage I2C/SPI, identification par registre <code>WHO_AM_I</code>, proposition de description</td>
+<td>démo de découverte</td>
+</tr>
+<tr>
+<td>GLA-20</td>
+<td>X</td>
+<td>Qualité de service : budget de publication par capteur, dégradation declared quand le bus sature</td>
+<td>mesure sous saturation de bus</td>
+</tr>
+<tr>
+<td>GLA-21</td>
+<td>X</td>
+<td>Horodatage matériel quand le bus le permet, et preuve de l'écart avec l'horodatage logiciel</td>
+<td>essai comparatif</td>
+</tr>
+<tr>
+<td>GLA-22</td>
+<td>X</td>
+<td>Publisher générique piloté par script (aucun C à écrire pour un capteur simple)</td>
+<td>démo</td>
+</tr>
+<tr>
+<td>GLA-23</td>
+<td>X</td>
+<td>Export des mesures vers un abonné PPS et vers un fichier circulaire borné</td>
+<td>test d'export</td>
+</tr>
+<tr>
+<td>GLA-24</td>
+<td>X</td>
+<td>Contribution amont : proposition d'un chapitre « écrire un publisher » ou d'un exemple capteur</td>
+<td>URL de la demande de fusion</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="7-plan-de-verification">7. Plan de vérification</h2>
+<ol>
+<li><strong>Unitaires C</strong> (<code>core/tests/</code>) : binaires autonomes, retour 0 si vert, une ligne par vérification, <code>OK &lt;n&gt; checks</code> à la fin. Cible : ≥ 600 vérifications.</li>
+<li><strong>Différentiel C ↔ Python</strong> : la calibration, le séquencement et la détection de péremption existent en deux implémentations indépendantes ; un test par graine compare sur 10 000 valeurs et <strong>réduit dichotomiquement</strong> le premier désaccord (méthode éprouvée sur Passerelle).</li>
+<li><strong>Banque de cas fautifs</strong> : 40 descriptions invalides, 12 arborescences cassées, 8 scénarios de panne — chaque cas doit produire l'erreur attendue, pas seulement « une erreur ».</li>
+<li><strong>Fuzz déterministe</strong> du parseur sous ASan/UBSan.</li>
+<li><strong>Mutants</strong> : au moins 8 mutations du code de décision (seuils, ordre de publication, gestion de <code>seq</code>) ; chacune doit être tuée par au moins un test.</li>
+<li><strong>Banc de latence</strong> : mesures réelles publiées dans le rapport, aucune cible non chiffrée.</li>
+<li><strong>Gardes maison</strong> : <code>sizecheck.py</code> (&lt; 500 lignes/fichier, &lt; 50 lignes/fonction), <code>spdx-guard</code> (en-tête de licence sur chaque fichier), <code>ci-budget</code> (≤ 5 min/job).</li>
+</ol>
+<hr>
+<h2 id="8-ci">8. CI</h2>
+<ul>
+<li><code>timeout-minutes: 5</code> par job, <code>concurrency</code> avec annulation des runs obsolètes, <code>actions/checkout@v4</code> en <code>fetch-depth: 1</code>.</li>
+<li>Deux jobs parallèles : <code>build-test</code> (core + bus + sensors, ASan/UBSan) et <code>host-test</code> (pytest, validateur, banc de latence sur scénarios).</li>
+<li>Aucun job ne construit pour QNX en CI tant que le SDP n'est pas disponible sur un runner ; dès qu'il l'est, un job <code>qnx-build</code> optionnel, hors PR, sur événement manuel.</li>
+<li>Runners self-hosted existants réutilisables ; garde <code>ci-budget</code> obligatoire.</li>
+</ul>
+<hr>
+<h2 id="9-jalons">9. Jalons</h2>
+<h3 id="91-option-5-semaines-soumission-au-concours">9.1 Option 5 semaines (soumission au concours)</h3>
+<table>
+<thead>
+<tr>
+<th>Semaine</th>
+<th>Livrable</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S1</td>
+<td>Essais E1–E4 (section 10) tranchés ; <code>CONTRACT.md</code> gelé ; <code>core/</code> desc+sample+calib+ring avec tests verts sur PC</td>
+</tr>
+<tr>
+<td>S2</td>
+<td>Bus virtuel + scénarios + rejeu déterministe ; jumeau Python ; tests différentiels ; validateur de schéma</td>
+</tr>
+<tr>
+<td>S3</td>
+<td>Couche publication QNX (si le SDP est installé) ; <code>glaned</code> ; banc de latence ; premiers chiffres</td>
+</tr>
+<tr>
+<td>S4</td>
+<td>Deux publishers réels sur Raspberry Pi 5 ; HAM ; politique de sécurité ; fuzz et mutants</td>
+</tr>
+<tr>
+<td>S5</td>
+<td>Codelab, docs EN/FR, vidéo 3 min, dépôt public, formulaire Devpost, marge</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Si le SDP n'est pas installé en S3</strong> : livrer le socle portable + le publisher virtuel + le banc de latence sur Linux, et l'annoncer explicitement dans la soumission. C'est une soumission plus faible mais honnête ; la section 13.4 dit comment la formuler.</p>
+<h3 id="92-option-3-mois">9.2 Option 3 mois</h3>
+<p>M1 = socle portable complet et prouvé (S1–S2 + fuzz + mutants). M2 = cible QNX, publishers réels, HAM, politique de sécurité, mesure de latence sur carte. M3 = découverte automatique, QoS, export PPS, codelab étendu, contribution amont, dossier de validation.</p>
+<hr>
+<h2 id="10-essais-de-faisabilite-semaine-1-avant-tout-code-produit">10. Essais de faisabilité (semaine 1, avant tout code produit)</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Question</th>
+<th>Comment trancher</th>
+<th>Bloquant si</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>E1</td>
+<td>Le SDP 8.0 s'installe-t-il et QEMU démarre-t-il une image QNX ?</td>
+<td>Compte myQNX → formulaire QNX Everywhere → licence (~1 h annoncée) → QNX Software Center → image Quick Start</td>
+<td>non (repli : socle portable seul)</td>
+</tr>
+<tr>
+<td>E2</td>
+<td>Un processus tiers peut-il créer et publier ses propres objets dans l'arborescence du service de publication ?</td>
+<td>Lire <code>dev_pub/overview.html</code> + <code>rmps_objects.html</code> en détail ; au besoin tester avec le publisher existant ; poser la question sur le Discord QNX et r/qnx</td>
+<td><strong>oui</strong> : basculer sur PPS ou sur un gestionnaire de ressources <code>/dev/sensors</code> maison</td>
+</tr>
+<tr>
+<td>E3</td>
+<td>Les frameworks GPIO et SPI sont-ils utilisables depuis un processus ordinaire sur Raspberry Pi 5 ?</td>
+<td>Lire <code>gpio_framework/overview.html</code> et la technote SPI ; croiser avec l'exemple officiel <code>rpi-gpio</code></td>
+<td>oui pour GLA-13 : se limiter au capteur thermique et au virtuel</td>
+</tr>
+<tr>
+<td>E4</td>
+<td>L'horodatage à la source est-il fiable à la milliseconde sur I2C/SPI ?</td>
+<td>Mesurer l'écart entre lecture du bus et <code>ClockTime(CLOCK_MONOTONIC)</code> sur 10 000 échantillons</td>
+<td>non : publier l'écart mesuré au lieu de promettre une borne</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="11-risques">11. Risques</h2>
+<table>
+<thead>
+<tr>
+<th>Risque</th>
+<th>Probabilité</th>
+<th>Impact</th>
+<th>Parade</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>E2 échoue : publication impossible depuis un processus tiers</td>
+<td>moyenne</td>
+<td>fort</td>
+<td>Repli annoncé : gestionnaire de ressources <code>/dev/sensors</code> + PPS, ce qui reste un projet Low-level valide</td>
+</tr>
+<tr>
+<td>Le SDP tarde (compte, licence, téléchargement)</td>
+<td>moyenne</td>
+<td>moyen</td>
+<td>Tout le socle est testable sur PC ; la cible n'arrive qu'en S3</td>
+</tr>
+<tr>
+<td>Le modèle de données orienté média ne se prête pas aux capteurs</td>
+<td>faible</td>
+<td>moyen</td>
+<td>GLA-08 : publier un schéma étendu et documenter l'écart (c'est précisément le trou PUB-META)</td>
+</tr>
+<tr>
+<td>Capteurs réels instables sur Pi 5 (bus, alimentation)</td>
+<td>moyenne</td>
+<td>faible</td>
+<td>Le publisher virtuel reste la démonstration principale ; le réel est un bonus filmé</td>
+</tr>
+<tr>
+<td>Un projet officiel QNX couvre déjà les capteurs (livre non lu)</td>
+<td>faible</td>
+<td>fort</td>
+<td>Vérifier <code>guides.html</code> et <code>references.html</code> avant S2 ; chercher « sensor » sur oss.qnx.com</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="12-script-video-3-minutes-sans-musique-sous-droits-sans-marque-tierce">12. Script vidéo (3 minutes, sans musique sous droits, sans marque tierce)</h2>
+<table>
+<thead>
+<tr>
+<th>Temps</th>
+<th>Plan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0:00–0:20</td>
+<td>Écran : un seul publisher existe dans QNX. Énoncé du trou, citations de la doc à l'appui</td>
+</tr>
+<tr>
+<td>0:20–0:50</td>
+<td>Terminal hôte : <code>gschema</code> valide une arborescence, <code>glat</code> sort p50/p99/p99.9</td>
+</tr>
+<tr>
+<td>0:50–1:40</td>
+<td>QEMU : <code>glaned</code> démarre, 5 capteurs virtuels publiés, scénario de panne injecté → <code>STALE</code> puis <code>FAULT</code>, horodatage visible</td>
+</tr>
+<tr>
+<td>1:40–2:25</td>
+<td>Raspberry Pi 5 sous QNX 8.0 : capteur thermique réel, valeurs lues, journal, puis capteur I2C</td>
+</tr>
+<tr>
+<td>2:25–2:50</td>
+<td>Preuves : tests verts (nombre de vérifications), test différentiel C ↔ Python, mutants tués, garde de taille</td>
+</tr>
+<tr>
+<td>2:50–3:00</td>
+<td>Rappel : ce que QNX apporte (cadence, priorités, horodatage, HAM, politique de sécurité)</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="13-dossier-de-soumission-devpost">13. Dossier de soumission Devpost</h2>
+<ol>
+<li><strong>Dépôt public</strong> créé pendant la période de soumission, licence ouverte détectable en tête de page (Apache-2.0 recommandé).</li>
+<li><strong>Catégorie</strong> : Low-level Software.</li>
+<li><strong>Preuve d'usage de QNX</strong> (obligatoire) : pointer nommément <code>publish/qnx/*.c</code>, <code>target/glaned.c</code>, le fragment de buildfile dans <code>image/</code>, la politique de sécurité, et les captures d'écran/vidéo sur QNX 8.0 avec la version du SDP et la cible.</li>
+<li><strong>Texte de description</strong> : problème (un seul publisher livré, aucune API, aucune simulation, aucune mesure de latence) → contribution (SDK, 5 publishers, simulateur, validateur, banc) → preuve (chiffres de latence, nombre de tests, mutants) → reproductibilité (versions, cible, toolchain).</li>
+<li><strong>Instructions de build et d'exécution</strong> : version QNX, cible (QEMU et/ou Raspberry Pi 5), toolchain, commandes exactes.</li>
+<li><strong>Bonus Codelab</strong> : renseigner l'URL du codelab (4 chapitres) dans le champ prévu.</li>
+<li><strong>Langue</strong> : tout en anglais, ou traduction anglaise fournie (règlement).</li>
+</ol>
+<hr>
+<h2 id="14-statut-des-affirmations">14. Statut des affirmations</h2>
+<p><strong>Vérifié dans la documentation</strong> (pages lues) : existence du framework de publication et de ses objets à emplacements fixes ; un seul publisher livré ; mécanisme de plugins ; absence d'API de rédaction de publisher ; absence de simulation sans matériel ; absence de validateur de conformité ; absence de toute information de latence/horodatage ; modèle de données orienté média ; frameworks GPIO et SPI documentés ; <code>rpi-gpio</code> officiel ; <code>libusb</code> et <code>libcamera</code> portés.</p>
+<p><strong>Hypothèses de conception à confirmer</strong> : qu'un processus tiers puisse publier ses propres objets (E2) ; la forme exacte de l'arborescence publiée (à figer après E2) ; la disponibilité effective de l'I2C sur l'image Quick Start Raspberry Pi 5 ; le comportement de HAM avec un publisher ; l'absence d'un framework capteurs dans un livre non lu (Device Publishers lu, mais Screen, audio, Technotes et SMMUMAN ne le sont pas).</p>
+<p><strong>Volontairement non affirmé</strong> : aucun chiffre de latence n'est annoncé avant mesure. Toute borne publiée dans la soumission doit sortir du banc <code>glat</code>.</p>
+<hr>
+<h2 id="15-regles-de-code-et-delegation">15. Règles de code et délégation</h2>
+<p><strong>Règles maison (non négociables)</strong> : C11, <code>-std=c11 -O2 -Wall -Wextra -Werror</code> ; <code>core/</code> pur (ni horloge, ni fichier, ni socket, ni allocation, ni état global mutable) ; code spécifique à QNX confiné dans <code>publish/qnx/</code> et <code>target/</code>, gardé par <code>#ifdef __QNX__</code> et jamais cassant pour le build PC ; moins de 500 lignes par fichier, moins de 50 lignes par fonction ; aucune duplication (un seul implémentation par logique, helpers partagés dans <code>core/src/</code>) ; Python 3 standard uniquement ; chaque exigence satisfaite est citée en commentaire au-dessus du code et dans le nom du test correspondant.</p>
+<p><strong>Découpage en lots pour sous-agents</strong> (un lot = un agent, brief complet et autonome) :</p>
+<table>
+<thead>
+<tr>
+<th>Lot</th>
+<th>Contenu</th>
+<th>Dépend de</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L1</td>
+<td><code>core/</code> desc + schema + tests + banque de cas fautifs</td>
+<td>CONTRAT gelé</td>
+</tr>
+<tr>
+<td>L2</td>
+<td><code>core/</code> sample + calib + ring + deadline + tests</td>
+<td>L1</td>
+</tr>
+<tr>
+<td>L3</td>
+<td>Jumeau Python (calibration, séquence, péremption) + test différentiel + réduction dichotomique</td>
+<td>L2</td>
+</tr>
+<tr>
+<td>L4</td>
+<td><code>bus/virtuel.c</code> + <code>scenarios/</code> + rejeu déterministe</td>
+<td>L2</td>
+</tr>
+<tr>
+<td>L5</td>
+<td><code>host/gschema</code> + <code>host/glat</code> + <code>host/gplot</code></td>
+<td>L4</td>
+</tr>
+<tr>
+<td>L6</td>
+<td>Fuzz du parseur + mutants + gardes (sizecheck, spdx, ci-budget)</td>
+<td>L1–L5</td>
+</tr>
+<tr>
+<td>L7</td>
+<td><code>publish/qnx/</code> + <code>target/glaned</code> + <code>image/</code> (nécessite le SDP)</td>
+<td>E1, E2</td>
+</tr>
+<tr>
+<td>L8</td>
+<td>Drivers réels + Raspberry Pi 5 + HAM (nécessite le SDP et la carte)</td>
+<td>L7, E3</td>
+</tr>
+<tr>
+<td>L9</td>
+<td>Codelab 4 chapitres + docs EN/FR + script vidéo</td>
+<td>L1–L6</td>
+</tr>
+</tbody>
+</table>
+<p>Chaque brief de sous-agent doit rappeler : contexte complet (l'agent ne partage aucune mémoire), critère de succès mesurable, bornes (temps, nombre d'essais, comportement en cas d'échec), règles shell (jamais <code>node -e</code>, <code>timeout</code> devant les commandes longues), et « fais-le toi-même, sans déléguer ».</p>
+</main>
+<footer>Généré depuis les sources Markdown du dépôt. Licence MIT.</footer>
+</body>
+</html>

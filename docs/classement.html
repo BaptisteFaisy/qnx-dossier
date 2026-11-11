@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Classement des 140 idées — Dossier QNX</title>
+<style>
+:root{--fg:#e6e6e6;--bg:#12141a;--card:#1b1f28;--acc:#7fd1c1;--mut:#9aa3b2;--bd:#2a3040}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+ font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{padding:1.4rem 1.2rem;border-bottom:1px solid var(--bd);background:var(--card)}
+header h1{margin:0;font-size:1.25rem}
+header p{margin:.3rem 0 0;color:var(--mut);font-size:.9rem}
+nav{display:flex;flex-wrap:wrap;gap:.4rem;padding:.8rem 1.2rem;border-bottom:1px solid var(--bd)}
+nav a{color:var(--mut);text-decoration:none;font-size:.85rem;padding:.3rem .6rem;
+ border:1px solid var(--bd);border-radius:999px}
+nav a:hover{color:var(--fg)}
+nav a.actif{color:#12141a;background:var(--acc);border-color:var(--acc);font-weight:600}
+main{padding:1.2rem;max-width:60rem;margin:0 auto}
+main h1{font-size:1.6rem;border-bottom:1px solid var(--bd);padding-bottom:.4rem}
+main h2{font-size:1.25rem;margin-top:2rem;color:var(--acc)}
+main h3{font-size:1.05rem;margin-top:1.6rem}
+a{color:var(--acc)}
+code{background:#0d0f14;padding:.1rem .35rem;border-radius:4px;font-size:.88em}
+pre{background:#0d0f14;padding:.9rem;border-radius:8px;overflow-x:auto;border:1px solid var(--bd)}
+pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.9rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--bd);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--card);white-space:nowrap}
+blockquote{border-left:3px solid var(--acc);margin:1rem 0;padding:.2rem 1rem;color:var(--mut)}
+footer{padding:1.2rem;color:var(--mut);font-size:.85rem;border-top:1px solid var(--bd);text-align:center}
+</style>
+</head>
+<body>
+<header>
+<h1>Dossier QNX — Global Hackathon 2026</h1>
+<p>Inventaire documenté des manques de QNX SDP 8.0, classement de 140 idées, trois cahiers des charges.</p>
+</header>
+<nav>
+<a href="index.html">Accueil</a>
+<a href="tamis.html">Tamis — politiques de sécurité</a>
+<a href="glane.html">Glane — capteurs et publication</a>
+<a href="eclat.html">Éclat — WebAssembly (WAMR)</a>
+<a href="classement.html" class="actif">Classement des 140 idées</a>
+<a href="inventaire.html">Inventaire : ce que QNX fournit déjà</a>
+<a href="idees.html">100 idées détaillées</a>
+</nav>
+<main>
+<h1 id="classement-final-consolide-qnx-global-hackathon-1111-2120">Classement final consolidé — QNX Global Hackathon (11/11 21:20)</h1>
+<p>Pool : 169 idées nommées (4 fichiers + 4 vagues d'inventaire) ; 140 notées, 29 éliminées avec motif.
+Grille /16 : Preuve du trou/3 · Non-redondance QNX/3 · Faisable sans SDP/2 · Faisable 3 mois/2 · Démo/2 · Originalité/3 · Catégorie libre/1
+Départage : preuve &gt; non-redondance &gt; catégorie libre &gt; originalité &gt; sans-SDP &gt; effort &gt; démo.
+Les 17 idées du lot sécurité sont les composants d'un seul produit (Tamis) : pénalité de redondance interne.</p>
+<pre><code>POOL : 169 idées nommées | 140 notées | 29 éliminées avec motif
+GRILLE /16 : Preuve du trou/3 · Non-redondance QNX/3 · Sans SDP/2 · Faisable 3 mois/2 · Démo/2 · Originalité/3 · Catégorie libre/1
+
+RANG SCORE  NOM             CATÉGORIE                  GRILLE     TROU / ANCRAGE
+  1. 15/16  Glane          Low-level Software        P3 R3 S1 E2 D2 O3 C1  SENS-ABS+PUB-SDK+PUB-SENS+PUB-SIM+PUB-CONF+PUB
+  2. 15/16  Éclat          Open-Source Ports         P3 R3 S1 E2 D2 O3 C1  WAMR (github.com/bytecodealliance/wamr)
+  3. 15/16  Tamis          Developer Tooling         P3 R3 S2 E2 D2 O3 C0  S1+S3+S8+S9+S10+S13
+  4. 14/16  Lucarne        Low-level Software        P3 R3 S1 E2 D1 O3 C1  IA-CHAN+IA-LIFE+IA-STATS+IA-IRQ+SA-TYPED+IA-DU
+  5. 14/16  Guichet        Low-level Software        P3 R3 S2 E2 D1 O2 C1  NET-01 sockets Unix sans FS inscriptible
+  6. 14/16  Échéancier     Developer Tooling         P3 R3 S2 E2 D1 O3 C0  3
+  7. 14/16  Réplique       Developer Tooling         P3 R3 S2 E1 D2 O3 C0  4
+  8. 14/16  Reprise        Developer Tooling         P3 R3 S1 E2 D2 O3 C0  HAM-TEST+HAM-LAT+HAM-DRIFT+PLMS-CRITPATH+PLMS-
+  9. 14/16  Établi         Developer Tooling         P3 R3 S1 E2 D2 O3 C0  RM-SKEL+RM-TEST+RM-CONF+RM-LAT
+ 10. 14/16  Grimpeur       Low-level Software        P3 R2 S2 E2 D1 O3 C1 (composant de Tamis)  8
+ 11. 14/16  Banc           Robotics &amp; Medical        P2 R3 S2 E2 D2 O2 C1  ?
+ 12. 14/16  Coffre         Robotics &amp; Medical        P2 R3 S2 E2 D2 O2 C1  ?
+ 13. 14/16  Vigie          Robotics &amp; Medical        P2 R3 S2 E2 D2 O2 C1  ?
+ 14. 13/16  Canette        Open-Source Ports         P3 R3 S2 E2 D1 O1 C1  can-utils / libsocketcan (github.com/linux-can
+
+--- ÉLIMINÉS (motif) ---
+</code></pre>
+<h2 id="sensibilite-classement-si-le-sdp-est-installe-critere-sans-sdp-retire">Sensibilité — classement si le SDP est installé (critère « sans SDP » retiré)</h2>
+<pre><code>POOL : 169 idées nommées | 140 notées | 29 éliminées avec motif
+GRILLE /16 : Preuve du trou/3 · Non-redondance QNX/3 · Sans SDP/2 · Faisable 3 mois/2 · Démo/2 · Originalité/3 · Catégorie libre/1
+
+RANG SCORE  NOM             CATÉGORIE                  GRILLE     TROU / ANCRAGE
+  1. 14/16  Glane          Low-level Software        P3 R3 S1 E2 D2 O3 C1  SENS-ABS+PUB-SDK+PUB-SENS+PUB-SIM+PUB-CONF+PUB
+  2. 14/16  Éclat          Open-Source Ports         P3 R3 S1 E2 D2 O3 C1  WAMR (github.com/bytecodealliance/wamr)
+  3. 13/16  Lucarne        Low-level Software        P3 R3 S1 E2 D1 O3 C1  IA-CHAN+IA-LIFE+IA-STATS+IA-IRQ+SA-TYPED+IA-DU
+  4. 13/16  Reprise        Developer Tooling         P3 R3 S1 E2 D2 O3 C0  HAM-TEST+HAM-LAT+HAM-DRIFT+PLMS-CRITPATH+PLMS-
+  5. 13/16  Tamis          Developer Tooling         P3 R3 S2 E2 D2 O3 C0  S1+S3+S8+S9+S10+S13
+  6. 13/16  Établi         Developer Tooling         P3 R3 S1 E2 D2 O3 C0  RM-SKEL+RM-TEST+RM-CONF+RM-LAT
+  7. 12/16  Guichet        Low-level Software        P3 R3 S2 E2 D1 O2 C1  NET-01 sockets Unix sans FS inscriptible
+  8. 12/16  Preuve         Developer Tooling         P3 R3 S0 E2 D1 O3 C0  SA-SPOR+SA-PRIHER+SA-BOOST+SA-EXTCODE+SA-CPUOF
+  9. 12/16  Échéancier     Developer Tooling         P3 R3 S2 E2 D1 O3 C0  3
+ 10. 12/16  Réplique       Developer Tooling         P3 R3 S2 E1 D2 O3 C0  4
+ 11. 12/16  Déclic         Developer Tooling         P3 R3 S1 E2 D2 O2 C0  4
+ 12. 12/16  Grimpeur       Low-level Software        P3 R2 S2 E2 D1 O3 C1 (composant de Tamis)  8
+ 13. 12/16  Toile          Low-level                 P3 R2 S0 E1 D2 O3 C1  virtio-gpu absent
+ 14. 12/16  Banc           Robotics &amp; Medical        P2 R3 S2 E2 D2 O2 C1  ?
+
+--- ÉLIMINÉS (motif) ---
+</code></pre>
+</main>
+<footer>Généré depuis les sources Markdown du dépôt. Licence MIT.</footer>
+</body>
+</html>

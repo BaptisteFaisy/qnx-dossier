@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Accueil — Dossier QNX</title>
+<style>
+:root{--fg:#e6e6e6;--bg:#12141a;--card:#1b1f28;--acc:#7fd1c1;--mut:#9aa3b2;--bd:#2a3040}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+ font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{padding:1.4rem 1.2rem;border-bottom:1px solid var(--bd);background:var(--card)}
+header h1{margin:0;font-size:1.25rem}
+header p{margin:.3rem 0 0;color:var(--mut);font-size:.9rem}
+nav{display:flex;flex-wrap:wrap;gap:.4rem;padding:.8rem 1.2rem;border-bottom:1px solid var(--bd)}
+nav a{color:var(--mut);text-decoration:none;font-size:.85rem;padding:.3rem .6rem;
+ border:1px solid var(--bd);border-radius:999px}
+nav a:hover{color:var(--fg)}
+nav a.actif{color:#12141a;background:var(--acc);border-color:var(--acc);font-weight:600}
+main{padding:1.2rem;max-width:60rem;margin:0 auto}
+main h1{font-size:1.6rem;border-bottom:1px solid var(--bd);padding-bottom:.4rem}
+main h2{font-size:1.25rem;margin-top:2rem;color:var(--acc)}
+main h3{font-size:1.05rem;margin-top:1.6rem}
+a{color:var(--acc)}
+code{background:#0d0f14;padding:.1rem .35rem;border-radius:4px;font-size:.88em}
+pre{background:#0d0f14;padding:.9rem;border-radius:8px;overflow-x:auto;border:1px solid var(--bd)}
+pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.9rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--bd);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--card);white-space:nowrap}
+blockquote{border-left:3px solid var(--acc);margin:1rem 0;padding:.2rem 1rem;color:var(--mut)}
+footer{padding:1.2rem;color:var(--mut);font-size:.85rem;border-top:1px solid var(--bd);text-align:center}
+</style>
+</head>
+<body>
+<header>
+<h1>Dossier QNX — Global Hackathon 2026</h1>
+<p>Inventaire documenté des manques de QNX SDP 8.0, classement de 140 idées, trois cahiers des charges.</p>
+</header>
+<nav>
+<a href="index.html" class="actif">Accueil</a>
+<a href="tamis.html">Tamis — politiques de sécurité</a>
+<a href="glane.html">Glane — capteurs et publication</a>
+<a href="eclat.html">Éclat — WebAssembly (WAMR)</a>
+<a href="classement.html">Classement des 140 idées</a>
+<a href="inventaire.html">Inventaire : ce que QNX fournit déjà</a>
+<a href="idees.html">100 idées détaillées</a>
+</nav>
+<main>
+<h1 id="dossier-qnx-global-hackathon-2026">Dossier QNX — Global Hackathon 2026</h1>
+<p>Travail de recherche et de conception mené en novembre 2026 pour le
+<a href="https://qnx.devpost.com/">QNX Global Hackathon</a> (dépôt des soumissions le 15 décembre 2026).</p>
+<p>Ce dépôt ne contient <strong>pas</strong> un projet soumis au concours : c'est le dossier de travail qui a
+servi à choisir un sujet. Il est publié parce que l'inventaire qu'il contient a coûté cher à
+établir et peut servir à d'autres.</p>
+<h2 id="ce-quon-y-trouve">Ce qu'on y trouve</h2>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Contenu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="inventaire.html">Inventaire officiel</a></td>
+<td>Ce que QNX SDP 8.0 <strong>fournit déjà</strong> (IDE Momentics, SAT, chaîne <code>secpol</code>, HAM, QPLMS, QFS, hyperviseur et ses 20 vdev, io-sock, conteneurs, ports open source) et les <strong>~74 trous documentés</strong>, chacun avec la page de documentation source.</td>
+</tr>
+<tr>
+<td><a href="classement.html">Classement</a></td>
+<td>169 idées nommées, 140 notées sur une grille explicite, 29 éliminées avec motif.</td>
+</tr>
+<tr>
+<td><a href="idees.html">100 idées détaillées</a></td>
+<td>Les 100 idées retenues à l'étape précédente, chacune rattachée au trou qu'elle exploite.</td>
+</tr>
+<tr>
+<td><a href="tamis.html">Tamis</a></td>
+<td>Cahier des charges complet — analyse statique et preuve des politiques de sécurité <code>secpol</code>.</td>
+</tr>
+<tr>
+<td><a href="glane.html">Glane</a></td>
+<td>Cahier des charges complet — couche capteurs et publication de périphériques.</td>
+</tr>
+<tr>
+<td><a href="eclat.html">Éclat</a></td>
+<td>Cahier des charges complet — portage de WAMR (WebAssembly) et courtier de capacités.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="les-trois-sujets-pousses-jusquau-cahier-des-charges">Les trois sujets poussés jusqu'au cahier des charges</h2>
+<p><strong>Tamis</strong> — <em>Developer Tooling &amp; Host Tools</em>. La documentation QNX reconnaît que la revue des
+règles inutiles est manuelle, que la politique générée n'est pas utilisable telle quelle, et
+qu'il n'existe <strong>aucune analyse statique avant déploiement</strong>. Tamis analyse une politique
+<code>secpol</code> à froid : chemins transitifs de privilège avec contre-exemple, preuve d'absence de
+chemin, minimisation avec preuve d'équivalence, diff sémantique, lint de typage. Point décisif :
+<code>secpolcompile</code> est un <strong>utilitaire hôte</strong>, donc le test différentiel contre le compilateur
+officiel ne nécessite aucune cible.</p>
+<p><strong>Glane</strong> — <em>Low-level Software</em>. QNX livre un framework de publication de périphériques et
+<strong>un seul</strong> publisher (<code>usblauncher_otg</code>, orienté USB/stockage/média). Aucune API pour en écrire
+un, aucune simulation sans matériel, aucun validateur de schéma, aucune mesure de latence, et
+aucune abstraction capteur au-dessus des frameworks GPIO et SPI pourtant documentés.</p>
+<p><strong>Éclat</strong> — <em>Open-Source Contribution &amp; Ports</em>. Aucun runtime WebAssembly n'est porté sur QNX
+(absence vérifiée dans l'index officiel des ports). WAMR porté, plus un courtier de capacités :
+chaque import du module devient un message vers un gestionnaire de ressources qui décide selon
+une politique dont le défaut est de <strong>tout refuser</strong>. Trois couches d'isolation indépendantes :
+le bac à sable WebAssembly, le processus sans abilities, la politique appliquée par le noyau.</p>
+<h2 id="methode-et-ses-limites">Méthode, et ses limites</h2>
+<p>Le classement est né d'un constat : le facteur limitant n'est pas le nombre d'idées mais le
+nombre de <strong>manques documentés</strong>. Une boîte combinatoire de 10 000 cellules ne produit que
+392 idées distinctes (facteur de duplication mesuré : 25). Le travail utile a donc été de lire
+la documentation — y compris les livres que personne ne lit, comme le guide de l'IDE, qui a
+invalidé rétroactivement cinq « trous » supposés.</p>
+<p>Limites assumées :</p>
+<ul>
+<li><strong>15 livres de documentation restent non lus</strong> (SMMUMAN, PCI Server, Device Publishers en
+  partie, Discontinuation Notice, Boot Optimization, Building Embedded Systems, QNX Software in
+  the Cloud, Technotes, etc.). L'inventaire n'est pas exhaustif.</li>
+<li>Les notes d'originalité et de qualité de démonstration sont des <strong>estimations</strong>, pas des
+  mesures.</li>
+<li>Trois affirmations ont été <strong>corrigées en cours de route</strong> : <code>inotify</code> existe bien en QNX 8.0
+  (dans <code>libfsnotify.so</code>) ; l'IDE Momentics fournit déjà un profileur, l'analyse mémoire, le
+  debug d'interblocage et l'analyse des temps de démarrage ; QFS fournit déjà un système de
+  fichiers à protection d'intégrité. Les idées fondées sur ces affirmations ont été écartées.</li>
+<li>Aucun des trois sujets n'a encore été exécuté sur QNX : la licence QNX Everywhere n'était pas
+  installée au moment de la rédaction. Les cahiers distinguent donc ce qui est démontrable sur
+  un poste Linux de ce qui exige la cible.</li>
+</ul>
+<h2 id="regenerer-le-site">Régénérer le site</h2>
+<pre><code>pip install markdown
+python3 tools/build_site.py site/
+</code></pre>
+<p>Le site est construit par la CI à partir des sources Markdown de <code>src/</code> : aucune page HTML
+n'est committée, il n'y a donc pas de dérive possible entre le texte et le site.</p>
+</main>
+<footer>Généré depuis les sources Markdown du dépôt. Licence MIT.</footer>
+</body>
+</html>

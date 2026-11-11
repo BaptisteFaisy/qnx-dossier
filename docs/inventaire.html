@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inventaire : ce que QNX fournit déjà — Dossier QNX</title>
+<style>
+:root{--fg:#e6e6e6;--bg:#12141a;--card:#1b1f28;--acc:#7fd1c1;--mut:#9aa3b2;--bd:#2a3040}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+ font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{padding:1.4rem 1.2rem;border-bottom:1px solid var(--bd);background:var(--card)}
+header h1{margin:0;font-size:1.25rem}
+header p{margin:.3rem 0 0;color:var(--mut);font-size:.9rem}
+nav{display:flex;flex-wrap:wrap;gap:.4rem;padding:.8rem 1.2rem;border-bottom:1px solid var(--bd)}
+nav a{color:var(--mut);text-decoration:none;font-size:.85rem;padding:.3rem .6rem;
+ border:1px solid var(--bd);border-radius:999px}
+nav a:hover{color:var(--fg)}
+nav a.actif{color:#12141a;background:var(--acc);border-color:var(--acc);font-weight:600}
+main{padding:1.2rem;max-width:60rem;margin:0 auto}
+main h1{font-size:1.6rem;border-bottom:1px solid var(--bd);padding-bottom:.4rem}
+main h2{font-size:1.25rem;margin-top:2rem;color:var(--acc)}
+main h3{font-size:1.05rem;margin-top:1.6rem}
+a{color:var(--acc)}
+code{background:#0d0f14;padding:.1rem .35rem;border-radius:4px;font-size:.88em}
+pre{background:#0d0f14;padding:.9rem;border-radius:8px;overflow-x:auto;border:1px solid var(--bd)}
+pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.9rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--bd);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--card);white-space:nowrap}
+blockquote{border-left:3px solid var(--acc);margin:1rem 0;padding:.2rem 1rem;color:var(--mut)}
+footer{padding:1.2rem;color:var(--mut);font-size:.85rem;border-top:1px solid var(--bd);text-align:center}
+</style>
+</head>
+<body>
+<header>
+<h1>Dossier QNX — Global Hackathon 2026</h1>
+<p>Inventaire documenté des manques de QNX SDP 8.0, classement de 140 idées, trois cahiers des charges.</p>
+</header>
+<nav>
+<a href="index.html">Accueil</a>
+<a href="tamis.html">Tamis — politiques de sécurité</a>
+<a href="glane.html">Glane — capteurs et publication</a>
+<a href="eclat.html">Éclat — WebAssembly (WAMR)</a>
+<a href="classement.html">Classement des 140 idées</a>
+<a href="inventaire.html" class="actif">Inventaire : ce que QNX fournit déjà</a>
+<a href="idees.html">100 idées détaillées</a>
+</nav>
+<main>
+<h1 id="inventaire-officiel-qnx-sdp-80-ce-qui-existe-deja-filtre-anti-doublon">Inventaire officiel QNX SDP 8.0 — ce qui existe déjà (filtre anti-doublon)</h1>
+<p>Généré le 2026-11-11 par 6 sous-agents à partir de www.qnx.com/developers/docs/8.0, oss.qnx.com et gitlab.com/qnx.</p>
+<h2 id="utilitaires">utilitaires</h2>
+<p>(lot absent)</p>
+<h2 id="construction-image">construction-image</h2>
+<p>J'ai tout ce qu'il faut. Voici l'inventaire.</p>
+<h2 id="outillage-officiel-qnx-sdp-80-image-amorcage-systemes-de-fichiers">Outillage officiel QNX SDP 8.0 — image, amorçage, systèmes de fichiers</h2>
+<p><strong>Construction d'image</strong>
+- <code>mkqnximage</code> — génère une image système complète (VMware/VirtualBox/QEMU/QVM hypervisor + Raspberry Pi + cibles physiques) : partitions boot/system/data, personnalisation par « snippets » (ifs_files, system_files, ifs_start, slm, passwd…), <code>--run/--stop/--getip</code> (source: utilities/m/mkqnximage.html)
+- <code>mkifs</code> — construit l'image OS « IFS » (.ifs) depuis un buildfile : startup, procnto, pilotes, libs ; montée en <code>/proc/boot</code> au boot (source: os_images/image_build.html)
+- Buildfile d'image — 3 sections : <code>[bootstrap]</code> (arch + startup + noyau), <code>[+script]</code> (commandes exécutées par procnto au démarrage), fichiers inclus avec permissions/symlinks/compression (source: buildfiles/buildfile.html)
+- <code>dumpifs</code> — liste le contenu d'une image .ifs (offsets, tailles, checksums) (source: os_images/image_build.html)
+- <code>make</code> du BSP — le Makefile fourni construit IPL + IFS dans <code>/images</code> (chemin de recherche : install → <code>$QNX_TARGET</code>) (source: bsp/bsp_build.html)
+- <code>diskimage</code> — crée une image de média partitionné contenant plusieurs filesystems (source: os_images/image_build.html)
+- <code>mki</code> — préfixe une image d'un en-tête U-Boot ; <code>mkrec</code> — convertit un binaire en format ROM (source: utilities, liste M)
+- <code>mkimage</code> — assemble une image « socket » à partir de fichiers individuels (source: utilities, liste M)</p>
+<p><strong>Amorçage / démarrage</strong>
+- IPL (<code>ipl-*</code>) — chargeur 1er étage spécifique carte/arch (x86 board-agnostic, ARM board-specific) : init mini, trouve et valide l'IFS, le charge, saute vers startup ; + IPL Library pour en écrire un (source: ipl/ipl_about.html)
+- <code>startup-*</code> — 1er programme de l'image : configure timers/IRQ/caches, remplit la system page, lance le noyau ; + Startup Library et Kernel Callouts (source: intro/intro_startup_sequence.html)
+- <code>procnto-smp-instr</code> — noyau + process manager fusionnés ; exécute le <code>[+script]</code> du buildfile (source: os_images/images_about.html)
+- SLM (System Launch and Monitor) — lancement ordonné d'applications multi-processus, sans toucher au buildfile (source: intro/intro_startup_sequence.html)
+- QPLMS — service 8.0 de lancement/surveillance de processus piloté par dépendances (source: guides.html, nav OS Components)
+- Boot Optimization Guide — techniques de réduction du temps de boot (early audio, HMI &lt; 10 s), mesure de baseline, optimisation Screen (source: fastboot/fb_about.html)</p>
+<p><strong>Systèmes de fichiers</strong>
+- <code>mkqnx6fs</code> / <code>mkqnx6fsimg</code> — formate / construit une image Power-Safe (fs-qnx6, crash-resilient, RW) (source: image_build.html, liste M)
+- <code>mkefs</code> — image de flash filesystem embarqué (.efs, ETFS, NOR/NAND, RO ou RW/reclaim) (source: os_images/images_about.html)
+- <code>mkfatfsimg</code> / <code>mkdosfs</code> — image FAT (host) / formatage FAT-12/16/32 (target) (source: liste M)
+- <code>mksquashfsimg</code> — image SquashFS compressée lecture seule (source: liste M)
+- <code>mkqfs</code>, <code>mkxfs</code>, <code>mount_ifs</code> — construction générique de FS QNX, montage d'un IFS (source: liste M)
+- QFS (QNX Filesystem for Safety) — FS lecture seule à protection d'intégrité (expérimental) (source: guides.html, nav)
+- <code>devb-*</code> — pilotes bloc (sdmmc, eide…) démarrés depuis le script de boot ; création de FS sur cible documentée (source: images_about.html, filesystem_create.html)
+- <strong>Absents de la réf 8.0</strong> : <code>mkdinit</code> et <code>mkrecfs</code> (existants en 7.1) ne figurent plus dans la liste des utilitaires M (source: utilities-m.html)</p>
+<p><strong>Mise à jour, sécurité d'image</strong>
+- <code>mkqnximage --copy[=b|s|d|all]</code> — écriture image/partitions sur carte SD (règles udev pour les permissions) (source: mkqnximage.html)
+- <code>mkqnximage --update</code> — mise à jour « OTA » : copie des partitions par le réseau puis relance des devb-* ; ne sait pas redimensionner les partitions (source: mkqnximage.html)
+- Security policies + <code>secpolgenerate</code> — abilities centralisées injectées dans l'image au build ; Pathtrust et fonctions fortifiées côté runtime (source: security.system/manual/about.html)
+- <code>mkqnximage</code> embarque un mode démo des fonctionnalités de sécurité (source: security mkqnximage_security.html)</p>
+<h2 id="conclusion-ce-que-qnx-ne-fournit-pas-trous-exploitables">Conclusion — ce que QNX ne fournit PAS (trous exploitables)</h2>
+<ol>
+<li><strong>Pas de chaîne de signature/vérification d'image générique</strong> dans le SDP : checksums visibles via <code>dumpifs</code> seulement ; le secure boot dépend du bootloader/carte — un outil de signature+vérification portable est un vrai trou.</li>
+<li><strong>Pas d'OTA robuste</strong> : <code>--update</code> = simple copie réseau sans atomicité, ni A/B, ni rollback, ni gestion de version — un update manager transactionnel avec fallback est inédit.</li>
+<li><strong>Pas d'outil unifié multi-cibles</strong> : <code>mkqnximage</code> couvre VM + Raspberry Pi, les autres cartes passent par <code>make</code> manuel dans le BSP ; rien pour orchestrer/visualiser/différencier des images multi-cartes (CI-friendly).</li>
+<li><strong>Pas d'instrumentation clé en main du temps de boot</strong> : le guide d'optimisation est méthodologique, sans dashboard automatisé de mesure par phase (IPL/startup/script/app).</li>
+<li><strong>Pas d'assistant de buildfile ni d'équivalent mkdinit/mkrecfs en 8.0</strong> : l'édition reste textuelle et experte — générateur/valideur interactif de buildfile = espace libre.</li>
+</ol>
+<p>Note : quelques fetchs ont rendu des 403 transitoires (proxy), résolus en réessayant les URLs canoniques ; aucune page inaccessible au final sur le périmètre couvert.</p>
+<h2 id="architecture-noyau">architecture-noyau</h2>
+<p>(lot absent)</p>
+<h2 id="securite">securite</h2>
+<p>Toutes les 21 pages ont été lues avec succès (aucune inaccessible). Voici la synthèse.</p>
+<h1 id="inventaire-securite-qnx-sdp-80-system-security-guide">Inventaire sécurité QNX SDP 8.0 (System Security Guide)</h1>
+<h2 id="a-ce-que-la-chaine-officielle-fournit-deja">A — Ce que la chaîne officielle fournit déjà</h2>
+<p><strong>Abilities (noyau/procnto)</strong>
+- ~70 abilities <strong>statiques</strong> (procmgr) : chaque processus a 2 jeux (root/non-root) ; sous-plages numériques possibles ; secpolcompile fusionne les sous-plages contiguës (source: abilities.html, abilities_reference.html).
+- Liste complète avec ce que chacune autorise : able_create, able_priv, channel_connect, child_newapp, chroot, clockset, confset, connection, cpumode, default_timer_tolerance, event, fork, getid, high_resolution_timer, hyp, interrupt, io, mac_policy, map_fixed, mem_add/lock/peer/phys/special, mountifs, msg_queue, pathspace, path_trust, pgrp, power, priority, privreg, prot_exec, prot_write_and_exec, public_channel, reboot, rlimit(_peer), rsrcdbmgr, runstate, schedule, server_monitor, session, setgid, settypeid, setuid, sigev_thread, signal, spawn(_setgid/_setuid), srandom, swap, trace, umask, untrusted_exec, wait, xprocess_able/debug/mem_read/query (source: abilities_reference.html).
+- <strong>Custom abilities</strong> (dynamiques, par nom) : fsevmgr/<em>, iofunc/chown|dup|exec|read, io-gpio/all, network/privport|rawsocket|reuseport|ipsec|admin|jailroot, smmu/</em>, vfs/* (source: abilities_reference.html).</p>
+<p><strong>Langage de politique (secpol.txt → secpolcompile → secpol.bin → secpolpush)</strong>
+- Éléments : <code>type</code>, <code>attribute</code> (groupes de types), <code>class</code> (permissions custom), <code>range</code> (plages nommées résolues au boot via fichier <code>ability:range_name:syspage:/…</code>), <code>default_rules</code> (source: secpol_language.html, named_range_file.html).
+- Règles : <code>allow src dst:ability{…}</code> (avec plages, <code>nonroot</code>, <code>unlock</code>, <code>noinherit</code>, <code>gain_priv</code>), <code>allow src dst:channel connect</code>, <code>allow_attach type chemin [ftype:] [type_canal]</code> (wildcards <code>*</code> et <code>...</code>), <code>allow_link</code>, <code>default_spawn_type</code>, <code>derive_type</code>, <code>mount_point uid:gid perms/ACL chemins</code> (source: secpol_language.html).
+- Compilateur : détecte types non déclarés, erreurs gain_priv (avertissements/erreurs si privilèges acquis par settypeid non déclarés), fusion de sous-plages (source: secpol_language.html, using_security_policy_types.html).
+- Types applicables aux processus (on -T, slm, posix_spawn) ; <strong>seul objet typable natif = le canal</strong> ; classes custom pour tout autre objet, à coder côté resource manager avec <code>secpol_get_permission()</code>/<code>secpol_check_permission()</code> (source: using_security_policy_types.html, secpol_language.html).</p>
+<p><strong>secpolgenerate (génération par observation)</strong>
+- Tourne sur la cible, observe les tests d'abilities/chemins via le trace noyau, produit <code>/dev/secpolgenerate/policy</code> (texte), <code>/errors</code> (règles manquantes + sigevents non enregistrés, ≤10/processus), <code>/unused</code> (règles jamais utilisées) ; options -u (illimité), -t N types, -c fichier config (types <code>unrestricted</code>), -s/-n (état persistant), -r (plages nommées), -C load (injection de <strong>fichiers d'événements</strong> compilés avec <code>secpolcompile -e</code> pour simuler des usages rares), -v (erreurs sur stderr) (source: using_security_policies.html, debugging.html, event_files.html, tuning.html).
+- Modes : génération initiale, <strong>diff incrémental</strong> contre politique existante, et <strong>monitoring en système déployé sécurisé</strong> (règles minimales documentées pour secpolgen_t/secpolmonitor_t) (source: tuning.html, using_secpolgenerate_secure_system.html).
+- Aussi : secpolmonitor (sortie temps réel), secpolpush (applique, seul à résoudre les plages nommées), secpol (visualisation), secpol-preload.so, secpollaunch (spawn avec transition de type en root, évite gain_priv) (source: security_policies.html, secpol_language.html, named_range_file.html).</p>
+<p><strong>APIs</strong>
+- <code>libsecpol</code> : baisser ses privilèges après init, spawner avec privilèges réduits, permission fine custom, traduction nom↔ID de type ; fonctions secpol_open/close/check_permission/get_permission/get_type_id/get_type_name/get_policy_id/resolve_name/transition_type/type_id/posix_spawnattr_settypeid/resmgr_attach, get/set_ids_from_arg ; marche avec ou sans politique (source: libsecpol_api.html).
+- <code>libsecpolev</code> : consommation des événements de trace politique — secpolev_init/wait_event/shutdown/flush, get_process_name/type/pid/timestamp, get_ability_info/path_info/custom_perm_info, get_dropped_count, callback de log ; événements ABILITY_TEST, PATH_ATTACH, PATH_LINK, CUSTOM_PERM avec flag DENIED (source: libsecpolev_api.html, secpol_event_monitor.html).</p>
+<p><strong>Pathtrust</strong> : empêche l'exécution de code non fiable (binaires + dlopen) ; ignore setuid/setgid sur FS non fiable ; exige procnto -qt, ability path_trust pour devb/mount -o trusted, partition à intégrité (QTD) ; mkqnximage --pathtrust pour démo (source: pathtrust.html).
+<strong>Fonctions fortifiées</strong> : <code>_FORTIFY_SOURCE=1|2</code>, ~170 fonctions libc/Msg<em>/resmgr_</em> avec variantes <code>__*_chk</code>, validation compile+runtime, termine le processus en cas d'anomalie, surcoût négligeable (recommandé en production) ; qchecksec vérifie le niveau (source: fortified.html).
+<strong>mkqnximage</strong> : images démo --procfs sécurisé, --pathtrust, QTD, secpol ; méthode = diff des fichiers output/build entre deux images (source: mkqnximage_security.html).
+<strong>Security matrix</strong> (couverture déjà revendiquée) : confidentialité au repos (chiffrement FS), intégrité/signature (QTD, secure boot), accès RM (politiques, ACL), exécution non fiable (pathtrust), détournement de contrôle (RELRO), ASLR, débordements buffer/pile (fortified, canaries), fuite d'info (/proc sécurisé), moindre privilège (politiques+abilities+ACL), DMA (SMMUMAN), DoS (rlimit, jails réseau), MITM/snooping réseau (jails) (source: security_matrix.html).</p>
+<h2 id="b-trous-reconnus-par-la-doc-sources">B — Trous reconnus par la doc (sourcés)</h2>
+<ol>
+<li><strong>Revue des règles inutiles = manuelle</strong> : « QNX recommends that you review the security policy specifically to locate processes with abilities that they don't need » ; /unused n'est qu'« a guide » car « it is possible that they're only required under circumstances that have not yet occured » (review_policies.html, security_policy_maintenance.html). Aucun outil ne tranche.</li>
+<li><strong>Politique générée non utilisable telle quelle</strong> : « The secpolgenerate utility is not designed to generate a security policy that you can use as is. Rather, it is intended to provide input into a policy that you modify » ; simplification (wildcards, attributes) à refaire à la main (security_policy_maintenance.html).</li>
+<li><strong>Aucune analyse statique/pré-exécution</strong> : la politique ne couvre que « behavior that secpolgenerate observed when you exercised the system » ; il faut « continue to exercise your system … so that secpolgenerate can more thoroughly track all the possible activity » — pas de preuve de couverture avant déploiement (using_security_policies.html).</li>
+<li><strong>Échecs invisibles à l'outil</strong> : « There are ways in which a system can fail that are invisible to secpolgenerate and thus won't show up in its errors file » (ex. permissions de fichiers, root→non-root) ; solution proposée : « identify the paths that it fails to open »… manuellement (troubleshooting.html).</li>
+<li><strong>Faux positifs non résolus</strong> : erreurs setuid/setgid/prot_exec/priority sans échec réel ; « Some of these might be partially resolved by secpolgenerate, others might require procnto changes » ; setuid() « not possible to fix … required for proper POSIX behavior » (troubleshooting.html).</li>
+<li><strong>Instabilité entre exécutions</strong> : « each time you run a system, secpolgenerate generates new rules that define new subranges » ; parade = retirer les sous-plages à la main et « grant the ability in an unrestricted manner » — pas d'outil de diff/stabilisation de politique entre versions (troubleshooting.html).</li>
+<li><strong>default_spawn_type jamais généré</strong> : « You have to add the default_spawn_type keyword manually. Because secpolgenerate has no way to determine if a process should change its type, it never adds a default_spawn_type rule » (secpol_language.html).</li>
+<li><strong>Analyse d'élévation de privilèges artisanale</strong> : pour savoir quel type apporte quel privilège, « comment out gain_priv in the policy and compile it. The error messages indicate the type » — essai/erreur, pas d'analyse de non-interférence entre types (secpol_language.html).</li>
+<li><strong>Fusion des nouvelles règles = manuelle</strong> : « these additional rules are merged with existing rules rather than concatenated » ; le choix des règles à garder (« you would probably ignore rules for console_t ») est laissé à l'humain (security_policy_maintenance.html, tuning.html).</li>
+<li><strong>Vérification du typage complet = manuelle</strong> : « run pidin -f a_n after startup and check the output to make sure that all processes have a security type » ; l'unicité de type par service n'est qu'un « CAUTION », non vérifié par outil (using_security_policy_types.html, using_security_policies.html).</li>
+<li><strong>libsecpolev verrouillé et non auto-découvert</strong> : « can only be used by one program at a time, and you can't use it at the same time as tracelogger » ; l'ability trace requise « can't [be] discover[ed] … by secpolgenerate and secpolmonitor, you have to manually give it » (secpol_event_monitor.html).</li>
+<li><strong>Boucle de dev lourde</strong> : modifier le fichier config de secpolgenerate impose « you have to rebuild the IFS each time » ; la parade documentée est un montage manuel en 5 étapes (tuning.html).</li>
+<li><strong>Plages nommées fragiles, non validables à froid</strong> : « If any range can't be resolved … the policy is not pushed and it is likely the system won't boot » ; secpolpush ne fusionne pas les plages adjacentes (named_range_file.html).</li>
+<li><strong>secpolgenerate ne peut pas s'auto-héberger</strong> : « it can't monitor its own usage until it starts, and after it has started it is too late » — ses propres règles sont à écrire à la main (using_secpolgenerate_secure_system.html).</li>
+<li><strong>Objets typés limités aux canaux</strong> : « Currently, the only object that QNX OS provides that can be given a type is a channel » ; tout objet métier exige une classe custom <strong>codée</strong> dans le RM, sans audit que le check est bien fait (using_security_policy_types.html).</li>
+</ol>
+<h2 id="c-conclusion-projets-de-concours-recevables">C — Conclusion (projets de concours recevables)</h2>
+<ol>
+<li>La génération par observation existe (secpolgenerate), mais <strong>tout l'aval est manuel</strong> : revue, simplification, fusion, stabilisation — c'est le cœur des opportunités.</li>
+<li>Projet fort : <strong>« policy diff/linter »</strong> — comparaison sémantique de politiques entre versions (sous-plages, types, attributes), détection d'élargissements de privilèges, fusion automatique de règles diff ; les trous 2, 6, 9 le justifient texte à l'appui.</li>
+<li>Projet fort : <strong>analyse statique/épreuve de couverture</strong> — combiner fichiers d'événements (<code>secpolcompile -e</code>), <code>/unused</code> et <code>/errors</code> pour prouver qu'une politique couvre les scénarios rares <strong>avant</strong> déploiement (trous 1, 3, 4).</li>
+<li>Projet recevable : <strong>assistant gain_priv/default_spawn_type</strong> — inférer les transitions de type et les élévations à partir du code (appels secpol_transition_type) et du graphe settypeid, là où la doc prescrit l'essai/erreur (trous 7, 8).</li>
+<li>À éviter : réinventer la génération d'abilities, le monitoring brut (libsecpolev/secpolmonitor existent) ou une « matrice attaque/mitigation » (security_matrix la fournit déjà).</li>
+</ol>
+<h2 id="hyperviseur-conteneurs-reseau-screen">hyperviseur-conteneurs-reseau-screen</h2>
+<p>Inventaire terminé — toutes les pages cibles ont été atteintes (quelques 403 proxy transitoires, résolus au retry ; aucun échec définitif).</p>
+<h1 id="qnx-sdp-80-ce-qui-est-deja-fourni">QNX SDP 8.0 — ce qui est déjà fourni</h1>
+<h2 id="1-hyperviseur-qnx-hypervisor-804-hypervisor-for-safety">1. Hyperviseur (QNX Hypervisor 8.0.4 / Hypervisor for Safety)</h2>
+<ul>
+<li>Micro-noyau + virtualisation intégrée au kernel, VM créées par processus <code>qvm</code> — architecture Popek/Goldberg, 64 bits seulement (AArch64/ARMv8, x86-64) (source: virt/virt.html, virt/support.html)</li>
+<li><strong>Invités supportés</strong> — QNX OS for Safety 8.0.4 (variante QHS), QNX OS 8.0+, Linux Ubuntu 22.04 ; Android/autres = via QNX Engineering Services ; 32 bits abandonné (source: virt/support.html)</li>
+<li><strong>Configuration invité</strong> — un processus <code>qvm</code> par VM, config par ligne de commande ou fichiers <code>guest.qvmconf</code> (typiquement <code>/guests/qnx80/qnx80-guest1.qvmconf</code>), lecture en une passe, tables ACPI + FDT exposées aux invités (source: config/qvm.html, config/acpi_fdt.html)</li>
+<li><strong>Sécurité/isolation</strong> — niveaux de privilège CPU (invité &lt; kernel), stratégies de protection, « design safe states », confinement DMA via IOMMU/SMMU manager, watchdogs virtuels, notification de terminaison <code>qvm</code>, détection d'environnement virtualisé (source: protection/protection.html et sous-pages)</li>
+</ul>
+<h3 id="liste-exhaustive-des-vdev-livres-20-source-vdev_refvdev_refhtml">Liste exhaustive des vdev livrés (20) — (source: vdev_ref/vdev_ref.html)</h3>
+<ul>
+<li><code>8259</code> — émulation minimale Intel 8259 PIC (x86)</li>
+<li><code>gic</code> — émulation ARM Generic Interrupt Controller</li>
+<li><code>hpet</code> — fournit un HPET à l'invité</li>
+<li><code>ioapic</code> — émulation Intel IOAPIC</li>
+<li><code>mc146818</code> — émulation horloge temps réel Motorola 146818</li>
+<li><code>pci-dummy</code> — périphérique PCI inactif, lecture seule</li>
+<li><code>pci-host-bridge</code> — pont hôte PCI</li>
+<li><code>pckeyboard</code> — contrôleur clavier IBM PC (seul « HID », legacy x86)</li>
+<li><code>pl011</code> — série ARM PL011</li>
+<li><code>progress</code> — trace des accès mémoire/instructions de l'invité (debug)</li>
+<li><code>ser8250</code> — émulation UART Intel 8250 (série/console)</li>
+<li><code>shmem</code> — mémoire partagée inter-OS</li>
+<li><code>smmu</code> — sous-ensemble smmu-*.so pour smmuman dans un invité QNX</li>
+<li><code>timer8254</code> — émulation timer Intel 8254</li>
+<li><code>virtio-blk</code> — bloc standard VIRTIO</li>
+<li><code>virtio-console</code> — console standard VIRTIO</li>
+<li><code>virtio-entropy</code> — RNG/entropie pour l'invité</li>
+<li><code>virtio-net</code> — réseau standard VIRTIO</li>
+<li><code>wdt-ib700</code> — watchdog IB700</li>
+<li><code>wdt-sp805</code> — watchdog ARM SP805</li>
+</ul>
+<p><strong>Non fournis</strong> : virtio-gpu, virtio-snd (son), vsock, virtio-balloon, virtio-input moderne, virtio-scsi, virtio-fs, USB virtuel, virtio-crypto. API + guide développeur vdev publics (<code>vdev-*.so</code>, GitLab qnx/hypervisor) pour en écrire (source: vdev_ref/vdev_ref.html, hypervisor.nav/bookset.html).</p>
+<h2 id="2-conteneurs-qnx-containers-10">2. Conteneurs (QNX Containers 1.0)</h2>
+<ul>
+<li><code>qrunc</code> — runtime bas niveau conforme OCI : isolation FS + CPU/mémoire, lancement/surveillance des processus, logs, exec/attach, nettoyage (source: containers/overview.html)</li>
+<li><code>qcmgr</code> — runtime haut niveau : messages de contrôle, gestion d'images (registry ou tar), réseau par configuration de pod, orchestre qrunc ; notion de <strong>pod</strong> façon Kubernetes (source: containers/overview.html, about.html)</li>
+<li><code>qcmctl</code> — CLI client de qcmgr (source: containers/appendix_qcmctl.html)</li>
+<li>Isolation réseau par « Network Jail » ; politiques de sécurité documentées (source: containers/appendix.html)</li>
+<li><strong>Limites</strong> — pas de namespace de processus (pidin voit tout l'hôte), applis privilégiées non contenues (root dans le conteneur peut éteindre l'hôte), setuid neutralisé, bug connu de perte du network jail sur fork/exec, restart = tuer qrunc+qcmgr (source: containers/appendix_caveats.html)</li>
+</ul>
+<h2 id="3-reseau-io-sock-pile-haute-performance">3. Réseau (io-sock, pile haute performance)</h2>
+<ul>
+<li><code>io-sock</code> — gestionnaire réseau en espace utilisateur, code/architecture alignés FreeBSD 14.4, TCP/UDP/IPv4/IPv6 intégrés, chiffrement + Wi-Fi intégrés, multi-instances possibles, drivers chargeables dynamiquement (source: io_sock/about.html, overview.html)</li>
+<li><strong>Protocoles livrés</strong> — ICMP, ICMP6, IPsec, IPv4, IPv6, ROUTE, SCTP, TCP, UDP, Unix-domain (source: io_sock/protocols.html)</li>
+<li><strong>Services livrés</strong> — CARP (redondance d'adresses), LAGG (agrégation), netmap (packet I/O rapide), TAP, TUN, VALE (switch virtuel via netmap), VLAN 802.1Q ; + BPF et PF/pfctl (filtrage, NAT) (source: io_sock/services.html, overview.html)</li>
+<li><strong>Extensibilité</strong> — guides « Writing Network Drivers for io-sock » + driver exemple, « Writing an io-sock Module » + module minimal, PTP 2-step (timestamping Tx/Rx, API module PTP) (source: io_sock/about.html, sample_module.html, ptp_api.html)</li>
+<li><strong>io-pkt</strong> — ancienne pile, officiellement <em>remplacée</em> par io-sock depuis SDP 7.1 ; doc de migration io-pkt→io-sock fournie (source: migration/networking.html, migrate_app.html)</li>
+</ul>
+<h2 id="4-graphisme-screen-40">4. Graphisme / Screen 4.0</h2>
+<ul>
+<li>Screen — modèle client/serveur avec <strong>composition fenêtrée</strong> (rendu off-screen), buffers/pixmaps/windows/streams, partage de ressources inter-processus, multi-écrans + déplacement de curseur entre displays, entrées/événements/notifs asynchrones, API function-safety, config par <code>graphics.conf</code> (source: screen/cscreen_about.html)</li>
+<li><strong>Wayland on Screen</strong> — implémentation C du protocole Wayland core (source: screen/cscreen_wayland.html)</li>
+<li>Écosystème : Screen DDK (pilotes GPU/display maison), OpenWF (wfd-server, Wfdcfg), lib Gestures, Input Events, Image Library, Video Capture, utilitaires calibration/debug (source: qnxsdp.nav/graphics.html)</li>
+<li><strong>Sécurité</strong> — doubles politiques (init puis runtime) pour screen et DRM, transition manuelle <code>drop_privileges</code> via <code>/dev/screen/command</code> et <code>/dev/dri/qnxcommand</code>, GPU dropping privileges, ACL sur <code>/dev/dri/card0</code>/<code>renderD128</code>, abilities <code>channel_connect</code> pour clients non-root (source: screen/cscreen_security.html)</li>
+</ul>
+<h2 id="conclusion-candidats-pour-le-hackathon-6-lignes">Conclusion — candidats pour le hackathon (6 lignes)</h2>
+<ol>
+<li><strong>vdev manquants = meilleur filon « Low-level Software »</strong> : virtio-gpu (aucune virtualisation GPU, Screen inutilisable en invité sans pass-through), virtio-snd (zéro son virtualisé), vsock (pas de canal socket host↔invité), virtio-balloon (mémoire statique), virtio-input moderne — l'API vdev est publique, documentée, avec samples et repo GitLab.</li>
+<li><strong>Réseau</strong> : pile complète (SCTP, PF, VLAN, netmap inclus) — ne pas refaire TCP/IP ; un <strong>module io-sock</strong> (API documentée) type QUIC, TSN/AVB, ou broker MQTT/DDS temps réel reste inédit ; io-pkt est mort, viser io-sock uniquement.</li>
+<li><strong>Conteneurs</strong> : pas de namespace PID, pas de confinement root, jail réseau bogué → outillage de supervision/isolation complémentaire possible, mais cœur déjà livré (qrunc/qcmgr/qcmctl, pods, registries).</li>
+<li><strong>Screen</strong> : composition, multi-écran, Wayland core déjà là ; candidats « Ports » : extensions Wayland/compositeur complet, streaming VNC/WebRTC de surfaces Screen, ou port d'applications Linux dans l'invité Ubuntu 22.04 (supporté officiellement par l'hyperviseur, Android non).</li>
+</ol>
+<h2 id="ecosysteme-oss">ecosysteme-oss</h2>
+<h2 id="inventaire-open-source-qnx-hackathon-2026">Inventaire open source QNX — hackathon 2026</h2>
+<p><strong>Sources consultées</strong> : oss.qnx.com ✅ (SPA JS : compteurs visibles — <strong>866 projets / 2 592 paquets / 13 931 builds</strong> — mais aucune API JSON accessible, 3 endpoints tentés → 404 ; liste exhaustive non extractible), gitlab.com/qnx ✅ (via API GitLab), qnx.software/qnx-everywhere ✅, qnx.devpost.com/resources ✅, github.com/qnx ✅ et github.com/qnx-ports ✅ (via API GitHub + arbre du dépôt <code>build-files/ports</code>, ~120 ports).</p>
+<h3 id="a-ports-open-source-maintenus-par-qnx-githubcomqnx-ports-liste-build-filesports">A. Ports open source maintenus par QNX (github.com/qnx-ports, liste = <code>build-files/ports/</code>)</h3>
+<p><strong>Compression</strong> : zlib, zstd, lz4, brotli, bzip2 — tous https://github.com/qnx-ports/build-files/tree/main/ports/<nom>
+<strong>TLS/crypto/sécu</strong> : gnutls, nettle, s2n-tls, strongswan (IPsec), sscep, libssh2
+<strong>BD</strong> : sqlite, sqlite_orm
+<strong>Réseau</strong> : curl, nghttp2, c-ares, libwebsockets, dnsmasq, unbound (DNS), tftp-hpa, lighttpd1.4, NTPsec, chrony, mosquitto (MQTT), libzmq (ZeroMQ), amqp-cpp, restbed
+<strong>Sérialisation/RPC</strong> : protobuf, grpc, flatbuffers, capnproto, cJSON, jansson, libjson, rapidjson, libyaml, tinyxml2, pugixml, libxml2, libexpat, icu
+<strong>Robotique/auto</strong> : ros2 (+ paquets vendor), Fast-DDS, Fast-CDR, vsomeip (SOME/IP), dlt-daemon (logs GENIVI), lely-core (CANopen), CANdb, open-amp + libmetal (AMP), <strong>epoll (shim)</strong>
+<strong>Cloud IoT</strong> : aws-c-common/-cal/-io, aws-crt-cpp, azure-iot-sdk-c
+<strong>IA/math</strong> : pytorch, tensorflow, onnx, onnxruntime, XNNPACK, ruy, ARM ComputeLibrary, OpenBLAS, eigen, ceres-solver, gtsam, SuiteSparse, METIS, clapack, sleef, cpuinfo, kineto
+<strong>Graphique/GUI/multimédia</strong> : qt, gtk, wayland, weston, cairo, pixman, graphene, gdk-pixbuf, freetype, harfbuzz, fontconfig, graphite, fribidi, libthai, libdatrie, libxkbcommon, xkeyboard-config, nanosvg, FreeImage, libpng, libjpeg-turbo, libyuv, SDL, SDL_ttf, openal-soft, libsndfile, vlc, webrtc, pdfium, libcamera
+<strong>Langages/outils</strong> : <strong>rust</strong>, <strong>lua</strong>, <strong>perl5</strong>, numpy, numpy2, pandas (donc toolchain Python présente), bash, vim, tree, minicom, picocom, glib, gettext-runtime, libffi, libiconv, libusb, libuv, libevent, libev, asio, pcre2, re2, gmp, mpfr, muslflt
+<strong>Test/bench/logs</strong> : googletest, Catch2, benchmark, check, cunit, trompeloeil, csmith, sysbench, lmbench, glog, g3log, gflags, abseil-cpp, boost, oneTBB
+<strong>Démos/radio</strong> : mame, RetroPie, rtl-sdr, dump1090</p>
+<h3 id="b-projets-dexemple-officiels-gitlabcomqnx">B. Projets d'exemple officiels (gitlab.com/qnx)</h3>
+<p><strong>Capteurs/caméra</strong> : <code>qnx/projects/camera-projects</code> — camera_example1_callback, example2_events, example3_viewfinder, example4_record, camera-list, camera-dump-frame(-no-screen), camera-manual-exposure, rpi4-debayer-example, rpi-isp-tuning-example ; pile RPi Camera : vchiq(+interface), vcsm(+interface), v_isp (MMAL), platform_broadcom (CSI2/ISP), rpi_mbox_interface, rpi5
+<strong>IA</strong> : ai-camera-app (TFLite + QNX Sensor Framework), pytorch_classifier_example (PyTorch Mobile), ai-services-rest-examples (REST Gemini) — https://gitlab.com/qnx/projects ; QNX-AI-workshop — https://github.com/qnx/QNX-AI-workshop
+<strong>Matériel RPi</strong> : rpi-gpio (resource manager GPIO + modules Python rpi_gpio/smbus), rpi-mailbox, rpi-thermal, trilobot (Pimoroni), rainbow-hat-qnx, usb-to-screen (gamepad HID→libscreen)
+<strong>Système/portage</strong> : simple-terminal (terminal de l'image Quick Start), shim-demo (<strong>shim eventfd</strong>, modèle de portage), drivers/ure
+<strong>Robotique</strong> : robot-arm + gamepad-control-with-ros2, qnx-ros2-workspace, ros2-multi-imu-demo (BNO055 multi-nœuds)
+<strong>Jeux/3D</strong> : quake3e, sample-apps/vkcube (Vulkan)
+<strong>Hyperviseur</strong> : hypervisor/getting-started (QHV multi-guests Pi 4B), fdt-examples, working-with-time, vdev-shmem (device mémoire partagée pour guest Linux), working-with-hardware, virtual-device-developers-guide
+<strong>Éducation</strong> : ateliers traffic-lights, codelabs — https://qnx.github.io/codelabs
+<strong>Images/BSP</strong> : quick-start-images (image RPi QNX 8.0 avec apps démo open source) ; BSP open source <strong>github.com/qnx/bsp_raspberrypi-bcm2711-rpi4</strong> et <strong>…bcm2712-rpi5</strong> ; QNX-Toolkit-for-VS-Code-Examples, qnx-agent-skills</p>
+<h3 id="c-qnx-everywhere-gratuit-non-commercial">C. QNX Everywhere (gratuit, non commercial)</h3>
+<p>SDP 8.0 (noyau + toolchain + utilitaires debug/profilage dont outils open source), QNX Developer Desktop (auto-hébergé), QNX Hypervisor, formations gratuites (learning.qnx.com), image Quick Start RPi 5, toolkit VS Code ; « 2,5K ports open source » publiés sous licences d'origine ; guide <strong>Linux Porting Guide</strong> dédié à la catégorie du concours. Pas de liste détaillée des libs <em>dans</em> le SDP trouvée (doc derrière bookset), mais les ports ci-dessus couvrent l'écosystème.</p>
+<h3 id="conclusion-6-lignes">Conclusion (6 lignes)</h3>
+<ol>
+<li><strong>Pièges (déjà faits, à éviter)</strong> : TLS/compression (gnutls, s2n, zlib/zstd/lz4/brotli), SQLite, protobuf/gRPC, OpenCV/ONNX Runtime/PyTorch/TensorFlow, Qt/GTK/Wayland/Weston/SDL, MQTT/ZMQ/DDS/ROS 2, curl/boost, Rust, Lua, Perl, numpy/pandas, epoll (shim) et eventfd (démo officielle).</li>
+<li><strong>Manques crédibles en 4 semaines + PR amont</strong> : <strong>ffmpeg</strong> ou <strong>GStreamer</strong> (multimédia : vlc/webrtc présents mais pas de framework de pipeline), <strong>git</strong> (bash/curl/ssh2/zlib déjà là — dépendances prêtes), <strong>jq</strong>, <strong>htop/tmux</strong>, petits outils CLI POSIX.</li>
+<li><strong>Shims noyau à forte valeur</strong> : inotify/timerfd/signalfd (sur le modèle du shim eventfd officiel) avec PR amont vers les consommateurs (tokio/mio, libev…) — très visible pour la catégorie Ports.</li>
+<li><strong>Python</strong> : numpy/pandas sont portés mais un CPython 3.x complet + pip est un gros morceau ; faisable seulement en reprise de l'existant qnx-ports.</li>
+<li><strong>Go/Node.js</strong> : ambitieux (runtime/V8) — plutôt hors budget 4 semaines, sauf contribution partielle amont.</li>
+<li>Vérifier chaque candidat sur <strong>oss.qnx.com</strong> (866 projets, liste complète non scrapable) et dans <code>qnx-ports/build-files/ports/</code> avant de s'engager : c'est la source de vérité « déjà porté ou non ».</li>
+</ol>
+<hr>
+<h1 id="correctif-majeur-1111-2025-linventaire-precedent-etait-biaise">CORRECTIF MAJEUR (11/11 20:25) — l'inventaire précédent était biaisé</h1>
+<p>L'inventaire initial n'a couvert que 5 chapitres et a conclu à des « absences » en ne
+regardant que la référence des <strong>utilitaires en ligne de commande</strong>. Or QNX livre une
+suite IDE complète (QNX Momentics, base Eclipse) que je n'avais pas ouverte.</p>
+<h2 id="ce-que-lide-momentics-fournit-deja-source-comqnxdocideuserguidetopicabouthtml">Ce que l'IDE Momentics fournit déjà (source : com.qnx.doc.ide.userguide/topic/about.html)</h2>
+<ul>
+<li><strong>Debugging</strong> : application en cours, bibliothèque, <strong>et fichier core</strong>.</li>
+<li><strong>Unit Testing</strong> + outil de <strong>couverture de code</strong>.</li>
+<li><strong>Memory Analysis</strong> + outils <strong>Valgrind</strong> (fuites, corruption) + perspective <em>QNX System
+  Information</em> (processus consommant excessivement mémoire/ressources).</li>
+<li><strong>Analyzing Performance</strong> : <strong>Application Profiler</strong> + <strong>Valgrind Cachegrind</strong>.</li>
+<li><strong>Analyzing System Behavior</strong> : <em>QNX System Information</em> et <em>QNX System Profiler</em> pour
+  « understand process and thread interaction on the target, <strong>reduce application and
+  system startup times</strong>, and <strong>debug deadlock</strong> and improper CPU usage levels ».</li>
+<li><strong>Building QNX OS Images</strong> : <em>QNX System Builder</em> (génération d'images amorçables,
+  transfert vers la carte).</li>
+<li><strong>JTAG</strong> : débogage matériel via Lauterbach TRACE32.</li>
+</ul>
+<h2 id="ce-que-le-sat-fournit-deja-source-comqnxdocsattopicdatainterpretationhtml">Ce que le SAT fournit déjà (source : com.qnx.doc.sat/topic/datainterpretation.html)</h2>
+<p>Citation exacte : « The best tool (by far) for interpreting the copious amounts of trace
+data is the QNX Momentics IDE. [...] We also provide a traceprinter utility that simply
+prints a plain-text version [...] You can also <strong>build your own custom interpreter, using
+the traceparser library</strong> ».
+Donc : capture, filtrage, buffers noyau, interprétation et <strong>bibliothèque traceparser</strong>
+existent. L'analyse de trace n'est PAS un trou.</p>
+<h2 id="ce-que-qfs-fournit-deja-source-comqnxdocneutrinoqtsafefstopicabouthtml">Ce que QFS fournit déjà (source : com.qnx.doc.neutrino.qtsafefs/topic/about.html)</h2>
+<p>QNX Filesystem for Safety : système de fichiers <strong>lecture seule à protection d'intégrité</strong>,
+en deux versions (certifiée sous licence QOS 8.0 ; <strong>expérimentale incluse dans le SDP 8.0</strong>),
+avec <code>mkqfs</code>, <code>qtsafefsd</code>, et appui sur la bibliothèque qcrypto.</p>
+<h2 id="consequences-trous-revoques-ou-fortement-affaiblis">Conséquences : trous révoqués ou fortement affaiblis</h2>
+<ul>
+<li>T1 « pas de profileur par échantillonnage » → <strong>FAUX</strong> : Application Profiler + Cachegrind.</li>
+<li>T2 « traceprinter brut, aucun agrégat » → <strong>TROMPEUR</strong> : l'IDE agrège, et <code>traceparser</code>
+  est fourni pour écrire son propre analyseur.</li>
+<li>T4 « post-mortem non corrélé » → <strong>PARTIELLEMENT FAUX</strong> : le System Profiler aide
+  explicitement à « debug deadlock », et l'IDE ouvre les fichiers core.</li>
+<li>T5 « supervision pauvre » → <strong>AFFAIBLI</strong> : perspective QNX System Information.</li>
+<li>I4 « boot non instrumenté » → <strong>FAUX</strong> : le System Profiler vise la réduction des temps
+  de démarrage applicatif et système.</li>
+<li>I5 « pas d'assistant de buildfile » → <strong>AFFAIBLI</strong> : QNX System Builder génère des images.</li>
+<li>I1 « pas de signature d'image » → <strong>AFFAIBLI</strong> : QFS protège l'intégrité (lecture seule)
+  et qcrypto fournit les primitives.</li>
+</ul>
+<h2 id="trous-qui-survivent-a-ce-correctif">Trous qui survivent à ce correctif</h2>
+<ul>
+<li>S1/S2/S3/S8/S9/S10/S13/S15 (politiques de sécurité) : aucun outil d'analyse statique de
+  politique trouvé, ni dans l'IDE ni ailleurs. <strong>Tamis survit intact.</strong></li>
+<li>T3 (vérification d'échéances déclarées, en CI, sans IDE) : rien d'équivalent trouvé.
+  <strong>Échéancier survit</strong>, à repositionner comme outil headless/CI au-dessus de <code>traceparser</code>.</li>
+<li>Rejeu déterministe d'une trace dans un modèle d'ordonnanceur : rien d'équivalent trouvé.
+  <strong>Réplique survit</strong> amputée de sa partie « chaîne de blocage » (couverte par l'IDE).</li>
+<li>H1 virtio-gpu, H3 vsock : toujours absents des 20 vdev. <strong>Toile et Veine survivent.</strong></li>
+<li>P1 WebAssembly : toujours absent de l'index officiel des ports. <strong>Éclat survit.</strong></li>
+<li>I2 A/B + rollback + orchestration de campagne : toujours absent (<code>mkqnximage --update</code>
+  reste une copie réseau). <strong>Doublure survit</strong> amputée de sa partie signature.</li>
+</ul>
+<h2 id="livres-jamais-lus-le-vrai-gisement-inexploite">Livres jamais lus = le vrai gisement inexploité</h2>
+<p>Device Publishers (RMPS, framework capteurs) · High Availability Framework (HAM) · QPLMS ·
+<strong>SMMUMAN</strong> (SMMU, confinement DMA) · PCI Server · Building Embedded Systems · Customizing
+a BSP · Boot Optimization · QFS · io-sock User's Guide · Technotes · Introspection API ·
+QNX Software in the Cloud · QNX Developer Desktop · Toolkit VS Code · C Library Reference ·
+Devctl/Ioctl · Migrating to 8.0 · Getting Started / Programmer's Guide / Writing a Resource
+Manager · System Architecture.</p>
+<hr>
+<h1 id="trous-nouveaux-1111-2030-api-c-migration-7180-devctl-introspection-api">TROUS NOUVEAUX (11/11 20:30) — API C, migration 7.1→8.0, devctl, Introspection API</h1>
+<p>Source : sous-agent ayant lu com.qnx.doc.qnxsdp.migration, com.qnx.doc.neutrino.devctl,
+com.qnx.doc.introspection, com.qnx.doc.neutrino.lib_ref. L = lu dans la doc, S = supposé.</p>
+<h2 id="resultat-14-web_fetch-tentes-10-lus-4-en-403-pages-apihtmlkernelhtml-de-la-discontinuation-notice-inaccessibles-via-le-proxy">Résultat — 14 <code>web_fetch</code> tentés (10 lus, 4 en 403 : pages <code>API.html</code>/<code>kernel.html</code> de la Discontinuation Notice inaccessibles via le proxy)</h2>
+<p><strong>Lu</strong> = confirmé dans la doc ; <strong>Supposé</strong> = inférence signalée.</p>
+<h3 id="a-trous-nouveaux-18">(A) Trous nouveaux (18)</h3>
+<table>
+<thead>
+<tr>
+<th>code</th>
+<th>trou (L=lu, S=supposé)</th>
+<th>source</th>
+<th>exploitable pour le concours</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LIBC-01</td>
+<td><code>inotify_*</code> <strong>n'a pas disparu</strong> : déplacé de libc vers <code>libfsnotify.so</code> (L) — l'hypothèse du parent est fausse</td>
+<td>migration/c_apps</td>
+<td>couche de compat Linux→QNX + détecteur auto de linkage ; corrige une idée existante</td>
+</tr>
+<tr>
+<td>LIBC-02</td>
+<td><code>_smalloc/_scalloc/_srealloc/_sfree</code> supprimés de libc (L)</td>
+<td>migration/c_apps</td>
+<td>lib API-compatible + scanner de code legacy qui les utilise</td>
+</tr>
+<tr>
+<td>LIBC-03</td>
+<td><code>itoa/ltoa/lltoa/ultoa/ulltoa/utoa</code> supprimés de stdlib.h (L)</td>
+<td>migration/c_apps</td>
+<td>auto-patcheur vers <code>snprintf</code>, linter de portage massif</td>
+</tr>
+<tr>
+<td>LIBC-04</td>
+<td>C++11/14 discontinués, libc++ seul, C++17/20 (L)</td>
+<td>migration/c_apps</td>
+<td>analyseur/statique de migration C++ legacy</td>
+</tr>
+<tr>
+<td>MIG-01</td>
+<td>Binaires 7.1 <strong>inexécutables</strong> en 8.0, rebuild complet obligatoire (L)</td>
+<td>migration/c_apps</td>
+<td>estimateur d'effort de migration + orchestrateur de rebuild CI</td>
+</tr>
+<tr>
+<td>DEVCTL-01</td>
+<td>Classe <code>DCMD_INPUT_*</code> <strong>obsolète</strong>, aucun remplacement documenté (L)</td>
+<td>devctl/about</td>
+<td>ressource manager + API d'entrée unifiée (HID/tactile)</td>
+</tr>
+<tr>
+<td>DEVCTL-02</td>
+<td><code>PART_*</code> (partitions) obsolète (L)</td>
+<td>devctl/about</td>
+<td>outillage de gestion de partitions moderne (CLI/GUI)</td>
+</tr>
+<tr>
+<td>DEVCTL-03</td>
+<td><code>DIOC*</code> (firewall PF), <code>TAP*/TUN*</code>, <code>GRES*</code>, <code>SRT*</code>, <code>SIOC*</code> : doc <strong>renvoyée vers les man FreeBSD 14.4</strong>, rien de natif (L)</td>
+<td>devctl/about</td>
+<td>suite de tests + doc + outils réseau spécifiques QNX sur ces ioctls</td>
+</tr>
+<tr>
+<td>DEVCTL-04</td>
+<td><code>SND_*</code>, <code>DCMD_MEDIA_*</code>, <code>DCMD_HAM_*</code>, <code>DCMD_MEMCLASS_*</code> marqués « used internally », non documentés (L)</td>
+<td>devctl/about</td>
+<td>observabilité audio/HA/mémoire par rétro-ingénierie des devctl</td>
+</tr>
+<tr>
+<td>NET-01</td>
+<td>Sockets de domaine Unix (io-sock) <strong>exigent un FS inscriptible</strong> power-safe/Ext2/FFS3 (L)</td>
+<td>migration 8.0.3</td>
+<td>service de relais UDS sans FS inscriptible ; très « embarqué sûr »</td>
+</tr>
+<tr>
+<td>NET-02</td>
+<td>DIM (Dynamic Interrupt Manager) à activer <strong>manuellement</strong> pour le débit réseau (L)</td>
+<td>migration 8.0.3</td>
+<td>auto-tuneur : bench + détection + activation selon la charge</td>
+</tr>
+<tr>
+<td>TOY-01</td>
+<td>Utilitaires cibles remplacés par <strong>toybox</strong>, à linker commande par commande (L)</td>
+<td>migration/command_line</td>
+<td>suite de détection des divergences 7.1↔toybox pour scripts embarqués</td>
+</tr>
+<tr>
+<td>MOUNT-01</td>
+<td><code>mount_ifs</code> ne daemonize plus, <code>-b</code> déprécié ; nouvel IFS en mémoire via <code>-o</code> (L)</td>
+<td>migration/command_line</td>
+<td>vérificateur de scripts de boot + tests de régression amorçage</td>
+</tr>
+<tr>
+<td>FS-01</td>
+<td>« Power-Safe filesystem compatibility » (qnx6fs) signalée comme point de migration 8.0.3 (L pointeur, S détail)</td>
+<td>migration 8.0.3</td>
+<td>outil fsck/conversion qnx6fs→power-safe</td>
+</tr>
+<tr>
+<td>IAPI-01</td>
+<td>IAPI expose PIDs, regs GP/FP, thread status, mappings, page tables, lecture mémoire — <strong>rien</strong> sur channels/connections/message passing, IRQs, stats CPU/IO par processus (L liste complète des 13 fonctions ; S pour l'absence)</td>
+<td>introspection/apis+overview</td>
+<td>« htop/pidin++ » de production sans <code>/proc</code>, orienté sûreté</td>
+</tr>
+<tr>
+<td>IAPI-02</td>
+<td>Dumper <strong>unique</strong> système, exige <code>PROCMGR_AID_DUMPER</code> ; pas d'écriture mémoire exposée (L)</td>
+<td>introspection/overview</td>
+<td>service de core dump configurable : compression, chiffrement, dump sélectif, export réseau</td>
+</tr>
+<tr>
+<td>IAPI-03</td>
+<td>Pas de flux d'événements cycle de vie (spawn/exit) — seuls les crashes notifiés (L liste ; S interprétation)</td>
+<td>introspection/apis</td>
+<td>daemon d'audit/surveillance de terminaison pour systèmes safety</td>
+</tr>
+<tr>
+<td>LIBC-05</td>
+<td>Le livre C n'a <strong>aucune matrice de conformité POSIX</strong> (sommaire L : A–Z, manifests, charsets, safety ; S l'absence)</td>
+<td>lib_ref/about</td>
+<td>générateur de suite de conformité POSIX QNX + tableau de bord</td>
+</tr>
+</tbody>
+</table>
+<h3 id="b-conclusion-5-lignes">(B) Conclusion (5 lignes)</h3>
+<ol>
+<li><strong>Oui, familles différentes</strong> : la plus neuve est l'<strong>outillage de portage/legacy</strong> (LIBC-01→04, MIG-01, TOY-01) — rien de tel dans les 7 projets existants (sécurité, trace, OTA, vdev, WASM).</li>
+<li>L'<strong>IAPI est un vrai filon</strong> : livre minuscule (13 fonctions), pensé « production/sûreté sans /proc », et tout l'observability moderne (connexions, canaux, IO, événements) est absent → outils diagnostics inédits.</li>
+<li>Les classes devctl <strong>obsolètes ou non documentées</strong> (INPUT, PART, SND, PF/TAP/TUN renvoyés à FreeBSD) ouvrent une famille « ressource managers &amp; réseau non outillé » distincte des vdev déjà trouvés.</li>
+<li>Point important : <strong><code>inotify</code> existe en 8.0</strong> (libfsnotify) — l'inventaire précédent est erroné ; timerfd/signalfd restent à vérifier (non vus).</li>
+<li>Limite honnête : la <strong>Discontinuation Notice (pages API/kernel/networking)</strong> est le gisement le plus dense et m'était inaccessible (403 proxy) — à refaire, ~10 trous supplémentaires probables (S).</li>
+</ol>
+<hr>
+<h1 id="trous-nouveaux-n2-1111-2045-system-architecture-writing-a-resource-manager-programmers-guide-introspection-api">TROUS NOUVEAUX n°2 (11/11 20:45) — System Architecture, Writing a Resource Manager, Programmer's Guide, Introspection API</h1>
+<p>Source : sous-agent ayant lu 13 pages (introspection_apis.html, overview.html,
+ipc_Channels.html, ipc_Pulses.html, ipc_Typed_memory.html, ipc_Priority_inheritance_messages.html,
+ipc_Server_boost.html, kernel_SchedulingAlgorithms.html, kernel_Sporadic_scheduling.html,
+kernel_External_Code.html, kernel_CPU_offlining.html, resmgr about.html (ToC 12 chapitres),
+prog about.html).</p>
+<h2 id="introspection-api-iapi-correction-14-fonctions-pas-13">Introspection API (IAPI) — correction : 14 fonctions, pas 13</h2>
+<ul>
+<li>IA-CHAN : aucune fonction pour canaux / connexions / files Receive-Send-Reply [lu]</li>
+<li>IA-LIFE : pas de flux spawn/exit, uniquement polling de PID + événement coredump [lu]</li>
+<li>IA-DUMP : Dumper <strong>unique</strong> système, déclenché seulement sur terminaison anormale, tout-ou-rien, pas d'export réseau [lu]</li>
+<li>IA-STATS : zéro statistique cumulative par processus/thread (CPU, IPC, appels) [lu]</li>
+<li>IA-IRQ : rien sur les interruptions (handlers, comptes, latences) [lu]</li>
+<li>IA-RO : API en lecture seule, aucune écriture/injection → pas d'émulation de client ni de fault-injection [lu]</li>
+<li>SA-TYPED : mémoire typée sans aucune introspection (noms, tailles, utilisateurs) [lu + absence]</li>
+</ul>
+<h2 id="ordonnancement-mecanismes-documentes-zero-outil-de-verification">Ordonnancement : mécanismes documentés, ZÉRO outil de vérification</h2>
+<ul>
+<li>SA-SPOR : SCHED_SPORADIC documenté (« capped limit ») mais aucun outil d'observation du budget ni des replenishments ; l'automatisation est renvoyée à <strong>MotionWise Schedule, hors SDP</strong> [lu]</li>
+<li>SA-BOOST : « server boost » — ambiguïté écrite par QNX : « it's not clear which thread should be boosted » [lu]</li>
+<li>SA-PRIHER : héritage de priorité des messages <strong>sticky</strong> (ne redescend pas au reply), aucun outil de preuve [lu]</li>
+<li>SA-EXTCODE : le scheduler peut exécuter du code externe au noyau affectant le déterminisme, sans observation [sommaire]</li>
+<li>SA-CPUOFF : CPU offlining par app privilégiée, pas d'outil de vérification/monitoring [sommaire]</li>
+<li>SA-PULSE : pulses non bloquants et non queueables, aucun mécanisme de capture/rejeu [lu + absence]</li>
+</ul>
+<h2 id="resource-managers-le-trou-le-plus-profond">Resource managers : le trou le plus profond</h2>
+<ul>
+<li>RM-SKEL : pas de générateur de squelette, le livre ne montre que des couches et exemples écrits à la main [lu]</li>
+<li>RM-TEST : <strong>aucun</strong> chapitre test / harnais / émulation de client / mesure de latence dans les 12 chapitres du livre [ToC exhaustif lu]</li>
+<li>RM-CONF : conformité non outillée, uniquement des conseils (« always at least one RECEIVE-blocked thread », « avoid leaving clients blocked indefinitely ») [sommaire]</li>
+<li>RM-LAT : Programmer's Guide sans chapitre de mesure IPC/latence ; timing.html ne traite que des « inaccuracies » du temps [ToC lu]</li>
+</ul>
+<h2 id="fausses-alertes-ecartees-par-cet-agent">Fausses alertes écartées par cet agent</h2>
+<ul>
+<li>Trace/profilage : le chapitre Microkernel Instrumentation existe (procnto-smp-instr) + SAT/traceparser → PAS un trou.</li>
+<li>Sécurité des resmgr : le System Security Guide existe (livre séparé) → ne pas revendiquer de trou « validation des entrées ».</li>
+<li>Non vérifiés faute de budget : partitions APS, ASID, donneur de priorité, détail de la mémoire typée.</li>
+</ul>
+<h2 id="trois-familles-nouvelles-disjointes-de-tout-ce-qui-precede">Trois familles nouvelles (disjointes de tout ce qui précède)</h2>
+<ol>
+<li>Chaîne d'outillage resmgr : générateur + harnais + fuzzer + lint de conformité + banc de latence.</li>
+<li>Introspection de production via IAPI : canaux, cycle de vie, stats, dump sélectif — l'API est annoncée « meant for production » mais aveugle à l'IPC.</li>
+<li>Preuve d'ordonnancement : budget sporadique, héritage sticky, server boost ambigu, code externe, CPU offlining.</li>
+</ol>
+<hr>
+<h1 id="trous-nouveaux-n3-1111-2100-ham-high-availability-framework-et-qplms">TROUS NOUVEAUX n°3 (11/11 21:00) — HAM (High Availability Framework) et QPLMS</h1>
+<p>Source : sous-agent, 12 pages lues. Citation clé : la migration HAF→QPLMS impose de
+« Holistically redesign the system's launch » — aucun convertisseur fourni.
+<strong>Rapport — trous HAM &amp; QPLMS</strong> (12 <code>web_fetch</code> utilisés, 12 pages <strong>lues</strong> ; rien d'autre parcouru)</p>
+<h2 id="a-trous-16">(A) Trous (16)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Code</th>
+<th>Trou</th>
+<th>Page source</th>
+<th>Pourquoi exploitable</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>HAM-TEST</td>
+<td>Aucun harnais de test/injection de pannes pour un handler HAM : le guide ne fournit que des listings d'exemples (restart, heartbeat, starvation), aucun outil pour simuler une panne et rejouer un scénario</td>
+<td>examples.html, about.html (LU)</td>
+<td>Un « chaos-HAM » QEMU/Pi5 qui tue/bloque/dégrade des processus et vérifie la réaction du handler = démonstration visuelle directe, zéro équivalent documenté</td>
+</tr>
+<tr>
+<td>2</td>
+<td>HAM-LAT</td>
+<td>Aucune mesure de latence de reprise ni preuve de borne : rien ne timestamp ni n'analyse le délai détection→action→service restauré</td>
+<td>hamover.html, examples.html (LU ; absence vérifiée sur les pages lues)</td>
+<td>Mesurer et <strong>prouver</strong> « reprise &lt; X ms » (combiné SAT/traceparser) = apport temps réel fort pour un jury</td>
+</tr>
+<tr>
+<td>3</td>
+<td>HAM-DECL</td>
+<td>HAM se configure uniquement par API C, aucune configuration déclarative, aucun validateur du graphe entités/conditions/actions (cycles d'actions, conditions jamais armées, entités orphelines)</td>
+<td>plms_migration_guide.html (« ham is configured by a C API »), hamover_HAMAPI.html (LU)</td>
+<td>Un linter/générateur déclaratif de supervision HAM, vérifié en CI hôte, comble un vide outillage évident</td>
+</tr>
+<tr>
+<td>4</td>
+<td>HAM-DRIFT</td>
+<td>La détection de dérive lente (fuite mémoire, latence métier qui dérive, deadline métier dépassée sans crash) repose sur des « external detectors » à écrire soi-même ; aucun détecteur fourni</td>
+<td>hamover.html (LU : « permits external detectors to report interesting events »)</td>
+<td>Bibliothèque de détecteurs prêts à l'emploi (seuils métriques, délais métier) branchés sur les conditions HAM = couche manquante entre supervision binaire et comportement fautif</td>
+</tr>
+<tr>
+<td>5</td>
+<td>HAM-FORK</td>
+<td>Limite explicite : la lib HAM n'est pas fork()-sûre, appels inutilisables dans le fils avant exec*()</td>
+<td>hamover_HAMAPI.html (LU)</td>
+<td>Un shim/testeur qui détecte et signale les violations fork+HAM, ou wrapper sûr, cible un piège réel documenté</td>
+</tr>
+<tr>
+<td>6</td>
+<td>HAM-STARVE-P</td>
+<td>Starvation couverte côté HAM (exemple dédié) mais <strong>pas</strong> côté QPLMS : plms ne surveille que heartbeat et mort, aucun contrôle de délai d'ordonnancement</td>
+<td>examples.html (LU), plms_overview.html, config_plms.html (LU : task monitor = interval/max_miss seulement)</td>
+<td>Ajouter une détection de starvation/délai métier à plms (via libplms + signaux) = trou fonctionnel net entre les deux services</td>
+</tr>
+<tr>
+<td>7</td>
+<td>PLMS-SPOF</td>
+<td>plms n'a <strong>pas de Guardian</strong> (« since it does not have a guardian ») : contrairement à HAM, plms est un point de défaillance unique ; rien ne documente sa propre supervision</td>
+<td>plms_migration_guide.html (LU), hamover.html (LU pour le contraste HAM/Guardian)</td>
+<td>Prouver/outiller la résilience de plms lui-même (double instance, reprise, mesure) = sujet sécurité/temporalité inédit</td>
+</tr>
+<tr>
+<td>8</td>
+<td>PLMS-VALID</td>
+<td>La vérif du DAG n'a lieu qu'au démarrage <strong>sur la cible</strong> (« PLMS parses the configuration file for correctness ») ; aucun validateur statique hôte (cycles, dépendances manquantes, includes cassés) avant le boot</td>
+<td>plms_overview.html, config_plms.html (LU)</td>
+<td>Validateur + visualiseur de DAG en CI/hôte : erreur détectée en secondes au lieu d'un boot raté sur Pi5</td>
+</tr>
+<tr>
+<td>9</td>
+<td>PLMS-CRITPATH</td>
+<td>Aucun outillage de mesure du chemin critique de démarrage : lancement parallèle affirmé mais pas de trace/Gantt de la file d'actions ni d'analyse du temps de boot résultant</td>
+<td>plms_overview.html (LU : action queue, worker threads)</td>
+<td>Extraire les événements slog2 → chemin critique + suggestions de parallélisation = lien direct avec Boot Optimization, mesurable sur Pi5</td>
+</tr>
+<tr>
+<td>10</td>
+<td>PLMS-ATTACH</td>
+<td>QPLMS ne peut pas superviser un processus déjà lancé (« QPLMS can't monitor an already-running process ») : tout processus démarré par <code>[+script]</code> ou SLM doit être relancé par plms</td>
+<td>plms_migration_guide.html, scénario 4 (LU)</td>
+<td>Pont « adopte sans relancer » (ou superviseur hybride SLM/script→plms) = trou fonctionnel explicitement reconnu par la doc</td>
+</tr>
+<tr>
+<td>11</td>
+<td>PLMS-MIGRATE</td>
+<td>Migration HAF→QPLMS entièrement manuelle : « Holistically redesign the system's launch », aucun convertisseur des appels ham_* C vers une config plms, idem depuis boot script/slm</td>
+<td>plms_migration_guide.html (LU)</td>
+<td>Transpiler ham_*→composants plms (+ rapport de couverture des 5 scénarios) = outil de migration 8.0 concret, rien d'existant</td>
+</tr>
+<tr>
+<td>12</td>
+<td>PLMS-NOTIFY</td>
+<td>Notifications QPLMS dégradées vs HAM : par classe d'événements, identité = <strong>hash du nom</strong> du composant (risque de collision, pas de pulse par entité/condition)</td>
+<td>plms_migration_guide.html §Notifications (LU)</td>
+<td>Couche de notification fiable (résolution de hash, routage fin) ou outillage de détection de collisions = limite documentée exploitable</td>
+</tr>
+<tr>
+<td>13</td>
+<td>PLMS-PRODKPI</td>
+<td>Observabilité de production absente : plmsctrl est réservé « only on development and test systems », logs = slog2 debug ; aucun KPI de reprise (max_tries épuisés, FAULT, DSS) exploitable en prod</td>
+<td>plms_migration_guide.html (LU), plms_overview.html (LU)</td>
+<td>Exporter états/KPI vers un superviseur externe (l'API NOTIFY existe mais est fruste) = famille « introspection de production » nouvelle</td>
+</tr>
+<tr>
+<td>14</td>
+<td>PLMS-APS8</td>
+<td><code>aps</code> non supporté en SDP 8.x (uniquement QOS 2.2.x) : les composants plms ne peuvent pas être assignés à une partition APS en 8.0 ; <code>-W</code> (runmask workers) perdu, remplacé par <code>cluster</code>/<code>-C</code></td>
+<td>usage_differences.html (LU)</td>
+<td>Démontrer/contourner l'impact ordonnancement en 8.0 (priorités 1-253, cluster) ou outiller le mapping APS↔plms = trou certitude temps réel</td>
+</tr>
+<tr>
+<td>15</td>
+<td>PLMS-DSS</td>
+<td>Sémantique de récupération grossière : repair = NONE/STOP/RESTART/FAULT/DSS avec DSS = <code>sysmgr_reboot()</code> complet ; pas de dégradation graduelle ni de restauration d'état du processus重启é</td>
+<td>plms_overview.html, config_plms.html (LU)</td>
+<td>Politiques de reprise à paliers (redémarrer le module, basculer en mode dégradé avant reboot) + checkpoint d'état = valeur sécurité démontrable</td>
+</tr>
+<tr>
+<td>16</td>
+<td>HAM-CFG-SLM</td>
+<td>Chevauchement HAM/SLM/plms non outillé : la doc cite slm/boot scripts comme « current launcher » à migrer, mais rien n'aide à arbitrer ou détecter les doublons de supervision (même processus gardé 2×)</td>
+<td>plms_migration_guide.html (LU) ; <strong>supposé</strong> : rôle exact de SLM non relu ici</td>
+<td>Audit des configurations (qui garde quoi, HAM vs plms vs SLM vs [+script]) = outil d'intégration système inédit</td>
+</tr>
+</tbody>
+</table>
+<h2 id="b-deja-couvert-ne-pas-reproposer">(B) Déjà couvert (ne pas reproposer)</h2>
+<ul>
+<li>HAM/Guardian : résilience du HAM lui-même par miroir en mémoire partagée (hamover.html, LU).</li>
+<li>Exemples HAM fournis : simple/compound restart, death notification, heartbeat/liveness, starvation (examples.html, LU).</li>
+<li>API HAM ~35 fonctions, thread-safe et cancellation-safe (parts.html, hamover_HAMAPI.html, LU).</li>
+<li>QPLMS : DAG de dépendances (<code>depend</code>, <code>module</code>), lancement parallèle (action queue + workers), watchdog heartbeat via mémoire partagée anonyme, mort/relance avec max_tries/wait_time, états riches dont DSS, mémoire pré-allouée, certifié safety (plms_overview.html, config_plms.html, LU).</li>
+<li>plmsctrl (debug uniquement), logs slog2info -b plms, -v (plms_migration_guide.html, LU).</li>
+<li>Lancement sécurisé dans la config : stype, ability, aslr, rlimits, groups/user, -U/-t avec secpol (config_plms.html, plms_migration_guide.html, LU) — rejoint la chaîne secpol déjà fournie.</li>
+<li>Guide de migration HAF→QPLMS avec 5 scénarios + notifications (LU) ; table de différences QOS 2.2.x/SDP 8.x (LU).</li>
+</ul>
+<h2 id="c-conclusion-familles-nouvelles">(C) Conclusion (familles nouvelles ?)</h2>
+<ol>
+<li><strong>Oui — introspection/observabilité de production</strong> : plmsctrl interdit en prod, aucun KPI de reprise, notifications par hash : famille distincte de l'IAPI existante (trous 7, 12, 13).</li>
+<li><strong>Oui — preuve &amp; mesure temporelle de la reprise</strong> : latence de reprise, borne prouvée, chemin critique de boot DAG, aps absent en 8.0 : parent de « preuve d'ordonnancement » mais appliqué à la supervision, jamais couvert (2, 9, 14).</li>
+<li><strong>Oui — migration 7.1/2.2→8.0 outillée</strong> : transpiler ham_*→plms, arbitrage HAM/SLM/[+script], validateur de config hôte : la doc impose un redesign manuel (3, 8, 11, 16).</li>
+<li><strong>Non nouveau</strong> : politiques de sécurité (stype/ability déjà dans la config), images/OTA, vdev, WebAssembly — rien dans ces deux guides ; « outillage des gestionnaires de ressources » n'est qu'effleuré (HAM/plms ne sont pas des RM), donc à classer comme famille <strong>supervision/HA</strong>, réellement nouvelle.</li>
+</ol>
+<hr>
+<h1 id="trous-nouveaux-n4-1111-2105-device-publishers-rmps-capteurs-hid-audio">TROUS NOUVEAUX n°4 (11/11 21:05) — Device Publishers (RMPS), capteurs, HID, audio</h1>
+<h2 id="trous-device-publishers-rmps-capteurs-hid-audio-qnx-sdp-80">Trous — Device Publishers (RMPS), capteurs, HID, audio — QNX SDP 8.0</h2>
+<p><strong>Pages lues</strong> (www.qnx.com/developers/docs/8.0/) : <code>dev_pub</code> about, overview, rmps_objects, plugins, usblauncher_otg ; nav <code>guides.html</code>, <code>references.html</code>, <code>programming.html</code>. <strong>Non lues</strong> : usblauncher_usage, drivers, plugin_ratings, graphics.html, technotes, listes A–Z des utilitaires → les « absences » ci-dessous sont <em>non rencontrées dans les pages lues</em>, pas prouvées exhaustivement.</p>
+<h3 id="a-trous">(A) Trous</h3>
+<table>
+<thead>
+<tr>
+<th>CODE</th>
+<th>Trou</th>
+<th>Source</th>
+<th>Exploitable</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PUB-SDK</td>
+<td>Aucune API/SDK « écrire un publisher » : le guide ne décrit que le <em>contenu des objets RMPS</em> et les options CLI</td>
+<td>dev_pub/about.html (lu)</td>
+<td>Kit open-source : lib de publication RMPS + générateur de publisher</td>
+</tr>
+<tr>
+<td>PUB-SENS</td>
+<td>Un seul publisher livré : <code>usblauncher_otg</code> (USB/stockage/média) ; rien pour capteurs, I2C/SPI, BLE, batterie, thermique</td>
+<td>dev_pub/overview.html (lu)</td>
+<td>Publisher de capteurs pour HAT RPi 5, gros besoin hackathon</td>
+</tr>
+<tr>
+<td>PUB-SIM</td>
+<td>Aucune simulation/test sans matériel mentionnée dans tout le guide ; pas de publisher virtuel pour QEMU</td>
+<td>dev_pub/about.html (lu, sommaire complet)</td>
+<td><code>fake-usblauncher</code>/injecteur RMPS pour QEMU = démo sans hardware</td>
+</tr>
+<tr>
+<td>PUB-CONF</td>
+<td>Aucun validateur de conformité des objets RMPS (arborescence « fixed locations » imposée mais non outillée)</td>
+<td>dev_pub/rmps_objects.html (lu)</td>
+<td>Linter/vérificateur de schéma RMPS réutilisable</td>
+</tr>
+<tr>
+<td>PUB-LAT</td>
+<td>Rien sur la latence de publication, horodatage des notifications ou QoS pub/sub</td>
+<td>dev_pub/rmps_objects.html (lu)</td>
+<td>Banc de mesure horodatée attach→objet RMPS→abonné</td>
+</tr>
+<tr>
+<td>PUB-ALARM</td>
+<td>Aucune priorité, arbitrage ou sémantique d'alarme : l'objet « device control » accepte des commandes, « peut contenir les résultats », sans file prioritaire ni préemption</td>
+<td>dev_pub/rmps_objects.html (lu)</td>
+<td>Voir (C) : couche d'arbitrage au-dessus de RMPS</td>
+</tr>
+<tr>
+<td>PUB-META</td>
+<td>Modèle de données orienté média/stockage (mountpoint, partitions, TOC, « temperature/drive mechanism » du disque) : pas d'unités, plages, calibration, timestamps de capteur</td>
+<td>dev_pub/rmps_objects.html (lu)</td>
+<td>Extension du schéma pour données physiques normalisées</td>
+</tr>
+<tr>
+<td>PUB-PLUG</td>
+<td>Plugins (generic, ipod, mediafs, audiocd, dvd) tous média ; pas d'API de rédaction ni d'exemple cités ; ratings auto-déclarés</td>
+<td>dev_pub/plugins.html (lu)</td>
+<td>SDK+exemple de plugin non-média (ex. métadonnées capteur)</td>
+</tr>
+<tr>
+<td>PUB-LIFE</td>
+<td>Publishers « persistent background processes… you can restart » mais aucune intégration HAM/lifecycle documentée</td>
+<td>dev_pub/overview.html (lu)</td>
+<td>Superviseur HAM générique pour publishers</td>
+</tr>
+<tr>
+<td>PUB-SEC</td>
+<td>Aucune permission/secpol mentionnée pour les objets RMPS — y compris l'objet de commande (couper l'alim d'un port USB)</td>
+<td>dev_pub/rmps_objects.html (lu)</td>
+<td>ACL + politique secpol pour <code>/usb/launcher/command/</code></td>
+</tr>
+<tr>
+<td>USB-OTG</td>
+<td>Protocoles OTG ADP/SRP/HNP non supportés, « software emulation » seulement</td>
+<td>dev_pub/usblauncher_otg.html (lu)</td>
+<td>Gestion USB-PD/rôles par software</td>
+</tr>
+<tr>
+<td>USB-GADGET</td>
+<td>Mode device limité à CarPlay (module Apple séparé) ; pas de gadget générique (UAC2, MTP, HID gadget)</td>
+<td>dev_pub/usblauncher_otg.html (lu)</td>
+<td>Publisher/gadget USB générique pour Pi 5</td>
+</tr>
+<tr>
+<td>SENS-ABS</td>
+<td>GPIO et SPI ont des frameworks documentés, mais aucune abstraction capteur au-dessus (fusion, calibration, découverte)</td>
+<td>nav/references.html (lu)</td>
+<td>« libsensors » QNX au-dessus de GPIO/SPI + publisher</td>
+</tr>
+<tr>
+<td>AUD-DOC</td>
+<td><strong>Zéro</strong> doc audio dans SDP 8.0 : pas d'io-audio, d'audio DDK, d'<code>asound</code>, de codecs dans guides/references/programming ; le multimédia vit dans un paquet séparé « Multimedia for QNX SDP »</td>
+<td>nav/guides.html, nav/references.html, nav/programming.html (lus) ; mention du paquet dans usblauncher_otg.html (lu)</td>
+<td>Tout projet audio SDP-only est greenfield : serveur/mixage à échéance garantie, mesure de latence bout-en-bout, codecs</td>
+</tr>
+<tr>
+<td>HID-DOC</td>
+<td>Aucune doc HID/input dans le nav SDP (io-input, pilotes HID absents des guides lus) — réserve : graphics.html (Screen) non consulté</td>
+<td>nav/guides.html, references.html (lus)</td>
+<td>Publisher HID + outil de test clavier/souris sur QEMU</td>
+</tr>
+</tbody>
+</table>
+<h3 id="b-deja-couvert-fausses-alertes-evitees">(B) Déjà couvert — fausses alertes évitées</h3>
+<ul>
+<li><strong>Un publisher existe et est documenté</strong> (<code>usblauncher_otg</code>, objets device/command/driver/mount, montage auto via <code>rules.mnt</code>) — ne pas proposer « framework de publication inexistant ».</li>
+<li><strong>Mécanisme de plugins avec manager et système de ratings</strong> — le trou est l'API de rédaction, pas le mécanisme.</li>
+<li><strong>Objet de commande RMPS</strong> (ex. power du hub) — le trou est l'arbitrage/priorité, pas les commandes.</li>
+<li><strong>Frameworks GPIO et SPI documentés</strong> — le bus est couvert ; seule l'abstraction capteur manque.</li>
+<li><strong>Introspection API et SAT existent</strong> (nav lu) — ne pas les reproposer.</li>
+<li><strong>Audio/Multimédia</strong> : probablement fourni hors SDP (« Multimedia for QNX SDP », Apple Device Support) — le trou est <em>dans SDP</em>, pas « QNX n'a pas d'audio ». io-audio/asound dans les utilitaires A–Z : non vérifié (budget).</li>
+</ul>
+<h3 id="c-alarmes-evenements-prioritaires-reponse-explicite">(C) Alarmes / événements prioritaires — réponse explicite</h3>
+<p><strong>Non, le framework RMPS ne couvre ni la gestion ni l'arbitrage d'alarmes.</strong> Pages lues : RMPS est un pub/sub d'<em>informations périphériques</em> (nom brut, mountpoint, partitions, bus/slot) ; l'objet « device control » accepte des commandes et « can also contain command outcomes » — aucune notion de priorité, préemption, file d'événements, criticité ou arbitrage inter-dispositifs n'apparaît (rmps_objects.html, overview.html, plugins.html, usblauncher_otg.html). <strong>Le projet d'arbitre d'alarmes IEC 60601-1-8 n'est donc pas rendu redondant</strong> ; RMPS peut au plus servir de transport de présence périphérique en amont de l'arbitre.</p>
+<h3 id="d-conclusion-familles-nouvelles">(D) Conclusion (familles nouvelles ?)</h3>
+<ol>
+<li><strong>Oui — famille inédite</strong> : « écosystème de publication périphériques/capteurs » (SDK publisher, simulateur QEMU, validateur RMPS, publishers capteurs) ne recoupe aucune des 8 familles listées.</li>
+<li><strong>Audio SDP-only = quasi nouvelle famille</strong> : rien de documenté dans SDP 8.0, donc mixage à échéance garantie, latence et codecs sont à reconstruire — très différenciant.</li>
+<li>L'arbitre d'alarmes médicales <strong>reste valide</strong> et gagne un ancrage officiel : RMPS comme source d'événements, l'arbitrage comme contribution propre.</li>
+<li>Ponts possibles avec l'existant : publisher USB virtuel ↔ « vdev manquants », superviseur HAM des publishers ↔ « outillage des gestionnaires de ressources ».</li>
+</ol>
+</main>
+<footer>Généré depuis les sources Markdown du dépôt. Licence MIT.</footer>
+</body>
+</html>

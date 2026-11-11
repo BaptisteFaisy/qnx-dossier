@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>100 idées détaillées — Dossier QNX</title>
+<style>
+:root{--fg:#e6e6e6;--bg:#12141a;--card:#1b1f28;--acc:#7fd1c1;--mut:#9aa3b2;--bd:#2a3040}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+ font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{padding:1.4rem 1.2rem;border-bottom:1px solid var(--bd);background:var(--card)}
+header h1{margin:0;font-size:1.25rem}
+header p{margin:.3rem 0 0;color:var(--mut);font-size:.9rem}
+nav{display:flex;flex-wrap:wrap;gap:.4rem;padding:.8rem 1.2rem;border-bottom:1px solid var(--bd)}
+nav a{color:var(--mut);text-decoration:none;font-size:.85rem;padding:.3rem .6rem;
+ border:1px solid var(--bd);border-radius:999px}
+nav a:hover{color:var(--fg)}
+nav a.actif{color:#12141a;background:var(--acc);border-color:var(--acc);font-weight:600}
+main{padding:1.2rem;max-width:60rem;margin:0 auto}
+main h1{font-size:1.6rem;border-bottom:1px solid var(--bd);padding-bottom:.4rem}
+main h2{font-size:1.25rem;margin-top:2rem;color:var(--acc)}
+main h3{font-size:1.05rem;margin-top:1.6rem}
+a{color:var(--acc)}
+code{background:#0d0f14;padding:.1rem .35rem;border-radius:4px;font-size:.88em}
+pre{background:#0d0f14;padding:.9rem;border-radius:8px;overflow-x:auto;border:1px solid var(--bd)}
+pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.9rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--bd);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--card);white-space:nowrap}
+blockquote{border-left:3px solid var(--acc);margin:1rem 0;padding:.2rem 1rem;color:var(--mut)}
+footer{padding:1.2rem;color:var(--mut);font-size:.85rem;border-top:1px solid var(--bd);text-align:center}
+</style>
+</head>
+<body>
+<header>
+<h1>Dossier QNX — Global Hackathon 2026</h1>
+<p>Inventaire documenté des manques de QNX SDP 8.0, classement de 140 idées, trois cahiers des charges.</p>
+</header>
+<nav>
+<a href="index.html">Accueil</a>
+<a href="tamis.html">Tamis — politiques de sécurité</a>
+<a href="glane.html">Glane — capteurs et publication</a>
+<a href="eclat.html">Éclat — WebAssembly (WAMR)</a>
+<a href="classement.html">Classement des 140 idées</a>
+<a href="inventaire.html">Inventaire : ce que QNX fournit déjà</a>
+<a href="idees.html" class="actif">100 idées détaillées</a>
+</nav>
+<main>
+<h1 id="100-idees-qnx-global-hackathon-2026-recalibrees-3-mois">100 idées — QNX Global Hackathon 2026 (recalibrées 3 mois)</h1>
+<p>Chaque idée cite le trou documenté qu'elle exploite (voir qnx-inventaire-officiel.md)
+ou une absence vérifiée dans l'index officiel github.com/qnx-ports/build-files/ports.</p>
+<p>Légende : SDP = le SDK installé est-il requis (oui/non/partiel).
+Provenance : lot A par sous-agent (texte complet restauré), lots B à F par b.</p>
+<h2 id="lot-a-securite-et-politiques-15-trous-du-system-security-guide">Lot A — Sécurité et politiques (15 trous du System Security Guide)</h2>
+<ol>
+<li><strong>Éplucheur</strong> — Developer Tooling &amp; Host Tools | Gap : 1 | Assistant de purge qui croise <code>/dev/secpolgenerate/unused</code>, les compteurs d'usage et un rejeu scénarisé pour classer chaque règle (utilisée / douteuse / morte) et produire un plan de suppression ordonné, chiffré et réversible au lieu de la revue manuelle prescrite par la doc | SDP : partiel (moteur d'analyse C11 + corpus de politiques sur PC, génération et compteurs sur cible) | Effort 5 sem : moyen | Démo : politique de 900 règles ramenée à 300 avec rapport de preuve ligne à ligne | Originalité : 4</li>
+<li><strong>Durcisseur</strong> — Low-level Software | Gap : 2 | Post-processeur qui rend la sortie brute de <code>secpolgenerate</code> directement exploitable : normalisation, en-têtes manquants, découpe en fichiers inclus, passage systématique par <code>secpolcompile</code> et paquet prêt pour <code>secpolpush</code>/<code>mkqnximage</code> | SDP : partiel (chaîne de transformation testable sur PC avec des échantillons, compilation sur cible) | Effort 5 sem : faible | Démo : un seul <code>make image</code> du log brut à l'image QNX qui démarre sans erreur | Originalité : 3</li>
+<li><strong>Oracle</strong> — Developer Tooling &amp; Host Tools | Gap : 3 | Analyseur statique de politique : parse la sortie, construit le graphe sujets/types/abilities et répond avant tout déploiement à « cette règle est-elle atteignable, sur-permissive, en conflit ? » avec simulation de décision hors ligne | SDP : oui (cœur C11 pur, corpus de politiques versionné, tests unitaires sur PC) | Effort 5 sem : moyen | Démo : détection en pré-exécution d'une faille que le déploiement réel ne révélerait qu'au bout d'une semaine | Originalité : 5</li>
+<li><strong>Témoin</strong> — Low-level Software | Gap : 4 | Sonde de couverture qui rend visibles les angles morts du générateur : wrapper d'exécution journalisant chmod, setuid/setgid, transitions root→non-root et permissions de fichiers, corrélé à la politique pour lister les trous que <code>secpolgenerate</code> ne pouvait pas voir | SDP : partiel (corrélateur C11 sur PC, capture système sur cible) | Effort 5 sem : moyen | Démo : rapport « 7 échecs invisibles trouvés, 4 corrigés par règle ajoutée » sur une appli réelle | Originalité : 4</li>
+<li><strong>Filtre</strong> — Developer Tooling &amp; Host Tools | Gap : 5 | Trieur de faux positifs : base de connaissances des erreurs setuid/setgid/prot_exec/priority, classées « contournable sans noyau » vs « exige <code>procnto</code> », avec recette de substitution par motif (spawn flags, abilities, ordonnancement) et rapport d'exclusion assumé | SDP : oui (moteur de règles + base de connaissances en C11 sur PC, motifs d'entrée réels collectés) | Effort 5 sem : faible | Démo : pile de 40 erreurs de génération réduite à 3 blocages réels documentés | Originalité : 3</li>
+<li><strong>Empreinte</strong> — Low-level Software | Gap : 6 | Stabilisateur de génération : N exécutions du même scénario, alignement des règles par clé sémantique (sujet + type + ability), fusion en politique canonique minimisée et rapport de variance expliquant ce qui oscille d'un run à l'autre | SDP : oui (alignement et fusion en C11 sur PC à partir de jeux de politiques fournis) | Effort 5 sem : moyen | Démo : trois runs divergents convergent en une politique identique bit à bit | Originalité : 4</li>
+<li><strong>Amorce</strong> — Developer Tooling &amp; Host Tools | Gap : 7 | Générateur du <code>default_spawn_type</code> manquant : infère le type par défaut par binaire depuis l'empreinte d'exécution et le chemin, émet le fragment à recoller et vérifie qu'aucun processus ne se retrouve non typé par accident | SDP : partiel (inférence et vérification sur PC, collecte sur cible) | Effort 5 sem : faible | Démo : politique incomplète devenue complète sans édition manuelle, <code>pidin</code> à l'appui | Originalité : 3</li>
+<li><strong>Grimpeur</strong> — Low-level Software | Gap : 8 | Moteur formel d'analyse d'élévation de privilèges qui remplace l'essai-erreur prescrit : graphe <code>settypeid</code>/<code>gain_priv</code>, recherche de chemins, détection de cycles, score de criticité et contre-exemple rejouable pas à pas | SDP : oui (graphe et recherche en C11, validés sur des topologies synthétiques puis réelles) | Effort 5 sem : moyen | Démo : découverte d'une chaîne d'élévation à 4 sauts sur une politique d'exemple, avec trace | Originalité : 5</li>
+<li><strong>Tisserand</strong> — Developer Tooling &amp; Host Tools | Gap : 9 | Fusionneur automatique après diff incrémental : merge à trois voies (base / généré / édité à la main), résolution de conflits par règles de priorité déclarées, patch signé, réversible et intégrable à git | SDP : oui (merge C11 sur PC, jeux de politiques en entrée) | Effort 5 sem : moyen | Démo : mise à jour de l'appli qui régénère la politique sans perdre une seule règle écrite à la main | Originalité : 4</li>
+<li><strong>Contrôleur</strong> — Low-level Software | Gap : 10 | Vérificateur de typage complet : sonde périodique qui remplace le <code>pidin -f a_n…</code> manuel, classe les processus non typés, alerte en CI et audite l'image produite par <code>mkqnximage</code> avant flash | SDP : partiel (moteur d'audit et hook CI sur PC, interrogation runtime sur cible) | Effort 5 sem : faible | Démo : pipeline qui refuse une image où 3 processus ont échappé au typage | Originalité : 3</li>
+<li><strong>Écouteur</strong> — Open-Source Contribution &amp; Ports | Gap : 11 | Client open-source de <code>libsecpolev</code> : chargement explicite de la bibliothèque verrouillée non auto-découverte, normalisation du flux en JSON/OpenTelemetry et tableau de bord temps réel des violations exploitable hors de QNX | SDP : partiel (normaliseur et dashboard sur PC, source d'événements sur cible ou en rejou) | Effort 5 sem : moyen | Démo : violation de politique visible en direct dans un navigateur à 500 ms près | Originalité : 4</li>
+<li><strong>Navette</strong> — Developer Tooling &amp; Host Tools | Gap : 12 | Boucle de développement chaude : démon qui surveille le fichier de configuration de <code>secpolgenerate</code>, relance génération et compilation, pousse et affiche le delta de violations en quelques secondes, plus un REPL pour tester une règle avant de l'écrire | SDP : partiel (orchestrateur et REPL sur PC, déploiement sur cible ou QEMU) | Effort 5 sem : faible | Démo : édition d'une règle, sauvegarde, verdict de sécurité affiché en moins de 10 s | Originalité : 3</li>
+<li><strong>Jauge</strong> — Low-level Software | Gap : 13 | Validateur de plages nommées à froid : existence, disjonction, couverture attendue et tests de bornes générés automatiquement, pour que plus aucune plage fragile ne parte en production sans preuve | SDP : oui (validateur et générateur de tests C11 sur PC, definitions de plages en entrée) | Effort 5 sem : faible | Démo : chevauchement de deux plages détecté avant déploiement, avec cas limite rejoué | Originalité : 4</li>
+<li><strong>Miroir</strong> — Low-level Software | Gap : 14 | Auto-hébergement de la surveillance : une seconde instance de <code>secpolgenerate</code> typée différemment surveille la première, un arbitre compare les deux flux et journalise la surveillance du surveillant dans une chaîne de confiance mesurée | SDP : non (besoin des deux instances sur cible ou QEMU ; arbitre et comparateur en C11 testables sur PC) | Effort 5 sem : élevé | Démo : corruption du générateur principal détectée en direct par son miroir | Originalité : 5</li>
+<li><strong>Mouleur</strong> — Low-level Software | Gap : 15 | Couche de typage au-delà des canaux : gestionnaire de ressources qui applique le même modèle de types et d'abilities aux mémoires partagées et aux connexions, avec bibliothèque cliente et expression de politique dans la syntaxe existante | SDP : partiel (modèle de typage et bibliothèque sur PC, gestionnaire de ressources sur cible) | Effort 5 sem : élevé | Démo : partage mémoire refusé à un processus non habilité, politique inchangée ailleurs | Originalité : 4</li>
+<li><strong>Sillage</strong> — Automotive &amp; Mobility | Gap : 3 | Dossier de validation pour calculateur : analyse statique de politique, preuve de non-élévation et journal horodaté des violations exportés comme artefact d'homologation aligné ISO 21434 / UNECE R155 | SDP : oui (génération du dossier et preuves sur PC, mesures embarquées ensuite) | Effort 5 sem : moyen | Démo : export d'un dossier d'audit complet signé depuis un simple build de politique | Originalité : 4</li>
+<li><strong>Perfuseur</strong> — Robotics &amp; Medical | Gap : 11 | Garde-fou temps réel pour robot ou dispositif médical : flux <code>libsecpolev</code> normalisé branché sur un superviseur qui bascule l'actionneur en mode sûr dès qu'une ability critique est violée, avec latence bornée mesurée et publiée | SDP : partiel (superviseur et rejou d'événements sur PC, boucle temps réel sur QEMU ou Pi 5) | Effort 5 sem : élevé | Démo : bras robotisé immobilisé en moins d'une milliseconde après violation de politique | Originalité : 4</li>
+</ol>
+<h2 id="lot-b-outillage-temps-reel-trace-et-supervision-5-trous-des-utilities">Lot B — Outillage temps réel, trace et supervision (5 trous des Utilities)</h2>
+<ol>
+<li><strong>Pendule</strong> — Developer Tooling | Gap : 3 | L'équivalent <code>cyclictest</code> qui manque : mesure de latence IRQ→thread et de réveil de thread sur N priorités, avec p50/p99/p99.9/max publiés. | SDP : non (mesure sur cible, agrégation sur PC) | Effort : moyen | Démo : courbe de latence sous charge, pire cas affiché | Originalité : 4</li>
+<li><strong>Flamme</strong> — Developer Tooling | Gap : 1 | Profileur par échantillonnage sans noyau instrumenté ni IDE : piles échantillonnées via l'API d'introspection, agrégées en flame graph côté hôte. | SDP : partiel | Effort : élevé | Démo : flame graph d'une image QNX réelle | Originalité : 4</li>
+<li><strong>Loupe</strong> — Developer Tooling | Gap : 2 | Agrégateur de trace : transforme le texte brut de <code>traceprinter</code> en histogrammes de latence, statistiques par priorité et frise HTML. | SDP : oui (parseur sur PC, traces enregistrées) | Effort : faible | Démo : trace brute → rapport HTML en une commande | Originalité : 3</li>
+<li><strong>Échéancier</strong> — Developer Tooling | Gap : 3 | Détection d'échéance manquée : le développeur déclare période et budget, l'outil vérifie chaque cycle sur trace et nomme le responsable (interruption, thread plus prioritaire). | SDP : oui | Effort : moyen | Démo : une échéance violée, coupable désigné | Originalité : 5</li>
+<li><strong>Renverse</strong> — Developer Tooling | Gap : 3 | Détecteur d'inversion de priorité : reconstruit les chaînes d'attente (mutex, <code>MsgSend</code> bloquant) et prouve si l'héritage de priorité a fonctionné. | SDP : oui | Effort : moyen | Démo : inversion provoquée puis corrigée, avant/après | Originalité : 4</li>
+<li><strong>Déclic</strong> — Developer Tooling | Gap : 4 | Enregistreur circulaire qui se fige au crash : surveille la terminaison, arrête la trace, sauve tampon + <code>pidin</code> + <code>slog2</code> dans une archive horodatée unique. | SDP : partiel | Effort : moyen | Démo : un processus tué, archive complète produite | Originalité : 4</li>
+<li><strong>Autopsie</strong> — Developer Tooling | Gap : 4 | Analyseur post-mortem corrélé : ouvre l'archive, croise vidange <code>dumper</code> et tampon de trace, reconstitue la chaîne de blocage et désigne le coupable. | SDP : oui (analyseur sur PC) | Effort : élevé | Démo : interblocage expliqué en une page | Originalité : 5</li>
+<li><strong>Compteur</strong> — Developer Tooling | Gap : 5 | Comptabilité d'E/S par processus et par gestionnaire de ressources (<code>sar</code>/<code>iostat</code> manquants) : débits, tailles, temps de service, files. | SDP : non | Effort : moyen | Démo : tableau des services les plus coûteux | Originalité : 3</li>
+<li><strong>Pouls</strong> — Developer Tooling | Gap : 5 | Vue temps réel côté hôte : flux depuis la cible, par priorité/classe/cœur, historique et seuils. | SDP : non | Effort : moyen | Démo : dashboard live sous QEMU | Originalité : 2 (concurrence de <code>pidin</code>/<code>hogs</code>)</li>
+<li><strong>Sismographe</strong> — Developer Tooling | Gap : 3 | Banc de régression temps réel en CI : scénario de charge standardisé à chaque PR, dérive des percentiles publiée, seuil rouge. | SDP : partiel | Effort : moyen | Démo : PR rouge pour 40 µs de dérive p99.9 | Originalité : 4</li>
+<li><strong>Étalon</strong> — Developer Tooling | Gap : 3 | Jeu de charges normalisées reproductibles (rafale de messages, tempête d'interruptions, famine mémoire) avec rapport chiffré : le <code>stress-ng</code> du temps réel. | SDP : oui (générateur portable) | Effort : moyen | Démo : même image, deux machines, chiffres comparables | Originalité : 4</li>
+<li><strong>Filature</strong> — Developer Tooling | Gap : 4 | Reconstructeur de causalité des messages : graphe des connexions et journal des allers-retours avec latences, export JSON. | SDP : oui | Effort : moyen | Démo : graphe de qui-parle-à-qui d'une image | Originalité : 3</li>
+<li><strong>Bilan</strong> — Developer Tooling | Gap : 1 | Coût CPU par gestionnaire de ressources sans PMU : attribution par événements de trace, ventilée par type de message. | SDP : oui | Effort : moyen | Démo : facture CPU par service | Originalité : 3</li>
+<li><strong>Sentinelle</strong> — Developer Tooling | Gap : 2 | Alertes de trace en continu : règles déclaratives (file saturée, thread affamé, priorité inversée) déclenchant une capture immédiate. | SDP : non | Effort : moyen | Démo : alerte → archive automatique | Originalité : 4</li>
+<li><strong>Rapport</strong> — Developer Tooling | Gap : 1 à 5 | Générateur de rapport de performance horodaté et diffable agrégeant trace, <code>pidin</code> et <code>slog2</code>, utilisable en dossier d'homologation. | SDP : oui | Effort : faible | Démo : rapport signé entre deux versions | Originalité : 2</li>
+<li><strong>Réplique</strong> — Developer Tooling | Gap : 4 | Rejeu déterministe d'une trace dans un simulateur d'ordonnanceur : reproduire un bogue de concurrence sans la cible. | SDP : oui | Effort : élevé | Démo : bogue rejoué à l'identique sur PC | Originalité : 5</li>
+<li><strong>Veilleur</strong> — Developer Tooling | Gap : 5 | Agent de surveillance embarqué à empreinte bornée publiant en PPS les indicateurs d'E/S, mémoire et ordonnancement. | SDP : non | Effort : moyen | Démo : indicateurs live depuis l'invité | Originalité : 3</li>
+</ol>
+<h2 id="lot-c-image-systeme-amorcage-et-mise-a-jour-5-trous-dos-components">Lot C — Image système, amorçage et mise à jour (5 trous d'OS Components)</h2>
+<ol>
+<li><strong>Sceau</strong> — Developer Tooling | Gap : 1 | Chaîne de signature et vérification d'image : signe l'IFS et les partitions, vérifie au démarrage via un gestionnaire de ressources, refuse une image altérée. | SDP : partiel | Effort : élevé | Démo : octet modifié → démarrage refusé | Originalité : 4</li>
+<li><strong>Cachet</strong> — Developer Tooling | Gap : 1 | Empreinte reproductible et SBOM : deux constructions sur machines différentes donnent la même empreinte, avec composants et licences. | SDP : oui | Effort : moyen | Démo : deux builds, même SHA-256 | Originalité : 4</li>
+<li><strong>Doublure</strong> — Automotive &amp; Mobility | Gap : 2 | Mise à jour transactionnelle A/B avec retour arrière : copie vérifiée, bascule atomique, retour automatique si le nouveau slot ne démarre pas. (Image système complète, pas un journal d'événements : distinct de l'EDR déjà fait.) | SDP : partiel | Effort : élevé | Démo : slot B corrompu → retour sur A | Originalité : 4</li>
+<li><strong>Campagne</strong> — Automotive &amp; Mobility | Gap : 2 | Orchestrateur de campagne de mise à jour sur parc : prérequis, cohorte témoin, arrêt si santé dégradée, traçabilité R156. | SDP : oui (orchestrateur hôte) | Effort : moyen | Démo : déploiement stoppé en pleine vague | Originalité : 3</li>
+<li><strong>Minutage</strong> — Developer Tooling | Gap : 4 | Instrumentation du temps de démarrage par phase (IPL → startup → script → services) avec graphique en cascade et régression en CI. | SDP : partiel | Effort : moyen | Démo : cascade de boot, phase coupable en rouge | Originalité : 4</li>
+<li><strong>Grille</strong> — Developer Tooling | Gap : 5 | Linter de buildfile d'image : entrées manquantes, permissions incohérentes, doublons, chemins invalides, avant <code>mkifs</code>. | SDP : oui | Effort : faible | Démo : buildfile fautif, 6 erreurs trouvées | Originalité : 3</li>
+<li><strong>Tissage</strong> — Developer Tooling | Gap : 5 | Générateur de buildfile depuis une description déclarative : services, dépendances, ordre de lancement, politique de sécurité. | SDP : oui | Effort : moyen | Démo : YAML → image amorçable | Originalité : 4</li>
+<li><strong>Cible</strong> — Developer Tooling | Gap : 3 | Front-end unifié multi-cibles (QEMU, RPi 5, BSP manuel) avec cache et artefacts nommés. | SDP : partiel | Effort : moyen | Démo : une commande, trois cibles | Originalité : 3</li>
+<li><strong>Repli</strong> — Developer Tooling | Gap : 2 | Gestionnaire de versions d'image : historique, différentiel binaire, restauration ciblée d'une partition. | SDP : oui | Effort : moyen | Démo : retour à la version n-2 en 10 s | Originalité : 3</li>
+<li><strong>Sentier</strong> — Developer Tooling | Gap : 4 | Mesure de l'impact de chaque service sur le temps de démarrage, avec recommandations de parallélisation et de démarrage paresseux. | SDP : partiel | Effort : moyen | Démo : boot passé de 4,1 s à 2,3 s | Originalité : 3</li>
+<li><strong>Scellé</strong> — Low-level | Gap : 1 | Amorçage vérifié bout en bout : mesure de l'IFS, scellement d'un secret dans l'état mesuré, refus en cas d'altération. | SDP : non | Effort : élevé | Démo : secret illisible après modification | Originalité : 4</li>
+<li><strong>Fantôme</strong> — Developer Tooling | Gap : 3 | Comparateur d'images : contenu, tailles, permissions, dépendances, différences entre deux builds, rapport diffable. | SDP : oui | Effort : faible | Démo : diff de deux images en clair | Originalité : 3</li>
+<li><strong>Reconstruction</strong> — Developer Tooling | Gap : 5 | Remplaçant des <code>mkdinit</code>/<code>mkrecfs</code> disparus en 8.0 : construction et initialisation des répertoires et systèmes de fichiers de démarrage. | SDP : partiel | Effort : moyen | Démo : arborescence créée sans outils manquants | Originalité : 3</li>
+<li><strong>Partition</strong> — Low-level | Gap : 2 | Redimensionnement et repartitionnement sûrs (ce que <code>--update</code> ne sait pas faire) avec plan de migration et retour arrière. | SDP : non | Effort : élevé | Démo : partition étendue sans perte | Originalité : 3</li>
+<li><strong>Crible</strong> — Developer Tooling | Gap : 1 | Vérificateur de conformité d'image avant flash : politique présente, permissions, binaires signés, services déclarés, bloquant en CI. | SDP : oui | Effort : moyen | Démo : image refusée pour politique absente | Originalité : 4</li>
+<li><strong>Aube</strong> — Low-level | Gap : 4 | Journal de démarrage structuré et horodaté dès les premières instructions, exploitable côté hôte sans console série. | SDP : partiel | Effort : moyen | Démo : boot sans série, journal récupéré | Originalité : 3</li>
+<li><strong>Gabarit</strong> — Developer Tooling | Gap : 3 | Générateur de squelette de projet cible (buildfile, Makefile, script de boot, tests, CI) reproductible en une commande. | SDP : oui | Effort : faible | Démo : projet complet en 30 s | Originalité : 2</li>
+</ol>
+<h2 id="lot-d-hyperviseur-conteneurs-reseau-graphisme-manques-verifies">Lot D — Hyperviseur, conteneurs, réseau, graphisme (manques vérifiés)</h2>
+<ol>
+<li><strong>Veine</strong> — Low-level | Manque : vsock absent des 20 vdev | Pilote virtio-vsock : canal hôte-invité fiable sans pile réseau, avec outil de dialogue côté hôte. | SDP : non | Effort : élevé | Démo : aller-retour hôte-invité en microsecondes | Originalité : 4</li>
+<li><strong>Onde</strong> — Low-level | Manque : virtio-snd absent | Pilote audio virtio-snd à tampons périodiques échéancés, avec mesure de gigue de trame. | SDP : non | Effort : élevé | Démo : flux 48 kHz sous charge, zéro tampon raté | Originalité : 4</li>
+<li><strong>Main</strong> — Low-level | Manque : virtio-input absent | Pilote virtio-input (clavier, souris, manette) exposé comme périphérique, événements horodatés à la source. | SDP : non | Effort : moyen | Démo : saisie hôte, latence événement-app mesurée | Originalité : 3</li>
+<li><strong>Ballon</strong> — Low-level | Manque : virtio-balloon absent | Pilote virtio-balloon : restitution dynamique de mémoire à l'hôte avec politique de priorité par partition. | SDP : non | Effort : élevé | Démo : mémoire rendue sans interrompre la boucle critique | Originalité : 4</li>
+<li><strong>Toile</strong> — Low-level | Manque : virtio-gpu absent | Pilote virtio-gpu minimal 2D permettant à Screen de fonctionner en invité sans passthrough matériel. | SDP : non | Effort : élevé | Démo : bureau QNX affiché dans une VM | Originalité : 5</li>
+<li><strong>Cloison</strong> — Developer Tooling | Manque : pas de namespace de processus | Visibilité bornée par conteneur : un <code>pidin</code>/<code>ps</code> qui ne voit que son conteneur, plus un superviseur de fuite. | SDP : partiel | Effort : moyen | Démo : conteneur A aveugle au conteneur B | Originalité : 4</li>
+<li><strong>Garde</strong> — Developer Tooling | Manque : pas de confinement root | Confinement root pour conteneurs : politique de sécurité type conteneur + vérificateur statique avant déploiement. | SDP : oui | Effort : moyen | Démo : escalade root refusée et journalisée | Originalité : 4</li>
+<li><strong>Écluse</strong> — Developer Tooling | Manque : jail réseau défaillant | Pare-feu de conteneur vérifiable : règles déclaratives, application par politique, tests automatiques de fuite. | SDP : oui | Effort : moyen | Démo : matrice de fuites testée, une trouvée | Originalité : 3</li>
+<li><strong>Quic</strong> — Low-level | Manque : module io-sock QUIC absent | Module protocolaire io-sock implémentant un sous-ensemble de QUIC pour échanges à latence bornée. | SDP : non | Effort : élevé | Démo : échange QUIC hôte-invité, perte de paquet injectée | Originalité : 4</li>
+<li><strong>Cadence</strong> — Low-level | Manque : TSN/AVB absent | Module io-sock pour planification de trafic TSN (gates 802.1Qbv) et mesure de gigue de bout en bout. | SDP : non | Effort : élevé | Démo : trafic prioritaire non perturbé par la charge | Originalité : 4</li>
+<li><strong>Ruche</strong> — Low-level | Manque : protocole capteurs contraints absent | Module io-sock léger pour bus de capteurs contraints, avec qualité de service à échéance. | SDP : non | Effort : moyen | Démo : 200 capteurs simulés, aucune échéance manquée | Originalité : 3</li>
+<li><strong>Vitrine</strong> — Developer Tooling | Manque : pas de diffusion d'écran | Diffusion d'un écran QNX vers un navigateur pour démo et télédiagnostic sans matériel ni console. | SDP : partiel | Effort : moyen | Démo : l'invité QNX visible dans le navigateur | Originalité : 3</li>
+<li><strong>Compositeur</strong> — Open-Source Ports | Manque : Wayland core seulement | Extensions Wayland manquantes (sous-surfaces, verrouillage, multi-écran) au-dessus de Screen. | SDP : non | Effort : élevé | Démo : deux surfaces composées à cadence garantie | Originalité : 3</li>
+<li><strong>Dimensionneur</strong> — Developer Tooling | Manque : allocation mémoire statique des invités | Outil de dimensionnement des partitions d'hyperviseur : mesure de l'usage réel puis proposition d'allocation et de budgets. | SDP : oui | Effort : moyen | Démo : rapport « cette VM gaspille 340 Mo » | Originalité : 3</li>
+<li><strong>Simulacre</strong> — Developer Tooling | Manque : testabilité des vdev | Banc de test de vdev sur PC : modèle d'invité factice qui exerce un vdev sans hyperviseur ni cible. | SDP : oui | Effort : moyen | Démo : un vdev testé sur PC avant tout flash | Originalité : 4</li>
+<li><strong>Étiquette</strong> — Low-level | Manque : mémoire partagée inter-OS non typée | Couche de mémoire partagée étiquetée et vérifiée (types, tailles, propriétaires) au-dessus du vdev <code>shmem</code>. | SDP : oui | Effort : moyen | Démo : échange hôte-invité avec type invalide refusé | Originalité : 4</li>
+<li><strong>Surveillant</strong> — Developer Tooling | Manque : supervision des invités | Supervision d'invités sous hyperviseur : santé, budgets, redémarrage, corrélation avec l'hôte. | SDP : partiel | Effort : moyen | Démo : invité planté relancé en 800 ms | Originalité : 3</li>
+</ol>
+<h2 id="lot-e-ports-open-source-absences-verifiees-dans-lindex-officiel">Lot E — Ports open source (absences vérifiées dans l'index officiel)</h2>
+<ol>
+<li><strong>Éclat</strong> — Open-Source Ports | Amont : WAMR (github.com/bytecodealliance/wamr) | Runtime WebAssembly en C + courtier de capacités : exécution bac à sable de code tiers sur un RTOS. Absence vérifiée : aucun port wasm/wamr/wasi dans l'index, <code>qnx-ports/wamr</code> en 404. | SDP : partiel (cœur WAMR compilable sur PC) | Effort : moyen | Démo : plugin non fiable chargé à chaud, accès interdit refusé | PR amont : couche QNX + correctifs portabilité | Originalité : 5</li>
+<li><strong>Sablier</strong> — Open-Source Ports | Amont : rt-tests / cyclictest (git.kernel.org/pub/scm/utils/rt-tests) | Portage de <code>cyclictest</code> et de la suite rt-tests : mesure de latence standardisée et comparable à Linux. Absence vérifiée dans l'index. | SDP : partiel | Effort : moyen | Démo : histogramme de latence max sur 10 min | PR amont : support de cible QNX | Originalité : 4</li>
+<li><strong>Écoute</strong> — Open-Source Ports | Amont : API inotify (shim, modèle = port <code>epoll</code> officiel) | Shim <code>inotify</code> au-dessus de <code>ionotify</code> : débloque des milliers de projets POSIX (watchers de build, éditeurs). Seul <code>epoll</code> existe aujourd'hui. | SDP : oui | Effort : moyen | Démo : un watcher de fichiers POSIX fonctionne inchangé | PR amont : vers les consommateurs (tokio, libev) | Originalité : 4</li>
+<li><strong>Tempo</strong> — Open-Source Ports | Amont : API timerfd (shim) | Shim <code>timerfd</code> sur les temporisateurs QNX : complète la famille avec <code>epoll</code> déjà porté. | SDP : oui | Effort : faible | Démo : boucle événementielle POSIX inchangée | PR amont : vers tokio/mio | Originalité : 4</li>
+<li><strong>Signe</strong> — Open-Source Ports | Amont : API signalfd (shim) | Shim <code>signalfd</code> : réception synchrone des signaux dans une boucle événementielle. | SDP : oui | Effort : faible | Démo : signaux traités sans handler asynchrone | PR amont : vers libev/libuv | Originalité : 4</li>
+<li><strong>Bobine</strong> — Open-Source Ports | Amont : FFmpeg (ffmpeg.org) | Portage du cœur codec/mux : le multimédia embarqué manque d'un framework, les dépendances image sont déjà portées. | SDP : partiel | Effort : élevé | Démo : transcodage d'un flux sur RPi 5 | PR amont : correctifs de portabilité | Originalité : 3</li>
+<li><strong>Pipeline</strong> — Open-Source Ports | Amont : GStreamer (gstreamer.freedesktop.org) | Cadre de pipeline multimédia sur Screen et l'audio QNX, avec chaînage d'éléments à échéance. | SDP : partiel | Effort : élevé | Démo : pipeline vidéo, image ratée comptée | PR amont : backend QNX | Originalité : 3</li>
+<li><strong>Souche</strong> — Open-Source Ports | Amont : git (git-scm.com) | git sur QNX : <code>bash</code>, <code>curl</code>, <code>libssh2</code>, <code>zlib</code> déjà portés, les dépendances sont prêtes ; utile au développement sur cible auto-hébergée. | SDP : partiel | Effort : moyen | Démo : clone et commit sur l'invité QNX | PR amont : correctifs POSIX | Originalité : 2</li>
+<li><strong>Fouille</strong> — Open-Source Ports | Amont : jq (jqlang.github.io/jq) | jq sur QNX : traitement JSON embarqué pour le diagnostic et les scripts d'image. | SDP : oui | Effort : faible | Démo : requête JSON sur <code>slog2</code> exporté | PR amont : support de cible | Originalité : 2</li>
+<li><strong>Tableau</strong> — Open-Source Ports | Amont : htop (htop.dev) | htop sur QNX : supervision interactive des processus et priorités, complément visuel à <code>pidin</code>. | SDP : partiel | Effort : faible | Démo : htop affichant les classes temps réel | PR amont : couche QNX | Originalité : 2</li>
+<li><strong>Brique</strong> — Open-Source Ports | Amont : LittleFS (github.com/littlefs-project/littlefs) | Système de fichiers tolérant aux coupures pour flash, exposé comme gestionnaire de ressources QNX. | SDP : oui | Effort : moyen | Démo : coupure pendant écriture, FS intact | PR amont : couche de portage | Originalité : 3</li>
+<li><strong>Canette</strong> — Open-Source Ports | Amont : can-utils / libsocketcan (github.com/linux-can) | Couche CAN utilisateur sur QNX avec pilote virtuel pour les tests sans matériel. | SDP : oui | Effort : moyen | Démo : trames CAN entre deux processus QNX | PR amont : backend QNX | Originalité : 3</li>
+<li><strong>Modbus</strong> — Open-Source Ports | Amont : libmodbus (libmodbus.org) | Passerelle industrielle à échéances garanties, esclave simulé pour la démo. | SDP : oui | Effort : faible | Démo : interrogation garantie en cadence sous charge | PR amont : support de cible | Originalité : 2</li>
+<li><strong>Timbre</strong> — Open-Source Ports | Amont : PortAudio (portaudio.com) | Couche audio portable au-dessus de l'audio QNX pour les applications temps réel. | SDP : partiel | Effort : moyen | Démo : même code audio sur Linux et QNX | PR amont : backend QNX | Originalité : 3</li>
+<li><strong>Zen</strong> — Open-Source Ports | Amont : zenoh-pico (github.com/eclipse-zenoh/zenoh-pico) | Pub/sub robotique très léger en C, alternative à DDS déjà porté ; à vérifier sur oss.qnx.com avant engagement. | SDP : oui | Effort : moyen | Démo : deux nœuds QNX à cadence garantie | PR amont : couche QNX | Originalité : 3</li>
+<li><strong>Verrou</strong> — Open-Source Ports | Amont : wolfSSL (wolfssl.com) | TLS à empreinte bornée et mode non bloquant à budget CPU ; à justifier face à <code>gnutls</code> et <code>s2n-tls</code> déjà portés. | SDP : oui | Effort : moyen | Démo : session TLS sans bloquer la boucle critique | PR amont : support de cible | Originalité : 2</li>
+</ol>
+<h2 id="lot-f-applications-temps-reel-medicales-et-automobiles-besoins-normes">Lot F — Applications temps réel médicales et automobiles (besoins normés)</h2>
+<ol>
+<li><strong>Vigie</strong> — Robotics &amp; Medical | IEC 60601-1-8 | Arbitre de tempête d'alarmes : priorités, escalade, acquittement, anti-noyade sonore, exposé comme gestionnaire de ressources. | QNX : resmgr + pulses prioritaires + <code>SCHED_SPORADIC</code> pour garantir la sonnerie | SDP : oui (logique portable) | Effort : moyen | Démo : 6 moniteurs, 40 alarmes en 10 s, la vitale passe devant | Originalité : 4</li>
+<li><strong>Débit</strong> — Robotics &amp; Medical | IEC 60601-2-24 | Contrôleur de pompe à perfusion : boucle de débit déterministe, détection d'occlusion et de bulle d'air, état sûr. | QNX : <code>TimerPulse</code>, HAM, pulses d'alarme | SDP : partiel | Effort : moyen | Démo : occlusion injectée, arrêt avant surpression | Originalité : 3</li>
+<li><strong>Souffle</strong> — Robotics &amp; Medical | IEC 80601-2-12 | Respirateur découpé en processus isolés où la panne d'un bloc ne coupe jamais la ventilation. | QNX : ASID, secpol, HAM | SDP : partiel | Effort : moyen | Démo : UI tuée, ventilation intacte | Originalité : 3</li>
+<li><strong>Coffre</strong> — Robotics &amp; Medical | cybersécurité FDA premarket | Durcissement d'un dispositif médical : politique générée puis vérifiée, journal d'audit infalsifiable, attestation au démarrage. | QNX : secpol, abilities, Pathtrust | SDP : oui | Effort : moyen | Démo : trois attaques bloquées et tracées | Originalité : 4</li>
+<li><strong>Banc</strong> — Robotics &amp; Medical | IEC 62304, validation | Simulateur de patient et injecteur de fautes côté hôte pilotant le dispositif QNX, verdict par exigence. | QNX : io-sock, PPS | SDP : oui | Effort : faible | Démo : scénario « désaturation », exigences cochées | Originalité : 4</li>
+<li><strong>Chronique</strong> — Robotics &amp; Medical | dossier peropératoire | Timeline horodatée au tick noyau (alarmes, paramètres, injections, annotations) sans ralentir les dispositifs. | QNX : MsgReceive passif, horloge monotone, PPS | SDP : oui | Effort : moyen | Démo : intervention simulée, timeline exacte | Originalité : 3</li>
+<li><strong>Double</strong> — Robotics &amp; Medical | IEC 62304, architecture deux canaux | Canal performant plus canal de sécurité indépendant dans un autre ASID, comparateur et état sûr. | QNX : ASID, secpol, SCHED_SPORADIC | SDP : partiel | Effort : moyen | Démo : divergence détectée, canal sûr prend la main | Originalité : 3</li>
+<li><strong>Renouvellement</strong> — Robotics &amp; Medical | mise à jour d'un dispositif en service | Mise à jour transactionnelle d'un dispositif médical avec validation, retour arrière et journal pour l'auditeur. | QNX : image A/B, secpol | SDP : partiel | Effort : élevé | Démo : mauvaise version refusée, dispositif intact | Originalité : 4</li>
+<li><strong>Garagiste</strong> — Automotive &amp; Mobility | ISO 14229 UDS + ISO 13400 DoIP | Serveur de diagnostic embarqué : sessions, accès sécurisé seed &amp; key, DTC avec instantanés, routines, réponses à fenêtre garantie. | QNX : resmgr, io-sock | SDP : oui (pile protocolaire portable) | Effort : moyen | Démo : client <code>python-udsoncan</code> lit un DTC | Originalité : 4</li>
+<li><strong>Horloge</strong> — Automotive &amp; Mobility | IEEE 802.1AS gPTP | Démon de synchronisation gPTP sur io-sock avec servo et mesure d'écart, pour fonctions réparties déterministes. | QNX : io-sock, horodatage, TimerPulse | SDP : non | Effort : élevé | Démo : écart entre deux nœuds sous la microseconde | Originalité : 4</li>
+<li><strong>Borne</strong> — Automotive &amp; Mobility | ISO 15118 Plug &amp; Charge | Contrôleur de borne : session 15118, PKI embarquée, bridage de puissance selon la capacité du bâtiment. | QNX : qcrypto, resmgr | SDP : partiel | Effort : élevé | Démo : session complète simulée, puissance bridée | Originalité : 3</li>
+<li><strong>Cadran</strong> — Automotive &amp; Mobility | tableau de bord 60 Hz | Cluster à échéance stricte qui isole une application tierce plantée et se replie sur un affichage minimal. | QNX : secpol, HAM, Screen | SDP : partiel | Effort : moyen | Démo : appli tierce tuée, compteur toujours à 60 Hz | Originalité : 3</li>
+<li><strong>Garde-fou</strong> — Automotive &amp; Mobility | ISO 26262, dégradation gracieuse | Superviseur de dégradation des fonctions ADAS : niveaux de repli, budget temporel, journal de transition. | QNX : HAM, pulses, SCHED_SPORADIC | SDP : oui | Effort : moyen | Démo : capteur perdu, repli de niveau 2 en 5 ms | Originalité : 4</li>
+<li><strong>Trame</strong> — Automotive &amp; Mobility | CAN / SOME-IP | Passerelle CAN↔SOME/IP avec table de signaux (DBC/FIBEX) et pare-feu de messages : filtrage, cadence, anomalies. | QNX : resmgr, io-sock | SDP : oui | Effort : moyen | Démo : trame hostile filtrée, bus sain préservé | Originalité : 4</li>
+<li><strong>Arène</strong> — Automotive &amp; Mobility | banc HIL logiciel | Banc matériel-en-boucle purement logiciel : bus virtuels, modèles de véhicule, injection de fautes, verdict par exigence. | QNX : QEMU, resmgr virtuels | SDP : oui | Effort : moyen | Démo : scénario de freinage rejoué à l'identique | Originalité : 3</li>
+<li><strong>Piste</strong> — Automotive &amp; Mobility | UNECE R155/R156 | Journal de cybersécurité véhicule et traçabilité de campagne, exportable pour l'homologation. | QNX : slog2, secpol, abilities | SDP : oui | Effort : moyen | Démo : dossier d'homologation généré en une commande | Originalité : 3</li>
+</ol>
+<hr>
+<h1 id="les-7-retenus-classement-par-solidite-de-preuve-pas-par-enthousiasme">LES 7 RETENUS (classement par solidité de preuve, pas par enthousiasme)</h1>
+<p>Critères : trou vérifié dans la doc ou absence vérifiée dans l'index officiel des ports ;
+réalisable en 5 semaines ; démontrable SANS le SDP (contrainte actuelle) ; catégorie encore
+libre dans le portefeuille du candidat (il a déjà Automotive x2 et Tooling x1).</p>
+<ol>
+<li>
+<p><strong>Tamis</strong> (= « Oracle » du lot A3, renommé : Oracle est une marque tierce, interdite en vidéo)
+   — Developer Tooling — trous 1, 3, 10, 13 de la sécurité.
+   Analyse statique AVANT déploiement : graphe types/abilities, chemins transitifs de
+   délégation, règles sur-permissives, preuve de non-interférence, vérification du typage
+   complet. Cœur C11 pur sur PC → <strong>seul projet démontrable intégralement sans le SDP</strong>.
+   Vise le bonus « Best use of QNX-specific Technologies » (politiques de sécurité citées).
+   Risque : un juge peut objecter que <code>secpolgenerate --diff</code> couvre une partie → répondre
+   « la doc dit elle-même qu'il n'y a aucune analyse pré-exécution ».</p>
+</li>
+<li>
+<p><strong>Échéancier</strong> — Developer Tooling — trou 3 de l'outillage (originalité 5).
+   Le développeur déclare période et budget ; l'outil vérifie chaque cycle sur la trace et
+   nomme le responsable de chaque échéance manquée. Rien d'équivalent : <code>lmbench</code> mesure,
+   il ne vérifie pas des échéances déclarées. Rend mesurables les promesses de <code>relais</code>.</p>
+</li>
+<li>
+<p><strong>Éclat</strong> — Open-Source Ports — absence VÉRIFIÉE par moi sur l'index officiel.
+   WAMR (bytecodealliance/wamr) + courtier de capacités. Aucun port wasm/wamr/wasi/wasmtime
+   dans <code>build-files/ports</code>, <code>qnx-ports/wamr</code> en 404. Cœur compilable sur PC, PR amont
+   obligatoire et crédible. C'est l'idée la mieux documentée du lot.</p>
+</li>
+<li>
+<p><strong>Écoute</strong> — Open-Source Ports — absence vérifiée.
+   Les trois shims noyau manquants regroupés en UN produit cohérent : <code>inotify</code>, <code>timerfd</code>,
+   <code>signalfd</code>. Seul <code>epoll</code> existe et sert de modèle officiel. Débloque des milliers de
+   projets POSIX ; PR amont vers tokio/mio/libev. Faible risque, forte visibilité.</p>
+</li>
+<li>
+<p><strong>Vigie</strong> — Robotics &amp; Medical — IEC 60601-1-8 (catégorie vide dans son portefeuille).
+   Arbitre de tempête d'alarmes en gestionnaire de ressources : pulses prioritaires,
+   escalade, acquittement, <code>SCHED_SPORADIC</code> pour garantir la sonnerie sous charge.
+   Meilleure démo des 100 (sonore et visuelle). Logique portable → testable sur PC.</p>
+</li>
+<li>
+<p><strong>Banc</strong> — Robotics &amp; Medical — IEC 62304, effort faible.
+   Simulateur de patient + injecteur de fautes côté hôte qui pilote le dispositif QNX et
+   rend un verdict par exigence. Effort le plus faible des 7, et il sert de banc de test
+   à Vigie → synergie immédiate entre deux soumissions.</p>
+</li>
+<li>
+<p><strong>Veine</strong> — Low-level Software — vsock absent des 20 vdev livrés (liste vérifiée).
+   Canal hôte-invité fiable sans pile réseau. <strong>Le plus risqué des 7</strong> : exige le SDP et
+   probablement le DDK hyperviseur, dont l'accès sous licence non commerciale n'est pas
+   vérifié. À ne lancer qu'après installation du SDP.</p>
+</li>
+</ol>
+<h2 id="arbitrages-assumes">Arbitrages assumés</h2>
+<ul>
+<li><strong>Trois projets en Developer Tooling</strong> (Tamis, Échéancier + Passerelle déjà soumis) : ils
+  se concurrencent entre eux. Si tu préfères élargir, remplace Échéancier par <strong>Onde</strong>
+  (virtio-snd, Low-level) ou par <strong>Étiquette</strong> (mémoire partagée inter-OS typée et vérifiée).</li>
+<li><strong>Écartés malgré une originalité à 5</strong> : <strong>Toile</strong> (virtio-gpu, le filon le plus cité) et
+  <strong>Réplique</strong> (rejeu déterministe de trace) — tous deux exigent la cible et sont hors
+  budget 5 semaines sans le SDP.</li>
+<li><strong>Écartés pour collision avec l'existant</strong> : tout ce qui ressemble à <code>lmbench</code>/<code>sysbench</code>
+  (déjà portés), à <code>secpolmonitor</code>/<code>libsecpolev</code> (fournis), à un transport virtio de
+  système de fichiers (Passerelle), à un journal anticoupure (Ambre), à une bascule entre
+  machines (Relais).</li>
+</ul>
+<h2 id="noms-a-corriger-avant-tout-depot">Noms à corriger avant tout dépôt</h2>
+<p>Le lot A (sous-agent) a produit des collisions : <strong>Jauge</strong> et <strong>Sillage</strong> sont déjà des
+dépôts de Baptiste ; <strong>Navette</strong>, <strong>Miroir</strong>, <strong>Filtre</strong>, <strong>Contrôleur</strong>, <strong>Empreinte</strong>
+sont réutilisés ailleurs dans ce fichier. <strong>Oracle</strong> est une marque tierce (le règlement
+interdit les marques de tiers dans la vidéo). Renommer : Oracle → Tamis, Jauge → Plages,
+Sillage → Homologation, Empreinte → Stabilisateur, Miroir → Autocontrôle.</p>
+<hr>
+<h1 id="reclassement-a-3-mois-13-semaines-v4">RECLASSEMENT À 3 MOIS (~13 semaines) — v4</h1>
+<p>Le calibre change tout : la licence QNX Everywhere s'obtient en ~1 h, donc « exige le SDP »
+n'est plus éliminatoire, et « effort élevé » devient réaliste. On privilégie alors la
+profondeur et l'impact plutôt que la démontrabilité immédiate sur PC.</p>
+<p><strong>CONFLIT DE CALENDRIER</strong> : 3 mois depuis le 11/11/2026 = ~11/02/2027, soit APRÈS la
+clôture du concours (15/12/2026 14 h ET) et après l'ouverture des délibérations (15/01/2027).
+Un projet calibré 3 mois ne peut être soumis à ce concours que sous forme de sous-ensemble
+livrable au 15/12. Les deux classements (5 semaines et 3 mois) sont donc conservés.</p>
+<h2 id="les-7-a-3-mois">Les 7 à 3 mois</h2>
+<ol>
+<li><strong>Toile</strong> — Low-level — virtio-gpu. Trou le plus cité de tout l'inventaire (« aucune
+   virtualisation GPU, Screen inutilisable en invité sans passthrough »). Originalité 5.
+   Démo : un bureau QNX complet dans une VM. Risque : accès au DDK hyperviseur sous
+   licence non commerciale, non vérifié.</li>
+<li><strong>Éclat</strong> — Open-Source Ports — WAMR + courtier de capacités. Absence vérifiée dans
+   l'index officiel et <code>qnx-ports/wamr</code> en 404. Originalité 5. PR amont obligatoire.</li>
+<li><strong>Réplique</strong> — Developer Tooling — fusion de <strong>Déclic</strong> (figer la trace au crash) +
+   <strong>Réplique</strong> (rejeu déterministe) + <strong>Autopsie</strong> (chaîne de blocage) : une machine à
+   remonter le temps pour QNX. Deux notes d'originalité 5 sur trois. Impossible en 5 semaines,
+   crédible en 3 mois.</li>
+<li><strong>Tamis</strong> — Developer Tooling — fusion d'<strong>Oracle</strong> (analyse statique pré-déploiement,
+   o5) + <strong>Grimpeur</strong> (graphe d'élévation de privilèges, o5) + <strong>Éplucheur</strong> (purge des
+   règles mortes) : un produit cohérent au lieu de trois utilitaires. Quatre trous documentés.</li>
+<li><strong>Mouleur</strong> — Low-level — trou 15 : « objets typés limités aux canaux ». Étendre le
+   modèle de types et d'abilities aux mémoires partagées et aux connexions. Contribution
+   profonde au modèle de sécurité QNX, pas un outil de plus.</li>
+<li><strong>Vigie</strong> — Robotics &amp; Medical — arbitre de tempête d'alarmes IEC 60601-1-8, fusionné
+   avec <strong>Banc</strong> (simulateur de patient + injecteur de fautes) pour produire un verdict de
+   conformité par exigence. Catégorie vide dans le portefeuille.</li>
+<li><strong>Doublure</strong> — Automotive &amp; Mobility — fusion de <strong>Doublure</strong> (A/B transactionnel avec
+   rollback) + <strong>Sceau</strong>/<strong>Scellé</strong> (signature, démarrage vérifié) + <strong>Crible</strong> (conformité
+   avant flash). Trou net : <code>mkqnximage --update</code> est une copie réseau sans atomicité,
+   sans A/B, sans rollback. Marché UNECE R156. Réutilise le savoir-faire de journalisation
+   atomique d'Ambre — mais concurrence Ambre et Relais dans la même catégorie.</li>
+</ol>
+<h2 id="devenus-viables-uniquement-grace-aux-3-mois">Devenus viables uniquement grâce aux 3 mois</h2>
+<p>Toile, Onde, Ballon, Veine (les 4 vdev absents) ; Réplique, Autopsie, Flamme (profilage
+par échantillonnage) ; Mouleur, Miroir (auto-hébergement de la surveillance) ; Doublure,
+Sceau, Scellé, Partition ; Horloge (gPTP 802.1AS), Borne (ISO 15118), Renouvellement ;
+Bobine (FFmpeg), Pipeline (GStreamer), Compositeur (Wayland complet) ; Quic, Cadence (TSN).</p>
+<h2 id="inchanges-par-le-calibre-deja-optimaux-en-5-semaines">Inchangés par le calibre (déjà optimaux en 5 semaines)</h2>
+<p>Tamis, Échéancier, Éclat, Écoute (+ Tempo + Signe), Vigie, Banc : cœur portable, trou
+vérifié, démonstration possible sur PC. Ce sont eux qui constituent le sous-ensemble
+livrable au 15/12 si tu tiens à ce concours.</p>
+</main>
+<footer>Généré depuis les sources Markdown du dépôt. Licence MIT.</footer>
+</body>
+</html>
