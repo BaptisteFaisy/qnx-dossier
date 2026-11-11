@@ -11,6 +11,7 @@ servi à choisir un sujet. Il est publié parce que l'inventaire qu'il contient 
 
 | Document | Contenu |
 |---|---|
+| [Fonctionnalités](features.html) | Les **70 exigences** des trois cahiers, extraites automatiquement de leurs tableaux, filtrables par projet et par niveau S/C/X. |
 | [Inventaire officiel](inventaire.html) | Ce que QNX SDP 8.0 **fournit déjà** (IDE Momentics, SAT, chaîne `secpol`, HAM, QPLMS, QFS, hyperviseur et ses 20 vdev, io-sock, conteneurs, ports open source) et les **~74 trous documentés**, chacun avec la page de documentation source. |
 | [Classement](classement.html) | 169 idées nommées, 140 notées sur une grille explicite, 29 éliminées avec motif. |
 | [100 idées détaillées](idees.html) | Les 100 idées retenues à l'étape précédente, chacune rattachée au trou qu'elle exploite. |

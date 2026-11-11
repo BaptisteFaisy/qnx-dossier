@@ -37,4 +37,8 @@ jobs:
           python-version: '3.12'
       - run: python -m pip install --quiet markdown
       - name: Le générateur fonctionne
-        run: python tools/build_site.py /tmp/site-ci && test -s /tmp/site-ci/index.html
+        run: |
+          python tools/build_site.py /tmp/site-ci
+          test -s /tmp/site-ci/index.html
+          test -s /tmp/site-ci/features.html
+          test -s /tmp/site-ci/styles.css

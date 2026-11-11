@@ -28,6 +28,8 @@ python3 tools/build_site.py site/
 - `src/GLANE-cahier-des-charges.md` — couche capteurs et publication de périphériques.
 - `src/ECLAT-cahier-des-charges.md` — portage WAMR et courtier de capacités.
 - `tools/build_site.py` — générateur du site (une seule implémentation, utilisée en local et en CI).
+- `tools/style.css` — feuille de style unique du site.
+- `docs/features.html` — page générée : les 70 exigences des trois cahiers, filtrables par projet et par niveau.
 
 ## Avertissement
 
