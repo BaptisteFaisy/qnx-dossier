@@ -77,7 +77,7 @@ Limites assumées :
 ## Régénérer le site
 
 ```
-pip install markdown
+pip install 'markdown==3.5.2'
 python3 tools/build_site.py site/
 ```
 

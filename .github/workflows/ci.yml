@@ -40,7 +40,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python -m pip install --quiet markdown
+      - run: python -m pip install --quiet 'markdown==3.5.2'
       - name: Le générateur fonctionne
         run: |
           python tools/build_site.py /tmp/site-ci

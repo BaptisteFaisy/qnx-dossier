@@ -15,7 +15,7 @@ committée, donc aucune dérive possible).
 Pour le régénérer localement :
 
 ```
-pip install markdown
+pip install 'markdown==3.5.2'
 python3 tools/build_site.py site/
 ```
 

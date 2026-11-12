@@ -27,7 +27,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Installer python-markdown
-        run: python -m pip install --quiet markdown
+        run: python -m pip install --quiet 'markdown==3.5.2'
       - name: Régénérer le site
         run: python tools/build_site.py /tmp/site-attendu
       - name: docs/ doit correspondre à la génération
