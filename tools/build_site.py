@@ -24,6 +24,7 @@ EXTENSIONS = ["tables", "fenced_code", "toc", "sane_lists"]
 
 NAV = [
     ("index", "Accueil"),
+    ("replique", "Réplique — émulateur QNX 8.0"),
     ("features", "Fonctionnalités"),
     ("tamis", "Tamis"),
     ("glane", "Glane"),
@@ -58,6 +59,10 @@ PROJETS = [
 SRC = {"tamis": "TAMIS-cahier-des-charges.md", "glane": "GLANE-cahier-des-charges.md",
        "eclat": "ECLAT-cahier-des-charges.md", "veille": "VEILLE-cahier-des-charges.md"}
 # Pages composées de plusieurs Markdown concaténés (slug → sources, dans l'ordre).
+# Pages statiques (HTML écrit tel quel, injecté dans le gabarit du site).
+STATIQUES = [
+    ("src/replique-demo.html", "replique"),
+]
 COMPOSITIONS = {"codelab-veille": [
     "src/veille-codelab/README.md",
     "src/veille-codelab/01-pourquoi-une-borne-prouvee.md",
@@ -263,6 +268,12 @@ def construire(sortie: pathlib.Path) -> int:
             print(f"sources absentes : {absentes}", file=sys.stderr)
             return 1
         ecrire(sortie, slug, page_composee(sources))
+    for rel, slug in STATIQUES:
+        src = RACINE / rel
+        if not src.exists():
+            print(f"source absente : {rel}", file=sys.stderr)
+            return 1
+        ecrire(sortie, slug, src.read_text(encoding="utf-8"))
     (sortie / "features.html").write_text(
         gabarit("Fonctionnalités", page_features(), "features"), encoding="utf-8")
     print("  features.html")
