@@ -66,7 +66,8 @@ COMPOSITIONS = {"codelab-veille": [
     "src/veille-codelab/04-porter-sur-qnx.md",
 ]}
 # Projets hébergés dans un autre dépôt : bandeau avec lien en tête de leur page.
-DEPOTS = {"veille": "https://github.com/BaptisteFaisy/veille"}
+DEPOTS = {"veille": ("https://github.com/BaptisteFaisy/veille",
+                     "https://baptistefaisy.github.io/veille/")}
 RE_EX = re.compile(r"^\|\s*([A-Z]{3}-\d{2})\s*\|\s*([SCX])\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|$")
 # Format 3 colonnes du cahier Veille : | S1 | exigence | S | (texte sans « | »).
 RE_EX3 = re.compile(r"^\|\s*([SCX]\d+)\s*\|\s*([^|]+?)\s*\|\s*([SCX])\s*\|$")
@@ -99,12 +100,17 @@ def convertir(src: pathlib.Path) -> str:
 
 
 def bandeau(slug: str) -> str:
-    """Lien en tête de page vers le dépôt propre d'un projet (dict DEPOTS)."""
-    url = DEPOTS.get(slug)
-    if not url:
+    """Liens en tête de page vers le dépôt (et le site) propres d'un projet."""
+    entree = DEPOTS.get(slug)
+    if not entree:
         return ""
-    return ('<p class="bandeau">Ce projet vit dans son propre dépôt — code, tests et '
-            f'preuve d\'exploration : <a href="{url}">{url}</a>.</p>')
+    depot, site = entree
+    texte = f'<a href="{depot}">{depot}</a>'
+    if site:
+        texte += (f', et tout le projet se visite en ligne (chiffres calculés, '
+                  f'preuves réelles) : <a href="{site}">{site}</a>')
+    return ('<p class="bandeau">Ce projet vit dans son propre dépôt — code, tests '
+            f'et preuve d\'exploration : {texte}.</p>')
 
 
 def premier_titre(chemin: pathlib.Path) -> str:

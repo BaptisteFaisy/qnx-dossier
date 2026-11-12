@@ -48,8 +48,9 @@ de borne pire-cas. Veille est un moniteur patient dont la chaîne capteur→alar
 bornée et **prouvée** par exploration exhaustive des 4800 états de défaillance atteignables
 (5×3×2×5×32), avec double preuve (modèle C11 pur + jumeau Python, puis kernel trace sur
 cible) et rapport d'audit empreinté SHA-256 exploitable en IEC 62304. Le projet vit dans
-[son propre dépôt](https://github.com/BaptisteFaisy/veille) ; le codelab qui l'accompagne
-est publié ici.
+[son propre dépôt](https://github.com/BaptisteFaisy/veille) et se visite en ligne sur
+[son site](https://baptistefaisy.github.io/veille/) — chiffres calculés depuis le code,
+preuves réellement rejouées au build ; le codelab qui l'accompagne est publié ici.
 
 ## Méthode, et ses limites
 
