@@ -50,12 +50,18 @@ main h1 small,main h2 small{display:block;font-size:.8rem;color:var(--mut);font-
 .niv{font-size:.72rem;font-weight:700;border-radius:4px;padding:.1rem .4rem;color:#12141a}
 .niv-S{background:#7fd1c1}.niv-C{background:#f0c674}.niv-X{background:#e58fb0}
 .proj{margin-left:auto;font-size:.75rem;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+.bandeau{background:var(--card);border:1px solid var(--bd);border-left:3px solid var(--acc);
+ border-radius:6px;padding:.55rem .8rem;color:var(--mut);font-size:.9rem}
+.sommaire{background:var(--card);border:1px solid var(--bd);border-radius:8px;
+ padding:.6rem 1rem;margin:1rem 0}
+.sommaire h2{margin:.3rem 0 .4rem;font-size:1rem}
+.sommaire ol{margin:.2rem 0 .4rem;padding-left:1.3rem}
 </style>
 </head>
 <body>
 <header>
 <h1>Dossier QNX — Global Hackathon 2026</h1>
-<p>Inventaire documenté des manques de QNX SDP 8.0, classement de 140 idées, trois cahiers des charges.</p>
+<p>Inventaire documenté des manques de QNX SDP 8.0, classement de 140 idées, quatre cahiers des charges.</p>
 </header>
 <nav>
 <a href="index.html" class="actif">Accueil</a>
@@ -63,6 +69,8 @@ main h1 small,main h2 small{display:block;font-size:.8rem;color:var(--mut);font-
 <a href="tamis.html">Tamis</a>
 <a href="glane.html">Glane</a>
 <a href="eclat.html">Éclat</a>
+<a href="veille.html">Veille</a>
+<a href="codelab-veille.html">Codelab Veille</a>
 <a href="classement.html">Classement</a>
 <a href="inventaire.html">Inventaire QNX</a>
 <a href="idees.html">100 idées</a>
@@ -85,7 +93,7 @@ servi à choisir un sujet. Il est publié parce que l'inventaire qu'il contient 
 <tbody>
 <tr>
 <td><a href="features.html">Fonctionnalités</a></td>
-<td>Les <strong>70 exigences</strong> des trois cahiers, extraites automatiquement de leurs tableaux, filtrables par projet et par niveau S/C/X.</td>
+<td>Les <strong>91 exigences</strong> des quatre cahiers, extraites automatiquement de leurs tableaux, filtrables par projet et par niveau S/C/X.</td>
 </tr>
 <tr>
 <td><a href="inventaire.html">Inventaire officiel</a></td>
@@ -111,9 +119,17 @@ servi à choisir un sujet. Il est publié parce que l'inventaire qu'il contient 
 <td><a href="eclat.html">Éclat</a></td>
 <td>Cahier des charges complet — portage de WAMR (WebAssembly) et courtier de capacités.</td>
 </tr>
+<tr>
+<td><a href="veille.html">Veille</a></td>
+<td>Cahier des charges complet — moniteur patient à latence d'alarme bornée et prouvée.</td>
+</tr>
+<tr>
+<td><a href="codelab-veille.html">Codelab Veille</a></td>
+<td>Codelab en 5 parties — prouver la latence d'une alarme médicale sur QNX 8.0.</td>
+</tr>
 </tbody>
 </table>
-<h2 id="les-trois-sujets-pousses-jusquau-cahier-des-charges">Les trois sujets poussés jusqu'au cahier des charges</h2>
+<h2 id="les-quatre-sujets-pousses-jusquau-cahier-des-charges">Les quatre sujets poussés jusqu'au cahier des charges</h2>
 <p><strong>Tamis</strong> — <em>Developer Tooling &amp; Host Tools</em>. La documentation QNX reconnaît que la revue des
 règles inutiles est manuelle, que la politique générée n'est pas utilisable telle quelle, et
 qu'il n'existe <strong>aucune analyse statique avant déploiement</strong>. Tamis analyse une politique
@@ -130,6 +146,14 @@ aucune abstraction capteur au-dessus des frameworks GPIO et SPI pourtant documen
 chaque import du module devient un message vers un gestionnaire de ressources qui décide selon
 une politique dont le défaut est de <strong>tout refuser</strong>. Trois couches d'isolation indépendantes :
 le bac à sable WebAssembly, le processus sans abilities, la politique appliquée par le noyau.</p>
+<p><strong>Veille</strong> — <em>Robotics &amp; Medical</em>. QNX ne fournit aucun framework d'alarme médicale
+IEC 60601-1-8, et le System Profiler mesure des échantillons ponctuels sans jamais prouver
+de borne pire-cas. Veille est un moniteur patient dont la chaîne capteur→alarme a une latence
+bornée et <strong>prouvée</strong> par exploration exhaustive des 4800 états de défaillance atteignables
+(5×3×2×5×32), avec double preuve (modèle C11 pur + jumeau Python, puis kernel trace sur
+cible) et rapport d'audit empreinté SHA-256 exploitable en IEC 62304. Le projet vit dans
+<a href="https://github.com/BaptisteFaisy/veille">son propre dépôt</a> ; le codelab qui l'accompagne
+est publié ici.</p>
 <h2 id="methode-et-ses-limites">Méthode, et ses limites</h2>
 <p>Le classement est né d'un constat : le facteur limitant n'est pas le nombre d'idées mais le
 nombre de <strong>manques documentés</strong>. Une boîte combinatoire de 10 000 cellules ne produit que

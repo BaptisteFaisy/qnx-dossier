@@ -44,3 +44,9 @@ main h1 small,main h2 small{display:block;font-size:.8rem;color:var(--mut);font-
 .niv{font-size:.72rem;font-weight:700;border-radius:4px;padding:.1rem .4rem;color:#12141a}
 .niv-S{background:#7fd1c1}.niv-C{background:#f0c674}.niv-X{background:#e58fb0}
 .proj{margin-left:auto;font-size:.75rem;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+.bandeau{background:var(--card);border:1px solid var(--bd);border-left:3px solid var(--acc);
+ border-radius:6px;padding:.55rem .8rem;color:var(--mut);font-size:.9rem}
+.sommaire{background:var(--card);border:1px solid var(--bd);border-radius:8px;
+ padding:.6rem 1rem;margin:1rem 0}
+.sommaire h2{margin:.3rem 0 .4rem;font-size:1rem}
+.sommaire ol{margin:.2rem 0 .4rem;padding-left:1.3rem}

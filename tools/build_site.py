@@ -2,7 +2,7 @@
 """Construit le site statique du dossier QNX à partir des sources Markdown.
 
 Une seule implémentation : ce script sert en local et dans la CI. La page
-« Fonctionnalités » est extraite des tableaux d'exigences des trois cahiers,
+« Fonctionnalités » est extraite des tableaux d'exigences des quatre cahiers,
 donc elle ne peut pas diverger du texte.
 
 Usage : python3 tools/build_site.py [repertoire_de_sortie]
@@ -28,6 +28,8 @@ NAV = [
     ("tamis", "Tamis"),
     ("glane", "Glane"),
     ("eclat", "Éclat"),
+    ("veille", "Veille"),
+    ("codelab-veille", "Codelab Veille"),
     ("classement", "Classement"),
     ("inventaire", "Inventaire QNX"),
     ("idees", "100 idées"),
@@ -37,6 +39,7 @@ PAGES = [
     ("src/TAMIS-cahier-des-charges.md", "tamis"),
     ("src/GLANE-cahier-des-charges.md", "glane"),
     ("src/ECLAT-cahier-des-charges.md", "eclat"),
+    ("src/VEILLE-cahier-des-charges.md", "veille"),
     ("src/qnx-classement-final.md", "classement"),
     ("src/qnx-inventaire-officiel.md", "inventaire"),
     ("src/qnx-100-idees-5sem.md", "idees"),
@@ -48,11 +51,28 @@ PROJETS = [
      "Couche capteurs, publication de périphériques, simulateur et banc de latence."),
     ("eclat", "Éclat", "Open-Source Contribution & Ports",
      "Portage de WAMR (WebAssembly) et courtier de capacités à refus par défaut."),
+    ("veille", "Veille", "Robotics & Medical",
+     "Moniteur patient QNX dont la latence capteur→alarme est bornée et prouvée par "
+     "exploration exhaustive des états de défaillance (IEC 62304 / IEC 60601-1-8)."),
 ]
 SRC = {"tamis": "TAMIS-cahier-des-charges.md", "glane": "GLANE-cahier-des-charges.md",
-       "eclat": "ECLAT-cahier-des-charges.md"}
+       "eclat": "ECLAT-cahier-des-charges.md", "veille": "VEILLE-cahier-des-charges.md"}
+# Pages composées de plusieurs Markdown concaténés (slug → sources, dans l'ordre).
+COMPOSITIONS = {"codelab-veille": [
+    "src/veille-codelab/README.md",
+    "src/veille-codelab/01-pourquoi-une-borne-prouvee.md",
+    "src/veille-codelab/02-construire-la-chaine.md",
+    "src/veille-codelab/03-prouver-par-exploration.md",
+    "src/veille-codelab/04-porter-sur-qnx.md",
+]}
+# Projets hébergés dans un autre dépôt : bandeau avec lien en tête de leur page.
+DEPOTS = {"veille": "https://github.com/BaptisteFaisy/veille"}
 RE_EX = re.compile(r"^\|\s*([A-Z]{3}-\d{2})\s*\|\s*([SCX])\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|$")
+# Format 3 colonnes du cahier Veille : | S1 | exigence | S | (texte sans « | »).
+RE_EX3 = re.compile(r"^\|\s*([SCX]\d+)\s*\|\s*([^|]+?)\s*\|\s*([SCX])\s*\|$")
 RE_ESSAI = re.compile(r"^\|\s*(E\d)\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|$")
+# Essais à 3 colonnes du cahier Veille : | E1 | question | bloquant |.
+RE_ESSAI3 = re.compile(r"^\|\s*(E\d+)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|$")
 RE_LOT = re.compile(r"^\|\s*(L\d+)\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|$")
 CSS = pathlib.Path(__file__).with_name("style.css").read_text(encoding="utf-8")
 
@@ -67,7 +87,7 @@ def gabarit(titre: str, corps: str, actif: str) -> str:
             f"<title>{titre} — Dossier QNX</title>\n<style>{CSS}</style>\n</head>\n<body>\n"
             "<header>\n<h1>Dossier QNX — Global Hackathon 2026</h1>\n"
             "<p>Inventaire documenté des manques de QNX SDP 8.0, classement de 140 idées, "
-            "trois cahiers des charges.</p>\n</header>\n<nav>\n" + "\n".join(liens) +
+            "quatre cahiers des charges.</p>\n</header>\n<nav>\n" + "\n".join(liens) +
             f"\n</nav>\n<main>\n{corps}\n</main>\n"
             "<footer>Généré depuis les sources Markdown du dépôt. Licence MIT.</footer>\n"
             "</body>\n</html>\n")
@@ -78,15 +98,54 @@ def convertir(src: pathlib.Path) -> str:
                              output_format="html5")
 
 
+def bandeau(slug: str) -> str:
+    """Lien en tête de page vers le dépôt propre d'un projet (dict DEPOTS)."""
+    url = DEPOTS.get(slug)
+    if not url:
+        return ""
+    return ('<p class="bandeau">Ce projet vit dans son propre dépôt — code, tests et '
+            f'preuve d\'exploration : <a href="{url}">{url}</a>.</p>')
+
+
+def premier_titre(chemin: pathlib.Path) -> str:
+    for ligne in chemin.read_text(encoding="utf-8").splitlines():
+        if ligne.startswith("# "):
+            return ligne[2:].strip()
+    return chemin.stem
+
+
+def page_composee(sources: list[str]) -> str:
+    """Sommaire local + chapitres Markdown concaténés, séparés par <hr>."""
+    liens, chapitres = [], []
+    for i, rel in enumerate(sources):
+        src = RACINE / rel
+        titre = premier_titre(src)
+        liens.append(f'<li><a href="#partie-{i + 1}">{html.escape(titre)}</a></li>')
+        chapitres.append(f'<section id="partie-{i + 1}">{convertir(src)}</section>')
+    sommaire = ('<nav class="sommaire"><h2>Sommaire</h2><ol>'
+                + "".join(liens) + "</ol></nav>")
+    return sommaire + "\n<hr>\n".join(chapitres)
+
+
 def extraire(chemin: pathlib.Path) -> dict:
-    """Lit un cahier et en tire exigences, essais de faisabilité et lots."""
+    """Lit un cahier et en tire exigences, essais de faisabilité et lots.
+
+    Deux formats de tableaux sont reconnus : 4 colonnes (Tamis/Glane/Éclat,
+    avec vérification) et 3 colonnes (Veille, niveau en dernière colonne).
+    Les exigences sont normalisées en (ident, niveau, texte, vérification).
+    """
     ex, essais, lots = [], [], []
     for ligne in chemin.read_text(encoding="utf-8").splitlines():
         m = RE_EX.match(ligne)
         if m:
             ex.append(m.groups())
             continue
-        m = RE_ESSAI.match(ligne)
+        m = RE_EX3.match(ligne)
+        if m:
+            ident, texte, niv = m.groups()
+            ex.append((ident, niv, texte, ""))
+            continue
+        m = RE_ESSAI.match(ligne) or RE_ESSAI3.match(ligne)
         if m:
             essais.append(m.groups())
             continue
@@ -98,10 +157,11 @@ def extraire(chemin: pathlib.Path) -> dict:
 
 def carte_exigence(projet: str, ident: str, niv: str, texte: str, verif: str) -> str:
     e = html.escape
+    pied = f'<footer><em>Vérification :</em> {e(verif)}</footer>' if verif else ""
     return (f'<article class="ex" data-projet="{projet}" data-niveau="{niv}">'
             f'<header><b>{e(ident)}</b><span class="niv niv-{niv}">{niv}</span>'
             f'<span class="proj">{e(projet)}</span></header>'
-            f'<p>{e(texte)}</p><footer><em>Vérification :</em> {e(verif)}</footer></article>')
+            f'<p>{e(texte)}</p>{pied}</article>')
 
 
 def bloc_projet(slug: str, nom: str, cat: str, desc: str, d: dict) -> str:
@@ -164,13 +224,19 @@ def page_features() -> str:
         d = extraire(RACINE / "src" / SRC[slug])
         total += len(d["exigences"])
         blocs.append(bloc_projet(slug, nom, cat, desc, d))
-    entete = ("<h1>Fonctionnalités des trois projets</h1>"
+    entete = ("<h1>Fonctionnalités des quatre projets</h1>"
               "<p>Page générée automatiquement depuis les tableaux d'exigences des cahiers "
               "des charges : elle ne peut pas diverger du texte source. Les niveaux "
               "<b>S</b> (socle, indispensable à une soumission), <b>C</b> (complet, la "
               "version visée) et <b>X</b> (extrême) viennent des cahiers.</p>"
               f"<p class=\"chiffres\"><b>{total}</b> fonctionnalités au total.</p>")
     return entete + filtres() + "".join(blocs) + script_filtres()
+
+
+def ecrire(sortie: pathlib.Path, slug: str, corps: str) -> None:
+    (sortie / f"{slug}.html").write_text(
+        gabarit(dict(NAV)[slug], corps, slug), encoding="utf-8")
+    print(f"  {slug}.html")
 
 
 def construire(sortie: pathlib.Path) -> int:
@@ -184,10 +250,13 @@ def construire(sortie: pathlib.Path) -> int:
         if not src.exists():
             print(f"source absente : {rel}", file=sys.stderr)
             return 1
-        label = dict(NAV)[slug]
-        (sortie / f"{slug}.html").write_text(gabarit(label, convertir(src), slug),
-                                             encoding="utf-8")
-        print(f"  {slug}.html")
+        ecrire(sortie, slug, bandeau(slug) + convertir(src))
+    for slug, sources in COMPOSITIONS.items():
+        absentes = [s for s in sources if not (RACINE / s).exists()]
+        if absentes:
+            print(f"sources absentes : {absentes}", file=sys.stderr)
+            return 1
+        ecrire(sortie, slug, page_composee(sources))
     (sortie / "features.html").write_text(
         gabarit("Fonctionnalités", page_features(), "features"), encoding="utf-8")
     print("  features.html")

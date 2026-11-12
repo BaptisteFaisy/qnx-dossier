@@ -2,7 +2,7 @@
 
 Dossier de recherche et de conception pour le [QNX Global Hackathon](https://qnx.devpost.com/) :
 inventaire documenté de ce que QNX SDP 8.0 fournit déjà et de ses manques, classement noté de
-140 idées, et trois cahiers des charges complets.
+140 idées, et quatre cahiers des charges complets.
 
 **Ce dépôt n'est pas une soumission au concours.** C'est le travail amont qui a servi à choisir
 un sujet. Il est publié parce que l'inventaire des manques documentés a coûté cher à établir.
@@ -27,9 +27,11 @@ python3 tools/build_site.py site/
 - `src/TAMIS-cahier-des-charges.md` — analyse statique des politiques de sécurité `secpol`.
 - `src/GLANE-cahier-des-charges.md` — couche capteurs et publication de périphériques.
 - `src/ECLAT-cahier-des-charges.md` — portage WAMR et courtier de capacités.
+- `src/VEILLE-cahier-des-charges.md` — moniteur patient à latence d'alarme bornée et prouvée (4e projet, Robotics & Medical ; le code vit dans le dépôt [veille](https://github.com/BaptisteFaisy/veille)).
+- `src/veille-codelab/` — codelab en 5 parties : prouver la latence d'une alarme médicale sur QNX 8.0.
 - `tools/build_site.py` — générateur du site (une seule implémentation, utilisée en local et en CI).
 - `tools/style.css` — feuille de style unique du site.
-- `docs/features.html` — page générée : les 70 exigences des trois cahiers, filtrables par projet et par niveau.
+- `docs/features.html` — page générée : les 91 exigences des quatre cahiers, filtrables par projet et par niveau.
 
 ## Avertissement
 

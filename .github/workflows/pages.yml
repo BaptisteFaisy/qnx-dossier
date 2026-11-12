@@ -39,7 +39,7 @@ jobs:
           echo "docs/ correspond à la génération."
       - name: Aucune page vide
         run: |
-          for p in index features tamis glane eclat classement inventaire idees; do
+          for p in index features tamis glane eclat veille codelab-veille classement inventaire idees; do
             test -s "docs/$p.html" || { echo "page vide ou absente : $p"; exit 1; }
           done
           grep -q '<table' docs/inventaire.html

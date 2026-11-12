@@ -23,8 +23,13 @@ jobs:
         run: |
           test -s index.md
           for f in TAMIS-cahier-des-charges GLANE-cahier-des-charges ECLAT-cahier-des-charges \
-                   qnx-classement-final qnx-inventaire-officiel qnx-100-idees-5sem; do
+                   VEILLE-cahier-des-charges qnx-classement-final qnx-inventaire-officiel \
+                   qnx-100-idees-5sem; do
             test -s "src/$f.md" || { echo "source manquante : $f"; exit 1; }
+          done
+          for f in README 01-pourquoi-une-borne-prouvee 02-construire-la-chaine \
+                   03-prouver-par-exploration 04-porter-sur-qnx; do
+            test -s "src/veille-codelab/$f.md" || { echo "codelab manquant : $f"; exit 1; }
           done
       - name: Taille des fichiers de code
         run: |

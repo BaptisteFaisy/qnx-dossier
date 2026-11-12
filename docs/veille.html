@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Veille — Dossier QNX</title>
+<style>:root{--fg:#e6e6e6;--bg:#12141a;--card:#1b1f28;--acc:#7fd1c1;--mut:#9aa3b2;--bd:#2a3040}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+ font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{padding:1.4rem 1.2rem;border-bottom:1px solid var(--bd);background:var(--card)}
+header h1{margin:0;font-size:1.25rem}
+header p{margin:.3rem 0 0;color:var(--mut);font-size:.9rem}
+nav{display:flex;flex-wrap:wrap;gap:.4rem;padding:.8rem 1.2rem;border-bottom:1px solid var(--bd)}
+nav a{color:var(--mut);text-decoration:none;font-size:.85rem;padding:.3rem .6rem;
+ border:1px solid var(--bd);border-radius:999px}
+nav a:hover{color:var(--fg)}
+nav a.actif{color:#12141a;background:var(--acc);border-color:var(--acc);font-weight:600}
+main{padding:1.2rem;max-width:60rem;margin:0 auto}
+main h1{font-size:1.6rem;border-bottom:1px solid var(--bd);padding-bottom:.4rem}
+main h2{font-size:1.25rem;margin-top:2rem;color:var(--acc)}
+main h3{font-size:1.05rem;margin-top:1.6rem}
+a{color:var(--acc)}
+code{background:#0d0f14;padding:.1rem .35rem;border-radius:4px;font-size:.88em}
+pre{background:#0d0f14;padding:.9rem;border-radius:8px;overflow-x:auto;border:1px solid var(--bd)}
+pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.9rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--bd);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--card);white-space:nowrap}
+blockquote{border-left:3px solid var(--acc);margin:1rem 0;padding:.2rem 1rem;color:var(--mut)}
+footer{padding:1.2rem;color:var(--mut);font-size:.85rem;border-top:1px solid var(--bd);text-align:center}
+main h1 small,main h2 small{display:block;font-size:.8rem;color:var(--mut);font-weight:400}
+.desc{color:var(--mut);margin:.2rem 0 .6rem}
+.chiffres{font-size:.9rem;color:var(--mut);margin:.2rem 0 1rem}
+.chiffres b{color:var(--fg)}
+.filtres{position:sticky;top:0;background:var(--bg);padding:.6rem 0;display:flex;
+ flex-wrap:wrap;gap:.4rem;border-bottom:1px solid var(--bd);z-index:2}
+.filtres button{background:var(--card);color:var(--mut);border:1px solid var(--bd);
+ border-radius:999px;padding:.3rem .7rem;font-size:.82rem;cursor:pointer}
+.filtres button:hover{color:var(--fg)}
+.filtres button.actif{background:var(--acc);color:#12141a;border-color:var(--acc);font-weight:600}
+#compte{margin-left:auto;color:var(--mut);font-size:.82rem;align-self:center}
+.projet{margin:1.6rem 0}
+.ex{background:var(--card);border:1px solid var(--bd);border-radius:8px;
+ padding:.7rem .85rem;margin:.55rem 0}
+.ex header{display:flex;gap:.55rem;align-items:center;flex-wrap:wrap}
+.ex header b{font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--acc)}
+.ex p{margin:.45rem 0}
+.ex footer{color:var(--mut);font-size:.85rem;border-top:1px dashed var(--bd);padding-top:.4rem}
+.niv{font-size:.72rem;font-weight:700;border-radius:4px;padding:.1rem .4rem;color:#12141a}
+.niv-S{background:#7fd1c1}.niv-C{background:#f0c674}.niv-X{background:#e58fb0}
+.proj{margin-left:auto;font-size:.75rem;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+.bandeau{background:var(--card);border:1px solid var(--bd);border-left:3px solid var(--acc);
+ border-radius:6px;padding:.55rem .8rem;color:var(--mut);font-size:.9rem}
+.sommaire{background:var(--card);border:1px solid var(--bd);border-radius:8px;
+ padding:.6rem 1rem;margin:1rem 0}
+.sommaire h2{margin:.3rem 0 .4rem;font-size:1rem}
+.sommaire ol{margin:.2rem 0 .4rem;padding-left:1.3rem}
+</style>
+</head>
+<body>
+<header>
+<h1>Dossier QNX — Global Hackathon 2026</h1>
+<p>Inventaire documenté des manques de QNX SDP 8.0, classement de 140 idées, quatre cahiers des charges.</p>
+</header>
+<nav>
+<a href="index.html">Accueil</a>
+<a href="features.html">Fonctionnalités</a>
+<a href="tamis.html">Tamis</a>
+<a href="glane.html">Glane</a>
+<a href="eclat.html">Éclat</a>
+<a href="veille.html" class="actif">Veille</a>
+<a href="codelab-veille.html">Codelab Veille</a>
+<a href="classement.html">Classement</a>
+<a href="inventaire.html">Inventaire QNX</a>
+<a href="idees.html">100 idées</a>
+</nav>
+<main>
+<p class="bandeau">Ce projet vit dans son propre dépôt — code, tests et preuve d'exploration : <a href="https://github.com/BaptisteFaisy/veille">https://github.com/BaptisteFaisy/veille</a>.</p><h1 id="veille-moniteur-patient-a-latence-dalarme-bornee-et-prouvee-sur-qnx-80">Veille — moniteur patient à latence d'alarme bornée et prouvée sur QNX 8.0</h1>
+<p><strong>Nom de travail : « Veille »</strong> (le moniteur qui veille : la chaîne capteur→alarme tient sa borne, et le prouve).
+Version 0.1 — 12 novembre 2026 — projet candidat au QNX Global Hackathon, catégorie <strong>Robotics &amp; Medical</strong>.
+Visé explicitement : <strong>Best of Robotics &amp; Medical</strong>, bonus <strong>Best use of QNX-specific Technologies</strong> (message passing, priority inheritance, resource managers, pulses/timers, kernel trace y sont nommément cités) et <strong>Best Codelab/Tutorial</strong>.</p>
+<blockquote>
+<p>Note de nommage : « Veille » est un nom commun français, aucune marque de tiers. Le règlement proscrit les marques de tiers dans les supports de soumission (vidéo comprise) — aucun nom de produit médical réel n'apparaît dans les supports.</p>
+</blockquote>
+<hr>
+<h2 id="0-lecture-rapide">0. Lecture rapide</h2>
+<p><strong>Ce que c'est.</strong> Un moniteur patient QNX 8.0 où la chaîne <strong>acquisition (ECG/SpO2/PA) → filtrage → décision → alarme audible</strong> a une <strong>latence de bout en bout bornée</strong>, et où cette borne est <strong>prouvée par exploration exhaustive de tous les états de défaillance</strong> au lieu d'être mesurée sur quelques scénarios chanceux.</p>
+<p><strong>La promesse, en une phrase.</strong> Une alarme médicale passe d'« elle a sonné en test » à « <strong>sa latence est garantie dans la borne B dans chaque état atteignable du système</strong>, avec un certificat exploitable dans un dossier IEC 62304 ».</p>
+<p><strong>Trois idées qui portent le projet.</strong></p>
+<ol>
+<li><strong>L'alarme est un chemin critique à deadline, pas une fonctionnalité.</strong> Comme Ambre traite l'écriture du crash comme une deadline de 20 ms, Veille traite la chaîne capteur→alarme comme un chemin à deadline garantie (ex. 100 ms pour une priorité haute). Le déterminisme QNX — priority inheritance à travers <code>MsgSend</code>, pulses et timers noyau, microkernel qui prévient de la mort d'un pair — est exactement ce qui rend la borne atteignable et vérifiable.</li>
+<li><strong>La preuve par exploration exhaustive, pas par mesure.</strong> Comme Ambre explore tous les états de coupure d'alimentation, Veille explore <strong>tous les états de défaillance</strong> de la chaîne (capteur bloqué/mort/bruité, bus saturé, inversion de priorité, alarmes concurrentes, panne d'un étage) et prouve que la latence reste dans la borne <strong>dans chaque état</strong>, ou qu'une alarme technique se déclenche dans sa propre borne. C'est la différence entre « ça a marché » et « c'est garanti ».</li>
+<li><strong>IEC 60601-1-8 outillé, pas subi.</strong> La norme exige des caractéristiques d'alarme (priorités haute/moyenne/basse, délais de déclenchement, profils sonores, verrouillage, acquittement, alarmes techniques). Veille fournit un framework qui <strong>implémente et prouve</strong> ces caractéristiques sur QNX, avec un rapport d'audit horodaté et empreinté (SHA-256 de la configuration) pour le dossier IEC 62304.</li>
+</ol>
+<p><strong>Trois niveaux d'ambition.</strong> <strong>S</strong> (socle : chaîne + jumeau + exploration d'un sous-ensemble d'états + rapport), <strong>C</strong> (complet : exploration exhaustive, fault injection, resource manager <code>/dev/veille</code>, kernel trace comme preuve, codelab), <strong>X</strong> (extrême : preuve formelle assistée, intégration matériel réel, dossier IEC 62304 complet).</p>
+<p><strong>À valider avant d'écrire la moindre ligne de produit</strong> (section 10) : cinq essais, dont E1 — geler les bornes et priorités exactes d'IEC 60601-1-8 — et E2 — confirmer que la priority inheritance <code>MsgSend</code> est observable par kernel trace sur QEMU.</p>
+<p><strong>Statut des affirmations.</strong> Section 13 : les valeurs exactes de délais d'IEC 60601-1-8 n'ont <strong>pas</strong> encore été lues page à page dans la norme (document payant). Les bornes utilisées sont des ordres de grandeur documentés publiquement ; c'est le premier travail de validation, pas une hypothèse de plus.</p>
+<hr>
+<h2 id="1-contexte-et-cas-dusage">1. Contexte et cas d'usage</h2>
+<h3 id="11-qui-a-ce-probleme">1.1 Qui a ce problème</h3>
+<table>
+<thead>
+<tr>
+<th>Acteur</th>
+<th>Besoin</th>
+<th>Ce qu'il fait aujourd'hui</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fabricant de moniteurs patient (IEC 60601-1-8, IEC 62304)</td>
+<td>Prouver que l'alarme sonne dans le délai requis, dans tous les cas</td>
+<td>Tests sur scénarios nominaux, argumentaire prose, tableur de cas</td>
+</tr>
+<tr>
+<td>Intégrateur système médical sur QNX</td>
+<td>Garantir la latence de bout en bout capteur→alarme</td>
+<td>Mesures ponctuelles au System Profiler, sans borne prouvée</td>
+</tr>
+<tr>
+<td>Responsable sûreté de fonctionnement</td>
+<td>Montrer que la défaillance d'un capteur ne rate pas une alarme</td>
+<td>Analyse FMEA manuelle, revue de code</td>
+</tr>
+<tr>
+<td>Auditeur IEC 62304</td>
+<td>Vérifier que les exigences temporelles d'alarme sont couvertes et testées</td>
+<td>Inspection de rapports de tests non exhaustifs</td>
+</tr>
+<tr>
+<td>Développeur QNX médical</td>
+<td>Comprendre pourquoi une alarme a été retardée sous charge</td>
+<td>Essai-erreur, traces kernel relues à la main</td>
+</tr>
+</tbody>
+</table>
+<h3 id="12-pourquoi-cest-un-vrai-marche">1.2 Pourquoi c'est un vrai marché</h3>
+<p>QNX équipe déjà des dispositifs médicaux (la documentation cite les medical devices parmi les systèmes critiques). IEC 60601-1-8 impose des caractéristiques temporelles d'alarme ; IEC 62304 impose de les prouver. Or <strong>rien dans QNX SDP 8.0 n'outille cette preuve</strong> : le System Profiler mesure, il ne prouve pas de borne dans le pire cas ; il n'existe ni framework d'alarme médicale, ni explorateur d'états de défaillance, ni générateur de certificat de latence. Veille occupe exactement cet espace — comme Tamis occupe l'analyse statique des politiques, comme Ambre occupe la durabilité prouvée du crash.</p>
+<h3 id="13-ce-que-veille-nest-pas">1.3 Ce que Veille n'est pas</h3>
+<p>Ni un moniteur patient complet certifié (hors périmètre : pas de certification réelle, pas de matériel médical réel), ni un analyseur de signal médical (pas de diagnostic, pas d'algorithme clinique), ni un système d'archivage de données patient (pas de DSE), ni un outil de développement générique. Veille est un <strong>framework de garantie et de preuve de latence d'alarme</strong> sur QNX.</p>
+<hr>
+<h2 id="2-ancrage-documentaire">2. Ancrage documentaire</h2>
+<h3 id="21-ce-que-qnx-fournit-deja-a-ne-pas-reinventer">2.1 Ce que QNX fournit déjà (à ne pas réinventer)</h3>
+<table>
+<thead>
+<tr>
+<th>Élément</th>
+<th>Rôle pour Veille</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Priority inheritance à travers <code>MsgSend</code></td>
+<td>La voie critique capteur→alarme ne peut pas être préemptée par du travail de moindre priorité</td>
+</tr>
+<tr>
+<td>Pulses et timers noyau (<code>timer_create</code>, <code>MsgSendPulse</code>)</td>
+<td>Cadence périodique d'acquisition et deadlines sans <code>sleep()</code></td>
+</tr>
+<tr>
+<td>Resource managers (<code>resmgr_*</code>)</td>
+<td><code>/dev/veille</code> : un processus possède la chaîne, les autres y accèdent par API typée</td>
+</tr>
+<tr>
+<td>Microkernel isolation + <code>CHANNEL</code> disconnect</td>
+<td>La mort d'un étage est notifiée aux pairs : décision→alarme sait que l'acquisition est tombée</td>
+</tr>
+<tr>
+<td>Kernel trace (<code>tracelogger</code>, <code>traceprinter</code>)</td>
+<td>Capture des événements message-passing/scheduling : la latence mesurée est la preuve empirique</td>
+</tr>
+<tr>
+<td>System Profiler (Momentics)</td>
+<td>Visualisation des latences — mais <strong>mesure ponctuelle, pas de borne prouvée</strong></td>
+</tr>
+<tr>
+<td>Adaptive partitioning</td>
+<td>Isolation de la partition critique (alarme) vs best-effort (UI, réseau)</td>
+</tr>
+<tr>
+<td>Power-Safe file system</td>
+<td>Journal d'alarmes durable (comme Ambre)</td>
+</tr>
+<tr>
+<td><code>secpol</code> (politiques de sécurité)</td>
+<td>Cloisonnement des processus de la chaîne (complément Tamis)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-les-trous-exploites-a-sourcer-page-a-page-section-13">2.2 Les trous exploités (à sourcer page à page — section 13)</h3>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Trou, tel que formulé</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M1</td>
+<td><strong>Aucun framework d'alarme médicale</strong> : QNX ne fournit ni priorités d'alarme IEC 60601-1-8, ni profils sonores, ni verrouillage/acquittement</td>
+<td>Inventaire QNX SDP 8.0</td>
+</tr>
+<tr>
+<td>M2</td>
+<td><strong>La latence de bout en bout n'est pas prouvée</strong> : le System Profiler mesure des échantillons, il n'explore pas les états de défaillance ni ne certifie une borne pire-cas</td>
+<td><code>system_profiler</code> doc</td>
+</tr>
+<tr>
+<td>M3</td>
+<td><strong>Pas d'exploration exhaustive d'états</strong> pour les chaînes temps réel : rien n'énumère capteur bloqué/mort/bruité × bus saturé × inversion de priorité × alarmes concurrentes</td>
+<td>Inventaire</td>
+</tr>
+<tr>
+<td>M4</td>
+<td><strong>IEC 60601-1-8 non outillé</strong> : les caractéristiques d'alarme (délais, priorités, sons) sont à implémenter à la main, sans support ni test de conformité</td>
+<td>Norme externe</td>
+</tr>
+<tr>
+<td>M5</td>
+<td><strong>Pas de certificat de latence exploitable en IEC 62304</strong> : aucun générateur de rapport d'audit horodaté/empreinté pour les exigences temporelles</td>
+<td>Inventaire</td>
+</tr>
+<tr>
+<td>M6</td>
+<td><strong>La défaillance de capteur ne déclenche pas d'alarme technique bornée</strong> : pas de supervision de la chaîne elle-même (capteur mort = silence, pas alarme)</td>
+<td>IEC 60601-1-8 §alarmes techniques</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Honnêteté : M1–M6 sont des affirmations sur l'<strong>absence</strong> d'outillage dans la documentation publique QNX 8.0. Comme pour Tamis, elles doivent être vérifiées page à page dans le SDP installé avant d'être gravées. Section 13.</p>
+</blockquote>
+<hr>
+<h2 id="3-perimetre">3. Périmètre</h2>
+<h3 id="31-dans-le-perimetre">3.1 Dans le périmètre</h3>
+<ul>
+<li><strong>Chaîne d'alarme</strong> : <code>échantillon capteur → acquire → filter → decide → alarm → acknowledge</code>, chaque étage horodaté.</li>
+<li><strong>Bornes de latence par priorité</strong> : haute / moyenne / basse (IEC 60601-1-8), configurables, avec deadline de bout en bout.</li>
+<li><strong>Exploration exhaustive d'états</strong> : produit cartésien des défaillances (capteur, bus, priorité, alarme, étage), avec élagage des combinaisons impossibles et preuve que la borne tient ou qu'une alarme technique se déclenche.</li>
+<li><strong>Fault injection</strong> : capteur bloqué/mort/bruité/dérive, bus saturé, inversion de priorité, panne d'étage, alarmes concurrentes.</li>
+<li><strong>Jumeau de vérification</strong> : cœur C11 pur + implémentation Python stdlib séparée, même contrat de sortie ; le désaccord est un bug réduit dichotomiquement.</li>
+<li><strong>Verdicts et rapports</strong> : texte, JSON (une ligne par verdict), Markdown d'audit (empreinte SHA-256, horodatage, version).</li>
+<li><strong>Cible QNX</strong> : resource manager <code>/dev/veille</code>, acquisition par pulses/timers, message passing avec priority inheritance, kernel trace comme preuve empirique.</li>
+<li><strong>Codelab</strong> : « Prouver la latence d'une alarme médicale sur QNX » (bonus Best Codelab).</li>
+</ul>
+<h3 id="32-hors-perimetre-assume">3.2 Hors périmètre (assumé)</h3>
+<p>Certification réelle IEC 60601/IEC 62304 (Veille produit des <strong>artefacts</strong> pour le dossier, pas la certification) ; matériel médical réel (capteurs simulés) ; algorithmes cliniques/diagnostic ; dossier patient/DSE ; UI graphique complète de moniteur ; remplacement du System Profiler (Veille le complète par la preuve).</p>
+<hr>
+<h2 id="4-architecture">4. Architecture</h2>
+<pre><code>veille/
+├── CONTRACT.md              # contrat gelé : chaîne, états, verdicts, formats octet pour octet
+├── VEILLE-cahier-des-charges.md   # ce document
+├── README.md                # pitch, garanties mesurées, état
+├── Makefile                 # build + test (C + Python + différentiel) sans dépendance
+├── LICENSE                  # MIT
+├── core/                    # C11 PUR : ni horloge, ni fichier, ni socket, ni état global mutable
+│   ├── include/veille/      #   chain.h state.h alarm.h proof.h verdict.h report.h
+│   ├── src/                 #   chain.c state.c alarm.c proof.c verdict.c report.c
+│   └── tests/               #   test_chain.c test_state.c test_alarm.c test_proof.c test_report.c
+├── host/                    # Python 3 stdlib : jumeau indépendant + CLI + explorateur d'états
+│   ├── veille/              #   __init__.py chain.py state.py alarm.py proof.py report.py cli.py
+│   └── tests/               #   test_chain.py test_proof.py test_differential.py
+├── target/                  # code QNX 8.0 : resource manager /dev/veille, capteurs simulés, alarme
+│   ├── rm/                  #   resmgr_veille.c (resource manager)
+│   ├── sensors/             #   sim_ecg.c sim_spo2.c sim_pa.c (générateurs d'échantillons)
+│   ├── alarm/               #   alarm_sink.c (sortie alarme horodatée)
+│   └── trace/               #   capture kernel trace → preuve empirique
+├── scenarios/               # corpus de scénarios de défaillance (JSON) : nominaux, pires cas, fautifs
+├── fixtures/                # configurations de chaîne (bornes, priorités) de référence
+├── tests/                   # différentiel C↔Python, exploration exhaustive, fault injection, mutants
+├── codelab/                 # chapitres : « prouver la latence d'une alarme médicale sur QNX »
+├── docs/                    # SAFETY.md GAP.md DECISIONS.md VALIDATION.md IEC60601-8.md spec-fr.md spec-en.md
+├── image/                   # build image QNX (mkifs) pour la démo QEMU
+└── .github/workflows/       # CI : build C, tests Python, différentiel, exploration, garde &lt;500 lignes
+</code></pre>
+<p><strong>Règle de portabilité.</strong> <code>core/</code> ne lit aucun fichier et ne consulte aucune horloge : l'appelant fournit les échantillons, les timestamps et les tampons. Le même noyau est exécutable depuis Python, depuis un test unitaire, et sur cible QNX. La double implémentation (C dans <code>core/</code>, Python dans <code>host/</code>) n'est pas une duplication : c'est un <strong>jumeau de vérification</strong> indépendant, comme sur Ambre, Passerelle et Tamis.</p>
+<p><strong>Règle de taille (AGENTS.md).</strong> Tout fichier &lt; 500 lignes, toute fonction &lt; 50 lignes. Vérifié en CI (<code>wc -l</code>). Zéro duplication : helpers partagés entre <code>core/</code> et <code>target/</code>.</p>
+<hr>
+<h2 id="5-contrat">5. Contrat</h2>
+<h3 id="51-chaine-de-traitement-figee">5.1 Chaîne de traitement (figée)</h3>
+<pre><code>sample(t0) → acquire(t1) → filter(t2) → decide(t3) → alarm(t4) → acknowledge(t5)
+</code></pre>
+<ul>
+<li>Latence de bout en bout : <code>L = t4 - t0</code> (déclenchement de l'alarme).</li>
+<li>Latence d'acquittement : <code>A = t5 - t4</code>.</li>
+<li>Aucune étape ne remonte : un étage ne relit jamais l'échantillon brut. Toute erreur arrête la chaîne et produit un verdict <code>VEILLE_CHAIN_FAULT</code> avec l'étage fautif — <strong>jamais</strong> de reprise approximative sur un échantillon partiellement traité.</li>
+<li>Chaque étage porte un timestamp monotone (fourni par l'appelant ; <code>core/</code> ne lit pas d'horloge).</li>
+</ul>
+<h3 id="52-bornes-configurables-defaut-iec-60601-1-8-a-valider-10">5.2 Bornes (configurables, défaut IEC 60601-1-8 à valider §10)</h3>
+<table>
+<thead>
+<tr>
+<th>Priorité</th>
+<th>Latence alarme <code>B_alarm</code></th>
+<th>Latence acquittement <code>B_ack</code></th>
+<th>Profil sonore</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>haute</td>
+<td>100 ms</td>
+<td>60 s</td>
+<td>3 pulses rapides, pause</td>
+</tr>
+<tr>
+<td>moyenne</td>
+<td>500 ms</td>
+<td>120 s</td>
+<td>2 pulses, pause longue</td>
+</tr>
+<tr>
+<td>basse</td>
+<td>1000 ms</td>
+<td>300 s</td>
+<td>1 pulse, pause très longue</td>
+</tr>
+<tr>
+<td>technique</td>
+<td>50 ms</td>
+<td>—</td>
+<td>continu (défaillance système)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="53-verdicts-enum-veille_verdict_code-sentinelle-veille_verdict__count">5.3 Verdicts (enum <code>veille_verdict_code</code>, sentinelle <code>VEILLE_VERDICT__COUNT</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Code</th>
+<th>Sévérité</th>
+<th>Porteur</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td><code>VEILLE_OK</code></td>
+<td>info</td>
+<td>chain_id, latency_ms</td>
+</tr>
+<tr>
+<td>1</td>
+<td><code>VEILLE_LATENCY_BOUND_EXCEEDED</code></td>
+<td>error</td>
+<td>chain_id, bound_ms, latency_ms, stage, state</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>VEILLE_ALARM_MISSED</code></td>
+<td>error</td>
+<td>chain_id, threshold, state</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>VEILLE_SENSOR_FAULT</code></td>
+<td>warning</td>
+<td>sensor_id, fault_kind, state</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>VEILLE_PRIORITY_INVERSION</code></td>
+<td>error</td>
+<td>chain_id, holder_prio, waiter_prio</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>VEILLE_TECHNICAL_ALARM</code></td>
+<td>warning</td>
+<td>chain_id, stage, cause</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>VEILLE_CHAIN_FAULT</code></td>
+<td>error</td>
+<td>chain_id, stage, cause</td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>VEILLE_PROOF_COMPLETE</code></td>
+<td>info</td>
+<td>states_explored, bound_ms, config_sha256</td>
+</tr>
+<tr>
+<td>8</td>
+<td><code>VEILLE_PROOF_COUNTEREXAMPLE</code></td>
+<td>error</td>
+<td>states_explored, fault_state, bound_ms, latency_ms</td>
+</tr>
+<tr>
+<td>9</td>
+<td><code>VEILLE_ACK_TIMEOUT</code></td>
+<td>warning</td>
+<td>chain_id, ack_bound_ms, elapsed_ms</td>
+</tr>
+</tbody>
+</table>
+<p>Un verdict porte toujours : <code>code</code>, <code>sev</code>, <code>message</code>. Les champs <code>chain_id</code>, <code>sensor_id</code>, <code>stage</code>, <code>state</code>, <code>bound_ms</code>, <code>latency_ms</code>, <code>config_sha256</code> sont <strong>optionnels</strong> (absents si non applicables).</p>
+<h3 id="54-api-c-en-tetes-sous-coreincludeveille">5.4 API C (en-têtes sous <code>core/include/veille/</code>)</h3>
+<p><code>verdict.h</code> :</p>
+<pre><code class="language-c">const char *veille_verdict_name(veille_verdict_code code);   /* hors plage -&gt; &quot;VEILLE_UNKNOWN&quot; */
+const char *veille_severity_name(veille_severity sev);        /* &quot;info&quot;|&quot;warning&quot;|&quot;error&quot; */
+veille_severity veille_verdict_default_severity(veille_verdict_code code);
+int veille_verdict_code_valid(veille_verdict_code code);      /* 1 si dans [0,COUNT) */
+</code></pre>
+<p><code>proof.h</code> :</p>
+<pre><code class="language-c">/* Explore exhaustivement les états de défaillance de la chaîne et prouve la borne. */
+int veille_proof_explore(const veille_chain_config *cfg,
+                         const veille_fault_mask *mask,
+                         veille_verdict *out, size_t cap, size_t *n_out);
+/* Retourne : 0 si preuve complète (borne tenue partout), 1 si contre-exemple, &lt;0 si erreur. */
+</code></pre>
+<p><code>report.h</code> :</p>
+<pre><code class="language-c">long veille_report_text    (const veille_verdict *v, size_t n, char *buf, size_t cap);
+long veille_report_json    (const veille_verdict *v, size_t n, char *buf, size_t cap);
+long veille_report_markdown(const veille_verdict *v, size_t n,
+                            const veille_report_meta *meta, char *buf, size_t cap);
+int  veille_report_exit_code(const veille_verdict *v, size_t n);
+</code></pre>
+<p>Sémantique de retour : nombre d'octets qui auraient été écrits tampon plein (comme <code>snprintf</code>) ; <code>&lt; 0</code> si argument invalide. Contenu toujours NUL-terminé si <code>cap &gt; 0</code>.
+<code>veille_report_meta</code> (fourni par l'appelant) : <code>config_file</code>, <code>config_sha256</code> (64 hex), <code>timestamp_utc</code> (ISO-8601), <code>veille_version</code>. Tout champ NULL est rendu <code>inconnu</code>.</p>
+<h3 id="55-formats-de-sortie">5.5 Formats de sortie</h3>
+<p><strong>Texte</strong> — une ligne par verdict, préfixe de sévérité aligné sur 5 caractères + 2 espaces :</p>
+<pre><code>ERROR  VEILLE_LATENCY_BOUND_EXCEEDED  chain=ecg_high  bound=100ms  latency=142ms  stage=decide  state=sensor_stuck|bus_saturated
+WARN   VEILLE_TECHNICAL_ALARM  chain=spo2_med  stage=acquire  cause=sensor_dead
+INFO   VEILLE_PROOF_COMPLETE  states=18432  bound=100ms  config_sha256=a3f9...
+</code></pre>
+<p>Termine par <code>OK</code> si aucun verdict error, sinon <code>FAILED &lt;n&gt; error(s)</code>.</p>
+<p><strong>JSON</strong> — une ligne par verdict, compact, ordre des clés <strong>figé</strong> : <code>code</code>, <code>sev</code>, <code>chain_id</code>, <code>sensor_id</code>, <code>stage</code>, <code>state</code>, <code>bound_ms</code>, <code>latency_ms</code>, <code>config_sha256</code>, <code>message</code>. Clés optionnelles omises quand absentes. Séparateurs <code>,</code> et <code>:</code> sans espace. Échappement identique C/Python (<code>"</code>→<code>\"</code>, <code>\</code>→<code>\\</code>, contrôles &lt;0x20→<code>\u00XX</code> minuscule, UTF-8 ≥0x20 tel quel).</p>
+<p><strong>Markdown d'audit</strong> — pour dossier IEC 62304 :</p>
+<pre><code># Rapport de preuve de latence — Veille
+
+- Configuration : &lt;config_file&gt;
+- Empreinte SHA-256 : &lt;config_sha256|inconnu&gt;
+- Horodatage (UTC) : &lt;timestamp_utc|inconnu&gt;
+- Version de Veille : &lt;veille_version|inconnu&gt;
+
+## Synthèse
+&lt;OK / FAILED n error(s)&gt;
+
+## Propriétés vérifiées
+### P1 — Latence d'alarme haute priorité ≤ 100 ms
+- Méthode : exploration exhaustive de &lt;N&gt; états de défaillance
+- Résultat : &lt;borne tenue / contre-exemple&gt;
+- Contre-exemple le cas échéant : &lt;état, latence, étage&gt;
+...
+</code></pre>
+<hr>
+<h2 id="6-exigences-s-c-x">6. Exigences (S / C / X)</h2>
+<h3 id="61-socle-s-demontrable-sans-qnx-sans-licence">6.1 Socle (S) — démontrable sans QNX, sans licence</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Exigence</th>
+<th>Niveau</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S1</td>
+<td>Chaîne <code>sample→acquire→filter→decide→alarm→ack</code> avec timestamps fournis par l'appelant, en C11 pur (<code>core/</code>)</td>
+<td>S</td>
+</tr>
+<tr>
+<td>S2</td>
+<td>Jumeau Python stdlib (<code>host/</code>) : même contrat de sortie, implémentation séparée</td>
+<td>S</td>
+</tr>
+<tr>
+<td>S3</td>
+<td>Test différentiel C↔Python sur corpus de scénarios : tout désaccord est un bug</td>
+<td>S</td>
+</tr>
+<tr>
+<td>S4</td>
+<td>Exploration exhaustive d'un sous-ensemble d'états (capteur × bus, 2 priorités) avec preuve de borne</td>
+<td>S</td>
+</tr>
+<tr>
+<td>S5</td>
+<td>Verdicts (10 codes) et rapports texte/JSON/Markdown avec empreinte SHA-256</td>
+<td>S</td>
+</tr>
+<tr>
+<td>S6</td>
+<td>Fault injection : capteur bloqué/mort/bruité, bus saturé</td>
+<td>S</td>
+</tr>
+<tr>
+<td>S7</td>
+<td><code>make test</code> vert sans QNX, sans QEMU, sans licence</td>
+<td>S</td>
+</tr>
+<tr>
+<td>S8</td>
+<td>CI GitHub Actions : build C (<code>-Wall -Wextra -Werror</code>), tests Python, différentiel, garde taille fichiers</td>
+<td>S</td>
+</tr>
+</tbody>
+</table>
+<h3 id="62-complet-c-ajoute-la-cible-qnx">6.2 Complet (C) — ajoute la cible QNX</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Exigence</th>
+<th>Niveau</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C1</td>
+<td>Resource manager <code>/dev/veille</code> exposant la chaîne d'alarme (API typée par message passing)</td>
+<td>C</td>
+</tr>
+<tr>
+<td>C2</td>
+<td>Acquisition périodique par pulses/timers noyau (pas de <code>sleep()</code>)</td>
+<td>C</td>
+</tr>
+<tr>
+<td>C3</td>
+<td>Priority inheritance <code>MsgSend</code> sur la voie critique : démontrée par kernel trace</td>
+<td>C</td>
+</tr>
+<tr>
+<td>C4</td>
+<td>Exploration exhaustive complète (tous les états : capteur × bus × priorité × alarme × étage) — <strong>✅ fait : 4800 états, &lt; 10 ms</strong></td>
+<td>C</td>
+</tr>
+<tr>
+<td>C5</td>
+<td>Kernel trace (<code>tracelogger</code>) capturé et converti en preuve empirique de latence</td>
+<td>C</td>
+</tr>
+<tr>
+<td>C6</td>
+<td>Fault injection sur cible : panne d'étage, <code>CHANNEL</code> disconnect notifié aux pairs</td>
+<td>C</td>
+</tr>
+<tr>
+<td>C7</td>
+<td>Image QNX (<code>mkifs</code>) bootable sur QEMU pour la démo</td>
+<td>C</td>
+</tr>
+<tr>
+<td>C8</td>
+<td>Codelab 4 chapitres : « prouver la latence d'une alarme médicale sur QNX »</td>
+<td>C</td>
+</tr>
+<tr>
+<td>C9</td>
+<td>Adaptive partitioning : partition critique (alarme) vs best-effort (UI), démontrée sous charge</td>
+<td>C</td>
+</tr>
+</tbody>
+</table>
+<h3 id="63-extreme-x-hors-hackathon-documente">6.3 Extrême (X) — hors hackathon, documenté</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Exigence</th>
+<th>Niveau</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>X1</td>
+<td>Preuve formelle assistée (coq/why3) de la borne sur le modèle d'états</td>
+<td>X</td>
+</tr>
+<tr>
+<td>X2</td>
+<td>Intégration capteurs réels (ECG/SpO2 matériel) avec isolation galvanique</td>
+<td>X</td>
+</tr>
+<tr>
+<td>X3</td>
+<td>Dossier IEC 62304 complet (traçabilité exigences→tests→preuves)</td>
+<td>X</td>
+</tr>
+<tr>
+<td>X4</td>
+<td>Redondance failover de la chaîne d'alarme (deux calculateurs, comme Relais)</td>
+<td>X</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="7-preuve-par-exploration-exhaustive">7. Preuve par exploration exhaustive</h2>
+<h3 id="71-modele-detats">7.1 Modèle d'états</h3>
+<p>La chaîne est modélisée comme un automate fini. Chaque étage a un ensemble d'états de défaillance :</p>
+<table>
+<thead>
+<tr>
+<th>Dimension</th>
+<th>États</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Capteur</td>
+<td><code>ok</code>, <code>stuck</code> (valeur figée), <code>dead</code> (pas d'échantillon), <code>noisy</code> (aberrant), <code>drift</code> (dérive lente)</td>
+</tr>
+<tr>
+<td>Bus</td>
+<td><code>ok</code>, <code>saturated</code> (charge), <code>spike</code> (pic de latence)</td>
+</tr>
+<tr>
+<td>Priorité</td>
+<td><code>normal</code>, <code>inverted</code> (tâche basse priorité tient un verrou)</td>
+</tr>
+<tr>
+<td>Alarme</td>
+<td><code>none</code>, <code>single</code>, <code>concurrent</code> (plusieurs), <code>locked</code>, <code>acked</code></td>
+</tr>
+<tr>
+<td>Étage</td>
+<td><code>ok</code>, <code>fault</code> (panne) pour chacun des 4 étages</td>
+</tr>
+</tbody>
+</table>
+<p>Produit cartésien complet (<strong>mesuré, E5 validé</strong>) : 5 × 3 × 2 × 5 × 32 = <strong>4800 états</strong>. L'estimation initiale « ~18432 » était erronée ; correction consignée dans <code>docs/VALIDATION.md</code>. Les 32 masques d'étage couvrent toutes les combinaisons de pannes des 5 étages (décision D10). Aucun élagage supplémentaire nécessaire : l'espace tient dans le budget d'un test unitaire (&lt; 10 ms).</p>
+<h3 id="72-propriete-prouvee">7.2 Propriété prouvée</h3>
+<p><strong>P1 (latence d'alarme).</strong> Pour tout état atteignable <code>s</code> de la chaîne de priorité <code>p</code>, soit la latence <code>L(s) ≤ B_alarm(p)</code>, soit une alarme technique se déclenche avec <code>L_tech(s) ≤ B_tech</code>.</p>
+<p><strong>P2 (non-manquement).</strong> Pour tout état <code>s</code> où un seuil physiologique est franchi, une alarme de priorité correspondante est déclenchée (jamais de silence).</p>
+<p><strong>P3 (acquittement).</strong> Pour tout état <code>s</code> avec alarme active, l'acquittement est possible dans <code>B_ack(p)</code>.</p>
+<h3 id="73-methode">7.3 Méthode</h3>
+<ol>
+<li>Énumérer tous les états atteignables (DFS sur l'automate, avec mémoïsation).</li>
+<li>Pour chaque état, simuler la chaîne (cœur C ou jumeau Python) avec les timestamps pires-cas (latence maximale de chaque étage dans cet état).</li>
+<li>Vérifier P1, P2, P3.</li>
+<li>Si toutes tiennent → <code>VEILLE_PROOF_COMPLETE</code> avec nombre d'états et empreinte de config.</li>
+<li>Si une tombe → <code>VEILLE_PROOF_COUNTEREXAMPLE</code> avec l'état fautif, la latence, l'étage (contre-exemple rejouable).</li>
+</ol>
+<h3 id="74-preuve-empirique-cible-qnx">7.4 Preuve empirique (cible QNX)</h3>
+<p>Sur QEMU/RPi5 : kernel trace (<code>tracelogger</code>) capture les événements message-passing et scheduling de la chaîne réelle. Les timestamps de trace donnent la latence mesurée <code>L_measured</code>. La borne prouvée <code>B_proof</code> (exploration) doit couvrir <code>L_measured</code> : <code>L_measured ≤ B_proof</code>. L'écart est rapporté (marge). C'est la double preuve : <strong>exhaustive</strong> (modèle) + <strong>empirique</strong> (trace).</p>
+<hr>
+<h2 id="8-tests-et-jumeau">8. Tests et jumeau</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>But</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Différentiel C↔Python</td>
+<td>Même sortie sur même scénario ; tout désaccord = bug, réduit dichotomiquement</td>
+</tr>
+<tr>
+<td>Exploration exhaustive</td>
+<td>P1/P2/P3 sur tous les états ; contre-exemple rejouable</td>
+</tr>
+<tr>
+<td>Fault injection</td>
+<td>Capteur bloqué/mort/bruité, bus saturé, inversion de priorité, panne d'étage</td>
+</tr>
+<tr>
+<td>Mutants</td>
+<td>Injection de fautes dans <code>core/</code> pour vérifier que les tests les attrapent</td>
+</tr>
+<tr>
+<td>Scénarios de référence</td>
+<td>Corpus <code>scenarios/</code> : nominaux, pires cas, fautifs, résultats attendus gelés</td>
+</tr>
+<tr>
+<td>Garde taille</td>
+<td>CI : <code>wc -l</code> &lt; 500 par fichier, fonctions &lt; 50 lignes (grep)</td>
+</tr>
+<tr>
+<td>Kernel trace (C)</td>
+<td>Latence mesurée ≤ borne prouvée, sur QEMU</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="9-demo-et-video-3-min">9. Démo et vidéo (&lt; 3 min)</h2>
+<ol>
+<li><strong>(0:00–0:30)</strong> Le problème : une alarme médicale dont la latence n'est pas garantie = risque patient. IEC 60601-1-8 exige des délais.</li>
+<li><strong>(0:30–1:15)</strong> Veille sur QEMU : moniteur patient simulé (ECG/SpO2), chaîne capteur→alarme, alarme audible qui sonne dans la borne.</li>
+<li><strong>(1:15–2:00)</strong> Fault injection en direct : capteur bloqué → alarme technique dans 50 ms ; bus saturé → la priorité haute tient 100 ms ; inversion de priorité → détectée et corrigée (priority inheritance).</li>
+<li><strong>(2:00–2:45)</strong> La preuve : exploration exhaustive de 18432 états → <code>VEILLE_PROOF_COMPLETE</code> ; rapport Markdown d'audit avec empreinte SHA-256 pour dossier IEC 62304 ; kernel trace qui confirme la borne.</li>
+<li><strong>(2:45–3:00)</strong> Jumeau C↔Python : différentiel vert. Codelab.</li>
+</ol>
+<p>Visuel : terminal + rapport Markdown + graphe d'états explorés + trace kernel (System Profiler). Pas de musique sous copyright, pas de marque tierce.</p>
+<hr>
+<h2 id="10-a-valider-avant-decrire-la-moindre-ligne-de-produit">10. À valider avant d'écrire la moindre ligne de produit</h2>
+<table>
+<thead>
+<tr>
+<th>Essai</th>
+<th>Question</th>
+<th>Bloquant</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>E1</td>
+<td>Geler les bornes et priorités exactes d'IEC 60601-1-8 (délais de déclenchement, profils sonores, verrouillage) — la norme est payante ; utiliser les ordres de grandeur publiquement documentés et le signaler</td>
+<td>oui (contrat §5.2)</td>
+</tr>
+<tr>
+<td>E2</td>
+<td>Confirmer que la priority inheritance <code>MsgSend</code> est observable par kernel trace sur QEMU (événements visibles dans <code>tracelogger</code>)</td>
+<td>oui (C3, preuve empirique)</td>
+</tr>
+<tr>
+<td>E3</td>
+<td>Vérifier que <code>timer_create</code> + <code>MsgSendPulse</code> donnent une cadence périodique stable sous charge sur QEMU</td>
+<td>oui (C2)</td>
+</tr>
+<tr>
+<td>E4</td>
+<td>Confirmer que <code>CHANNEL</code> disconnect notifie bien les pairs à la mort d'un étage (microkernel)</td>
+<td>oui (C6)</td>
+</tr>
+<tr>
+<td>E5</td>
+<td>Mesurer le nombre réel d'états atteignables : <strong>4800</strong> (5×3×2×5×32), validé par <code>make test</code> et le différentiel C↔Python</td>
+<td>✅ fait</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="11-planning-12-nov-15-dec-4-semaines">11. Planning (12 nov → 15 déc, ~4 semaines)</h2>
+<table>
+<thead>
+<tr>
+<th>Semaine</th>
+<th>Livrable</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S1 (12–18 nov)</td>
+<td>Contrat gelé, socle C (<code>core/</code>), jumeau Python (<code>host/</code>), différentiel vert, exploration sous-ensemble (S1–S7). E1–E2 validés.</td>
+</tr>
+<tr>
+<td>S2 (19–25 nov)</td>
+<td>Exploration exhaustive complète (C4), fault injection (S6/C6), rapports (S5), CI (S8).</td>
+</tr>
+<tr>
+<td>S3 (26 nov–2 déc)</td>
+<td>Cible QNX : resource manager <code>/dev/veille</code> (C1), pulses/timers (C2), priority inheritance + kernel trace (C3/C5), image QEMU (C7).</td>
+</tr>
+<tr>
+<td>S4 (3–9 déc)</td>
+<td>Adaptive partitioning (C9), codelab (C8), docs (SAFETY, GAP, VALIDATION), polissage.</td>
+</tr>
+<tr>
+<td>Tampon (10–15 déc)</td>
+<td>Vidéo &lt;3 min, soumission Devpost, relecture, marge.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="12-risques">12. Risques</h2>
+<table>
+<thead>
+<tr>
+<th>Risque</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bornes IEC 60601-1-8 inaccessibles (norme payante)</td>
+<td>Contrat §5.2 approximatif</td>
+<td>Utiliser ordres de grandeur publiés, documenter l'hypothèse, rendre les bornes configurables</td>
+</tr>
+<tr>
+<td>Explosion combinatoire des états</td>
+<td>Exploration trop lente</td>
+<td>Élagage agressif (impossibles, symétries), mémoïsation, sous-ensemble S d'abord</td>
+</tr>
+<tr>
+<td>Priority inheritance non observable sur QEMU</td>
+<td>C3 non démontrable</td>
+<td>E2 en amont ; sinon prouver par le modèle + trace partielle</td>
+</tr>
+<tr>
+<td>Kernel trace trop volumineux</td>
+<td>Preuve empirique lourde</td>
+<td>Filtrer les événements de la chaîne uniquement, fenêtre temporelle bornée</td>
+</tr>
+<tr>
+<td>Temps (4 semaines)</td>
+<td>C/X non atteints</td>
+<td>S d'abord (démontrable sans QNX), C ensuite, X documenté seulement</td>
+</tr>
+<tr>
+<td>Chevauchement avec Ambre/Relais (même style preuve)</td>
+<td>Jugé « pas substantiellement différent »</td>
+<td>Veille = médical (IEC 60601-1-8), Ambre = automotive (UN R160), Relais = steer-by-wire (UN R79) : domaines, normes et chaînes distincts</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="13-statut-des-affirmations">13. Statut des affirmations</h2>
+<table>
+<thead>
+<tr>
+<th>Affirmation</th>
+<th>Statut</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>QNX n'a pas de framework d'alarme médicale IEC 60601-1-8</td>
+<td>À vérifier page à page dans SDP installé (M1)</td>
+</tr>
+<tr>
+<td>Le System Profiler mesure mais ne prouve pas de borne pire-cas</td>
+<td>Vérifié dans doc publique (M2)</td>
+</tr>
+<tr>
+<td>Pas d'exploration exhaustive d'états dans QNX SDP</td>
+<td>À vérifier (M3)</td>
+</tr>
+<tr>
+<td>Priority inheritance <code>MsgSend</code> observable par kernel trace</td>
+<td>À valider (E2)</td>
+</tr>
+<tr>
+<td>Bornes IEC 60601-1-8 (100/500/1000 ms)</td>
+<td>Ordres de grandeur publics, à geler (E1)</td>
+</tr>
+<tr>
+<td>4800 états atteignables (5×3×2×5×32)</td>
+<td>✅ mesuré (E5) — correction de l'estimation initiale « ~18432 », consignée dans VALIDATION.md</td>
+</tr>
+</tbody>
+</table>
+<p>Comme Tamis : trois affirmations ont été corrigées en cours de route sur Tamis ; Veille suivra la même discipline — toute correction est consignée ici.</p>
+<hr>
+<h2 id="14-references">14. Références</h2>
+<ul>
+<li>IEC 60601-1-8 : Alarmes médicales — exigences générales (priorités, délais, profils sonores, verrouillage, acquittement, alarmes techniques).</li>
+<li>IEC 62304 : Logiciels de dispositifs médicaux — cycle de vie (traçabilité, vérification, validation).</li>
+<li>QNX SDP 8.0 : System Security Guide, Resource Manager Library, Kernel Trace (<code>tracelogger</code>), System Profiler, Adaptive Partitioning, Power-Safe File System.</li>
+<li>Projets frères : Ambre (EDR, preuve par exploration de power-cuts), Relais (failover latence bornée), Tamis (analyse statique de politiques), Passerelle (FS virtio/9P), Glane (capteurs/périphériques), Éclat (WAMR + capability broker).</li>
+<li>QNX Global Hackathon 2026 : https://qnx.devpost.com/ — règles, catégories, bonus.</li>
+</ul>
+<hr>
+<h2 id="15-decisions-de-conception-a-completer-dans-docsdecisionsmd">15. Décisions de conception (à compléter dans docs/DECISIONS.md)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Décision</th>
+<th>Justification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D1</td>
+<td>Cœur C11 pur, pas d'horloge ni de fichier</td>
+<td>Portabilité, testabilité sans QNX, jumeau Python comparable</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>Jumeau Python séparé, pas une copie</td>
+<td>Vérification indépendante (désaccord = bug)</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>Exploration exhaustive sur modèle d'états, pas sur cible</td>
+<td>Preuve pire-cas, rejouable, sans matériel</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>Kernel trace comme preuve empirique complémentaire</td>
+<td>Double preuve : modèle + réel</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>Resource manager <code>/dev/veille</code></td>
+<td>API typée, isolation, un seul propriétaire de la chaîne</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>Bornes configurables (pas gravées)</td>
+<td>IEC 60601-1-8 à geler (E1), normes évolutives</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>MIT</td>
+<td>Cohérent avec les autres projets du portfolio</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>Codelab inclus</td>
+<td>Bonus Best Codelab/Tutorial, pédagogie QNX</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><em>Fin du cahier des charges — Veille v0.1.</em></p>
+</main>
+<footer>Généré depuis les sources Markdown du dépôt. Licence MIT.</footer>
+</body>
+</html>
