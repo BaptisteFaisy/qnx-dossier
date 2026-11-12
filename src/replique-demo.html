@@ -62,9 +62,11 @@ droite est le port série, où se déroule la démo.</p>
 démonstration, tels que relevés sur le serveur :</p>
 <p><img src="https://raw.githubusercontent.com/Tradoooo/replique/main/docs/screenshots/invite-qnx800.png"
    alt="écran de l'invité QNX 8.0" style="max-width:100%;border:1px solid #2a3040;border-radius:8px"></p>
-<p><a href="https://raw.githubusercontent.com/Tradoooo/replique/main/docs/screenshots/demo-declic.txt">Transcription
-de la démonstration (console série)</a> — <code>bug-deadlock</code> s'interbloque,
-<code>slay</code> le termine, Déclic assemble l'archive et affiche son SHA-256.</p>
+<p>Sur cette capture, la démonstration est complète : <code>bug-deadlock</code>
+s'interbloque (chaque thread attend le mutex de l'autre), <code>slay</code> le
+termine, et <strong>Déclic assemble l'archive sur la cible</strong> —
+<em>trace figée (tracelogger arrêté), archive 13721 octets, sha256=d14e4d59…,
+sections trace=7484 pidin=5278 slog2=355 core=58 manifest=114</em>.</p>
 
 <h2>Ce qui est vérifié, ce qui ne l'est pas</h2>
 <table>
