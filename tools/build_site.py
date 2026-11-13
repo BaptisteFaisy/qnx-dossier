@@ -32,6 +32,7 @@ NAV = [
     ("glane-demo", "Glane — émulateur QNX 8.0 en direct"),
     ("eclat", "Éclat"),
     ("veille", "Veille"),
+    ("veille-demo", "Veille — émulateur QNX 8.0 en direct"),
     ("codelab-veille", "Codelab Veille"),
     ("classement", "Classement"),
     ("inventaire", "Inventaire QNX"),
@@ -66,6 +67,7 @@ STATIQUES = [
     ("src/replique-demo.html", "replique"),
     ("src/tamis-demo.html", "tamis-demo"),
     ("src/glane-demo.html", "glane-demo"),
+    ("src/veille-demo.html", "veille-demo"),
 ]
 # Fragments de vitrine ajoutés en fin d'une page existante (page -> source).
 DEMOS = {
@@ -79,8 +81,8 @@ COMPOSITIONS = {"codelab-veille": [
     "src/veille-codelab/04-porter-sur-qnx.md",
 ]}
 # Projets hébergés dans un autre dépôt : bandeau avec lien en tête de leur page.
-DEPOTS = {"veille": ("https://github.com/BaptisteFaisy/veille",
-                     "https://baptistefaisy.github.io/veille/")}
+DEPOTS = {"veille": ("https://github.com/Tradoooo/veille",
+                     "https://tradoooo.github.io/veille/")}
 RE_EX = re.compile(r"^\|\s*([A-Z]{3}-\d{2})\s*\|\s*([SCX])\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|$")
 # Format 3 colonnes du cahier Veille : | S1 | exigence | S | (texte sans « | »).
 RE_EX3 = re.compile(r"^\|\s*([SCX]\d+)\s*\|\s*([^|]+?)\s*\|\s*([SCX])\s*\|$")
