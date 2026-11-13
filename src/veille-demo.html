@@ -15,7 +15,7 @@ droite est le port série, où le scénario déroule son journal.</p>
 <div class="demo">
 <div class="box">
 <h3>Écran de l'invité QNX 8.0 (console VGA)</h3>
-<img id="screen" src="https://baptiste-ms-7d18.tail3a8bdf.ts.net:10001/screen.png" alt="écran de l'invité QNX 8.0 de Veille">
+<img id="screen" src="https://r630-debian.tail3a8bdf.ts.net:8091/veille/screen.png" alt="écran de l'invité QNX 8.0 de Veille">
 <div class="keys">
 <button data-k="ret">Entrée</button><button data-k="spc">Espace</button>
 <button data-k="up">↑</button><button data-k="down">↓</button>
@@ -32,7 +32,7 @@ moniteur QEMU. Essayez : <code>ls /proc/boot</code>, <code>pidin</code>,
 </div>
 </div>
 <p><span class="pill ok">en direct</span>
-<span class="pill">invité QNX 8.0, QEMU, sur pc</span>
+<span class="pill">invité QNX 8.0, QEMU, sur r630</span>
 <span class="pill">cœur C recompilé pour QNX 8.0</span>
 <span class="pill">le dépôt est public : <a href="https://github.com/Tradoooo/veille">Tradoooo/veille</a></span></p>
 
@@ -75,7 +75,7 @@ n'embarque aucun <code>printf</code> — le scénario embarqué n'utilise donc q
 <li><a href="https://github.com/Tradoooo/veille/tree/main/image">image/</a> — construction de l'image invitée (buildfile <code>mkifs</code>, <code>build-image.sh</code>, <code>demo.sh</code>)</li>
 </ul>
 <script>
-var API="https://baptiste-ms-7d18.tail3a8bdf.ts.net:10001";
+var API="https://r630-debian.tail3a8bdf.ts.net:8091/veille";
 function tick(){
   var i=document.getElementById("screen");
   i.src=API+"/screen.png?t="+Date.now();

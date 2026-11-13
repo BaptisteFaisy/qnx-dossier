@@ -101,8 +101,8 @@ pre.cmd{background:#0e1016;border:1px solid var(--bd);border-radius:8px;padding:
 </nav>
 <main>
 <h2>L'invité QNX 8.0 de Glane, en direct</h2>
-<p>Voici un <strong>invité QNX 8.0</strong> qui tourne réellement sur le poste de travail
-(<code>pc</code>, SDP 8.0 installé, QEMU en TCG) : au démarrage il publie le
+<p>Voici un <strong>invité QNX 8.0</strong> qui tourne réellement sur le serveur
+(<code>r630</code>, SDP 8.0 installé, QEMU en TCG) : au démarrage il publie le
 capteur <code>temp-chassis</code>, l'accéléromètre <code>imu-accel</code> et la
 tension <code>batt-voltage</code> dans l'espace de noms de l'invité
 (<code>/dev/shmem</code>), en expose une copie par un gestionnaire de ressources
@@ -114,7 +114,7 @@ publication.</p>
 <div class="demo">
 <div class="box">
 <h3>Écran de l'invité QNX 8.0 (console VGA)</h3>
-<img id="screen" src="https://baptiste-ms-7d18.tail3a8bdf.ts.net:10000/screen.png" alt="écran de l'invité QNX 8.0 de Glane">
+<img id="screen" src="https://r630-debian.tail3a8bdf.ts.net:8091/glane/screen.png" alt="écran de l'invité QNX 8.0 de Glane">
 <div class="keys">
 <button data-k="ret">Entrée</button><button data-k="spc">Espace</button>
 <button data-k="up">↑</button><button data-k="down">↓</button>
@@ -130,10 +130,10 @@ Essayez&nbsp;: <code>ls /dev/shmem</code>, <code>cat /dev/shmem/temp-chassis.inf
 </div>
 </div>
 <p><span class="pill ok">en direct</span>
-<span class="pill">invité QNX 8.0, QEMU/TCG, sur pc</span>
+<span class="pill">invité QNX 8.0, QEMU/TCG, sur r630</span>
 <span class="pill">le dépôt est public : <a href="https://github.com/Tradoooo/glane">Tradoooo/glane</a></span></p>
 <script>
-var API="https://baptiste-ms-7d18.tail3a8bdf.ts.net:10000";
+var API="https://r630-debian.tail3a8bdf.ts.net:8091/glane";
 function tick(){
   var i=document.getElementById("screen");
   i.src=API+"/screen.png?t="+Date.now();

@@ -117,10 +117,15 @@ périphérique virtio-gpu, négocie un <strong>scanout 1280×800</strong>, publi
 l'ouvre et peint une mire — que QEMU affiche. L'écran de gauche est l'affichage de
 l'invité (les boutons injectent des touches) ; la console de droite est le port série,
 où se déroule la boucle.</p>
+<p>L'invité vit sur le serveur <code>r630</code> (SDP 8.0 installé). Comme une VM
+inutilisée coûte 1,5 Go de RAM et du CPU, <strong>il est arrêté après 5 minutes sans
+visite</strong> ; la première requête qui arrive le <strong>relance tout seul</strong>
+— l'écran affiche alors « INVITÉ EN DÉMARRAGE » pendant la montée de QNX. La page
+ci-dessous suffit à le réveiller.</p>
 <div class="demo">
 <div class="box">
 <h3>Écran de l'invité QNX 8.0 (sortie virtio-gpu)</h3>
-<img id="screen" src="https://baptiste-ms-7d18.tail3a8bdf.ts.net:8443/toile/screen.png" alt="écran de l'invité QNX 8.0 de Toile">
+<img id="screen" src="https://r630-debian.tail3a8bdf.ts.net:8091/toile/screen.png" alt="écran de l'invité QNX 8.0 de Toile">
 <div class="keys">
 <button data-k="ret">Entrée</button><button data-k="spc">Espace</button>
 <button data-k="up">↑</button><button data-k="down">↓</button>
@@ -136,7 +141,8 @@ moniteur QEMU. Essayez : <code>pidin</code>, <code>ls /proc/boot</code>.</div>
 </div>
 </div>
 <p><span class="pill ok">en direct</span>
-<span class="pill">invité QNX 8.0, QEMU, virtio-gpu</span>
+<span class="pill">invité QNX 8.0, QEMU, virtio-gpu, sur r630</span>
+<span class="pill">l'invité s'arrête après 5 min sans visite et repart tout seul</span>
 <span class="pill">pilote et cœur compilés par qcc pour QNX 8.0</span>
 <span class="pill">le dépôt est public : <a href="https://github.com/Tradoooo/toile">Tradoooo/toile</a></span></p>
 
@@ -190,7 +196,7 @@ preuve que ce cœurpilote un vrai périphérique.</blockquote>
 <li><a href="https://github.com/Tradoooo/toile/blob/main/docs/VIRTIO-GPU.md">VIRTIO-GPU</a> — le contrat des commandes, le piège du 3D refusé</li>
 </ul>
 <script>
-var API="https://baptiste-ms-7d18.tail3a8bdf.ts.net:8443/toile";
+var API="https://r630-debian.tail3a8bdf.ts.net:8091/toile";
 function tick(){
   var i=document.getElementById("screen");
   i.src=API+"/screen.png?t="+Date.now();
