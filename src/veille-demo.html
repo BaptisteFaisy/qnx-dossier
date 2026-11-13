@@ -10,8 +10,9 @@ image invitée : ci-dessous, il s'exécute dans QNX, pas dans une simulation sur
 réellement sous QEMU : au démarrage il explore les 4 800 états de la chaîne, rejoue
 600 échantillons avec pannes injectées, démarre le gestionnaire de ressources
 <code>/dev/veille</code>, puis un client mesure 200 allers-retours. L'écran de gauche est
-la console VGA de l'invité (les boutons injectent des touches dans la VM) ; la console de
-droite est le port série, où le scénario déroule son journal.</p>
+la console VGA de l'invité : elle affiche <strong>une phase complète à la fois</strong>
+(80×25, écran effacé entre les phases) ; les boutons injectent des touches dans la VM.
+La console de droite est le port série, qui déroule le même scénario en texte.</p>
 <div class="demo">
 <div class="box">
 <h3>Écran de l'invité QNX 8.0 (console VGA)</h3>
@@ -37,18 +38,32 @@ moniteur QEMU. Essayez : <code>ls /proc/boot</code>, <code>pidin</code>,
 <span class="pill">le dépôt est public : <a href="https://github.com/Tradoooo/veille">Tradoooo/veille</a></span></p>
 
 <h3>Ce qui s'exécute dans l'invité</h3>
-<pre class="cmd">[1/4] veille-sim        exploration exhaustive : bound=200 states=4800 -> VEILLE_PROOF_COMPLETE
-                        simulation 600 échantillons : 291 alarmes physiologiques, 8 techniques
-[2/4] veille-rm         gestionnaire de ressources /dev/veille (pulses, timers noyau, MsgSend)
-[3/4] bench-client      200 allers-retours sur /dev/veille : rtt min 212 us, max 6663 us, moyenne 418 us
-                        verdict = VEILLE_OK + alarme technique "mort d'un pair" à la déconnexion
-[4/4] état final        rm relancé, /dev/veille prêt, invite interactive</pre>
-<p>Sortie réelle du bilan relevée dans l'invité (console série) :</p>
+<p>L'écran VGA de l'invité fait <strong>80×25</strong> : une démo qui défile n'est pas une démo
+visible. Le scénario est donc joué en <strong>quatre phases</strong>, chacune tenant dans
+l'écran et effaçant la précédente — six secondes par phase, trois cycles, puis
+l'<strong>invite reste interactive</strong> (les boutons de la page injectent leurs touches
+dans l'invité QNX 8.0).</p>
+<table>
+<thead><tr><th>Phase</th><th>Ce que l'écran affiche</th></tr></thead>
+<tbody>
+<tr><td><strong>1/4 — preuve</strong></td><td>exploration exhaustive : <code>VEILLE_PROOF_COMPLETE bound=200 states=4800</code></td></tr>
+<tr><td><strong>2/4 — simulation</strong></td><td>600 échantillons, pannes injectées : 291 alarmes physiologiques, 8 techniques, marge 200 ms, <code>L_measured &lt;= B_proof</code></td></tr>
+<tr><td><strong>3/4 — signal brut</strong></td><td>les quatre états capteur : figé / tachycardie / mort / régulier, avec latence et borne</td></tr>
+<tr><td><strong>4/4 — cible</strong></td><td>le gestionnaire de ressources <code>/dev/veille</code> (QNX, SCHED_FIFO 62), 200 allers-retours mesurés, verdict</td></tr>
+</tbody>
+</table>
+<p>Sortie réelle relevée dans l'invité (console série, même texte que l'écran) :</p>
 <pre class="cmd">--- bilan ---
 alarmes physiologiques : 291 (latence max 0.063 ms, borne prouve 200 ms)
 alarmes techniques     : 8 (latence max 0.030 ms, borne 50 ms)
 marge de sret        : 200 ms (borne prouve - latence mesure max)
-[OK] L_measured <= B_proof sur tous les chantillons  double preuve cohrente.</pre>
+[OK] L_measured <= B_proof sur tous les chantillons  double preuve cohrente.
+
+PHASE 4/4  CIBLE  -  resource manager /dev/veille + mesure
+# fin label=vitrine echantillons=200 min_us=124 max_us=552 moyenne_us=257
+Verdict de la chaine apres la deconnexion du client :
+INFO VEILLE_OK borne=200 ms
+WARN VEILLE_TECHNICAL_ALARM borne=50 ms</pre>
 
 <h3>Ce qui est vérifié, ce qui ne l'est pas</h3>
 <table>
