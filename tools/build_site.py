@@ -27,6 +27,7 @@ NAV = [
     ("replique", "Réplique — émulateur QNX 8.0"),
     ("features", "Fonctionnalités"),
     ("tamis", "Tamis"),
+    ("tamis-demo", "Tamis — émulateur QNX 8.0 en direct"),
     ("glane", "Glane"),
     ("glane-demo", "Glane — émulateur QNX 8.0 en direct"),
     ("eclat", "Éclat"),
@@ -63,6 +64,7 @@ SRC = {"tamis": "TAMIS-cahier-des-charges.md", "glane": "GLANE-cahier-des-charge
 # Pages statiques (HTML écrit tel quel, injecté dans le gabarit du site).
 STATIQUES = [
     ("src/replique-demo.html", "replique"),
+    ("src/tamis-demo.html", "tamis-demo"),
     ("src/glane-demo.html", "glane-demo"),
 ]
 # Fragments de vitrine ajoutés en fin d'une page existante (page -> source).

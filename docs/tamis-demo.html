@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tamis — émulateur QNX 8.0 en direct — Dossier QNX</title>
+<style>:root{--fg:#e6e6e6;--bg:#12141a;--card:#1b1f28;--acc:#7fd1c1;--mut:#9aa3b2;--bd:#2a3040}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+ font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{padding:1.4rem 1.2rem;border-bottom:1px solid var(--bd);background:var(--card)}
+header h1{margin:0;font-size:1.25rem}
+header p{margin:.3rem 0 0;color:var(--mut);font-size:.9rem}
+nav{display:flex;flex-wrap:wrap;gap:.4rem;padding:.8rem 1.2rem;border-bottom:1px solid var(--bd)}
+nav a{color:var(--mut);text-decoration:none;font-size:.85rem;padding:.3rem .6rem;
+ border:1px solid var(--bd);border-radius:999px}
+nav a:hover{color:var(--fg)}
+nav a.actif{color:#12141a;background:var(--acc);border-color:var(--acc);font-weight:600}
+main{padding:1.2rem;max-width:60rem;margin:0 auto}
+main h1{font-size:1.6rem;border-bottom:1px solid var(--bd);padding-bottom:.4rem}
+main h2{font-size:1.25rem;margin-top:2rem;color:var(--acc)}
+main h3{font-size:1.05rem;margin-top:1.6rem}
+a{color:var(--acc)}
+code{background:#0d0f14;padding:.1rem .35rem;border-radius:4px;font-size:.88em}
+pre{background:#0d0f14;padding:.9rem;border-radius:8px;overflow-x:auto;border:1px solid var(--bd)}
+pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.9rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--bd);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--card);white-space:nowrap}
+blockquote{border-left:3px solid var(--acc);margin:1rem 0;padding:.2rem 1rem;color:var(--mut)}
+footer{padding:1.2rem;color:var(--mut);font-size:.85rem;border-top:1px solid var(--bd);text-align:center}
+main h1 small,main h2 small{display:block;font-size:.8rem;color:var(--mut);font-weight:400}
+.desc{color:var(--mut);margin:.2rem 0 .6rem}
+.chiffres{font-size:.9rem;color:var(--mut);margin:.2rem 0 1rem}
+.chiffres b{color:var(--fg)}
+.filtres{position:sticky;top:0;background:var(--bg);padding:.6rem 0;display:flex;
+ flex-wrap:wrap;gap:.4rem;border-bottom:1px solid var(--bd);z-index:2}
+.filtres button{background:var(--card);color:var(--mut);border:1px solid var(--bd);
+ border-radius:999px;padding:.3rem .7rem;font-size:.82rem;cursor:pointer}
+.filtres button:hover{color:var(--fg)}
+.filtres button.actif{background:var(--acc);color:#12141a;border-color:var(--acc);font-weight:600}
+#compte{margin-left:auto;color:var(--mut);font-size:.82rem;align-self:center}
+.projet{margin:1.6rem 0}
+.ex{background:var(--card);border:1px solid var(--bd);border-radius:8px;
+ padding:.7rem .85rem;margin:.55rem 0}
+.ex header{display:flex;gap:.55rem;align-items:center;flex-wrap:wrap}
+.ex header b{font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--acc)}
+.ex p{margin:.45rem 0}
+.ex footer{color:var(--mut);font-size:.85rem;border-top:1px dashed var(--bd);padding-top:.4rem}
+.niv{font-size:.72rem;font-weight:700;border-radius:4px;padding:.1rem .4rem;color:#12141a}
+.niv-S{background:#7fd1c1}.niv-C{background:#f0c674}.niv-X{background:#e58fb0}
+.proj{margin-left:auto;font-size:.75rem;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+.bandeau{background:var(--card);border:1px solid var(--bd);border-left:3px solid var(--acc);
+ border-radius:6px;padding:.55rem .8rem;color:var(--mut);font-size:.9rem}
+.sommaire{background:var(--card);border:1px solid var(--bd);border-radius:8px;
+ padding:.6rem 1rem;margin:1rem 0}
+.sommaire h2{margin:.3rem 0 .4rem;font-size:1rem}
+.sommaire ol{margin:.2rem 0 .4rem;padding-left:1.3rem}
+</style>
+</head>
+<body>
+<header>
+<h1>Dossier QNX — Global Hackathon 2026</h1>
+<p>Inventaire documenté des manques de QNX SDP 8.0, classement de 140 idées, quatre cahiers des charges.</p>
+</header>
+<nav>
+<a href="index.html">Accueil</a>
+<a href="replique.html">Réplique — émulateur QNX 8.0</a>
+<a href="features.html">Fonctionnalités</a>
+<a href="tamis.html">Tamis</a>
+<a href="tamis-demo.html" class="actif">Tamis — émulateur QNX 8.0 en direct</a>
+<a href="glane.html">Glane</a>
+<a href="glane-demo.html">Glane — émulateur QNX 8.0 en direct</a>
+<a href="eclat.html">Éclat</a>
+<a href="veille.html">Veille</a>
+<a href="codelab-veille.html">Codelab Veille</a>
+<a href="classement.html">Classement</a>
+<a href="inventaire.html">Inventaire QNX</a>
+<a href="idees.html">100 idées</a>
+</nav>
+<main>
+<style>
+.demo{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:1rem;margin:1.2rem 0}
+@media(max-width:860px){.demo{grid-template-columns:1fr}}
+.box{background:var(--card);border:1px solid var(--bd);border-radius:10px;overflow:hidden}
+.box h3{margin:0;padding:.6rem .8rem;font-size:.9rem;background:#1f2432;border-bottom:1px solid var(--bd)}
+#screen{width:100%;height:290px;object-fit:contain;background:#000;display:block}
+#console{height:330px;overflow:auto;margin:0;border:0;border-radius:0;
+ font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;padding:.6rem;color:#cfe8c8}
+.keys{display:flex;flex-wrap:wrap;gap:.35rem;padding:.55rem .8rem;border-top:1px solid var(--bd)}
+.keys button{background:#232a3c;color:var(--fg);border:1px solid var(--bd);border-radius:6px;
+ padding:.3rem .55rem;cursor:pointer;font:inherit;font-size:.85rem}
+.keys button:hover{background:#2c3549;border-color:var(--acc)}
+.note{color:var(--mut);font-size:.85rem;padding:.5rem .8rem}
+.pill{display:inline-block;font-size:.75rem;padding:.1rem .5rem;border-radius:999px;
+ border:1px solid var(--bd);color:var(--mut)}
+.pill.ok{color:var(--acc);border-color:var(--acc)}
+pre.cmd{background:#0e1016;border:1px solid var(--bd);border-radius:8px;padding:.6rem .8rem;
+ overflow:auto;font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;color:#cfe8c8}
+</style>
+<main>
+<h1>Tamis — l'invité QNX 8.0, en direct</h1>
+<p>Tamis analyse <strong>statiquement</strong> une politique de sécurité QNX
+(<code>secpol</code>) et prouve l'accessibilité des privilèges <em>avant</em> le
+déploiement. Pour montrer que l'outil marche sur une vraie cible — et pas sur
+une simulation — le cœur C de Tamis est <strong>compilé pour QNX 8.0 par
+<code>qcc</code></strong> et embarqué dans une image invitée : ci-dessous, il
+tourne réellement, dans QNX, sur une politique QNX 8.0 réelle.</p>
+
+<h2>L'invité, en direct</h2>
+<p>Voici un <strong>invité QNX 8.0</strong> qui tourne réellement sur le serveur
+(<code>r630</code>, SDP 8.0 installé, QEMU) : il démarre, analyse la politique
+embarquée (<code>politique.secpol</code>) et affiche les verdicts. L'écran de
+gauche est la console VGA de l'invité (les boutons injectent des touches) ; la
+console de droite est le port série, où se déroule le même scénario.</p>
+<div class="demo">
+<div class="box">
+<h3>Écran de l'invité QNX 8.0 (console VGA)</h3>
+<img id="screen" src="https://r630-debian.tail3a8bdf.ts.net:8092/screen.png" alt="écran de l'invité QNX 8.0">
+<div class="keys">
+<button data-k="ret">Entrée</button><button data-k="spc">Espace</button>
+<button data-k="up">↑</button><button data-k="down">↓</button>
+<button data-k="l">l</button><button data-k="c">c</button>
+<button data-k="tab">Tab</button><button data-k="cr">Ctrl-C</button>
+</div>
+<div class="note">Capture d'écran rafraîchie toutes les 2 s ; les touches vont à l'invité via le moniteur QEMU.</div>
+</div>
+<div class="box">
+<h3>Console série — le scénario Tamis</h3>
+<pre id="console">connexion…</pre>
+</div>
+</div>
+<p><span class="pill ok">en direct</span>
+<span class="pill">invité QNX 8.0, QEMU/TCG, sur r630</span>
+<span class="pill">cœur C recompilé pour QNX 8.0</span>
+<span class="pill">le dépôt est public : <a href="https://github.com/Tradoooo/tamis">Tradoooo/tamis</a></span></p>
+
+<h2>Ce qui s'exécute dans l'invité</h2>
+<p>Le scénario joue cinq commandes de l'outil, <strong>dans la cible</strong> :</p>
+<pre class="cmd">tamis reach   /proc/boot/politique.secpol --src app_tiers --dst pompe_critique
+tamis lint    /proc/boot/politique.secpol
+tamis explain /proc/boot/politique.secpol --src app_tiers --dst pompe_critique
+tamis proof   /proc/boot/politique.secpol --src app_tiers --dst pompe_critique
+tamis version</pre>
+<p>Sortie réelle relevée dans l'invité (console série) :</p>
+<pre class="cmd">ERROR  TAMIS_PATH_FOUND  demo.secpol  app_tiers -&gt; pompe_critique (3 sauts) : settypeid,settypeid,settypeid
+INFO   TAMIS_OK  demo.secpol  Pourquoi ce refus : app_tiers atteint pompe_critique via la chaîne
+      app_tiers →(settypeid) journal →(settypeid) diag →(settypeid) pompe_critique.
+      Correctif minimal : retirer la règle settypeid (dernière arête avant pompe_critique) tue ce chemin.
+WARN   TAMIS_MISSING_DEFAULT_SPAWN  demo.secpol  default_spawn_type absent (trou S7)
+ERROR  TAMIS_INTERFERENCE_POSSIBLE  demo.secpol  app_tiers -&gt; pompe_critique (3 sauts)</pre>
+<p>La politique analysée est le format <strong>QNX 8.0 réel</strong> : c'est le
+fichier que le compilateur officiel <code>secpolcompile</code> accepte (0
+erreur), pas un format provisoire.</p>
+
+<h2>Capture de l'invité</h2>
+<p><img src="https://raw.githubusercontent.com/Tradoooo/tamis/main/docs/screenshots/invite-qnx800.png"
+   alt="écran de l'invité QNX 8.0 de Tamis" style="max-width:100%;border:1px solid #2a3040;border-radius:8px"></p>
+
+<h2>Ce qui est vérifié, ce qui ne l'est pas</h2>
+<table>
+<thead><tr><th>Preuve</th><th>Résultat</th></tr></thead>
+<tbody>
+<tr><td>Le cœur C compile pour QNX 8.0 (<code>qcc -V gcc_ntox86_64</code>, <code>-Werror</code>)</td><td><strong>réussi</strong> — binaire ELF QNX embarqué dans l'IFS</td></tr>
+<tr><td>Le même binaire analyse une politique QNX 8.0 <em>dans</em> l'invité</td><td><strong>réussi</strong> — verdicts identiques à ceux du poste</td></tr>
+<tr><td>Différentiel C ↔ Python ↔ JS (même contrat, octet pour octet)</td><td><strong>0 divergence</strong> sur les scénarios de test</td></tr>
+<tr><td>Accord avec le compilateur officiel <code>secpolcompile</code> (oracle)</td><td><strong>42 cas</strong> du corpus : verdicts comparés au compilateur QNX 8.0</td></tr>
+<tr><td>Preuve formelle rejouable (encodeur SMT-LIB2)</td><td><strong>validée par Z3</strong> (<code>unsat</code> = le chemin existe)</td></tr>
+<tr><td>Le <em>refus</em> prédit par Tamis, confirmé par QNX en exécution</td>
+    ><strong>non vérifié</strong> — il faut un <code>secpol.bin</code> compilé et injecté dans l'IFS (SDP requis)</td></tr>
+</tbody>
+</table>
+<blockquote>Piège QNX 8.0 connu et contourné : sans disque, le <code>ksh</code> de l'invité ne peut
+ni créer de tube (<code>pipe</code>) ni faire de substitution de commande — le scénario
+embarqué n'en utilise donc aucun. Le même constat a été fait sur la démo Réplique.</blockquote>
+
+<h2>Où aller voir la suite</h2>
+<ul>
+<li><a href="https://github.com/Tradoooo/tamis">Le dépôt du projet</a> — cœur C11, parseur <code>secpol</code>, jumeaux Python/JS, CI, oracle</li>
+<li><a href="https://github.com/Tradoooo/tamis/blob/main/docs/SECPOL-PARSEUR.md">docs/SECPOL-PARSEUR.md</a> — le contrat gelé du parseur</li>
+<li><a href="https://github.com/Tradoooo/tamis/blob/main/docs/ORACLE-SDP.md">docs/ORACLE-SDP.md</a> — la table de vérité du compilateur officiel</li>
+<li><a href="https://github.com/Tradoooo/tamis/blob/main/image/README.md">image/README.md</a> — construction de l'image invitée et du scénario</li>
+</ul>
+</main>
+<script>
+var API="https://r630-debian.tail3a8bdf.ts.net:8092";
+function tick(){
+  var i=document.getElementById("screen");
+  i.src=API+"/screen.png?t="+Date.now();
+  fetch(API+"/console").then(function(r){return r.text();}).then(function(t){
+    var c=document.getElementById("console");c.textContent=t;c.scrollTop=c.scrollHeight;});
+}
+document.querySelectorAll(".keys button").forEach(function(b){
+  b.onclick=function(){fetch(API+"/key?k="+encodeURIComponent(b.dataset.k));};
+});
+setInterval(tick,2000);tick();
+</script>
+
+</main>
+<footer>Généré depuis les sources Markdown du dépôt. Licence MIT.</footer>
+</body>
+</html>
