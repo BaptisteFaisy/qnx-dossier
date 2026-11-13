@@ -185,6 +185,19 @@ n'embarque aucun <code>printf</code> — le scénario embarqué n'utilise donc q
 <code>echo</code> et des redirections par fichier. La console VGA est un terminal texte
 (l'image socle n'a pas de pilote d'affichage).</blockquote>
 
+<h3>L'invite reste interactive après la démo</h3>
+<p>Quand le scénario a fini ses trois cycles, l'invité ne s'éteint pas : il rend la main
+sur un <strong>shell QNX 8.0</strong>. Les boutons de la page injectent leurs touches
+dans la VM — on peut donc interroger la cible depuis le navigateur. Tapé depuis la
+vitrine :</p>
+<pre class="cmd"># uname -a
+QNX localhost 8.0.0 2026/06/05-16:26:03EDT x86pc x86_64
+# ls
+bin  dev  proc  tmp  usr
+#</pre>
+<p>C'est la même session que celle qui a joué le scénario : une invite qui répond, c'est
+une invite vivante, pas une capture d'écran.</p>
+
 <h3>Où aller voir la suite</h3>
 <ul>
 <li><a href="https://github.com/Tradoooo/veille">Le dépôt du projet</a> — cœur C11, jumeau Python, preuve d'exploration, CI</li>
