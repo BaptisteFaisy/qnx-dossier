@@ -28,6 +28,7 @@ NAV = [
     ("features", "Fonctionnalités"),
     ("tamis", "Tamis"),
     ("glane", "Glane"),
+    ("glane-demo", "Glane — émulateur QNX 8.0 en direct"),
     ("eclat", "Éclat"),
     ("veille", "Veille"),
     ("codelab-veille", "Codelab Veille"),
@@ -62,7 +63,12 @@ SRC = {"tamis": "TAMIS-cahier-des-charges.md", "glane": "GLANE-cahier-des-charge
 # Pages statiques (HTML écrit tel quel, injecté dans le gabarit du site).
 STATIQUES = [
     ("src/replique-demo.html", "replique"),
+    ("src/glane-demo.html", "glane-demo"),
 ]
+# Fragments de vitrine ajoutés en fin d'une page existante (page -> source).
+DEMOS = {
+    "glane": "src/glane-demo.html",
+}
 COMPOSITIONS = {"codelab-veille": [
     "src/veille-codelab/README.md",
     "src/veille-codelab/01-pourquoi-une-borne-prouvee.md",
@@ -261,7 +267,11 @@ def construire(sortie: pathlib.Path) -> int:
         if not src.exists():
             print(f"source absente : {rel}", file=sys.stderr)
             return 1
-        ecrire(sortie, slug, bandeau(slug) + convertir(src))
+        corps = bandeau(slug) + convertir(src)
+        # vitrine en direct : le fragment de démo est ajouté en fin de page
+        if slug in DEMOS:
+            corps += "\n" + (RACINE / DEMOS[slug]).read_text(encoding="utf-8")
+        ecrire(sortie, slug, corps)
     for slug, sources in COMPOSITIONS.items():
         absentes = [s for s in sources if not (RACINE / s).exists()]
         if absentes:
