@@ -11,17 +11,19 @@ servi à choisir un sujet. Il est publié parce que l'inventaire qu'il contient 
 
 | Document | Contenu |
 |---|---|
-| [Fonctionnalités](features.html) | Les **91 exigences** des quatre cahiers, extraites automatiquement de leurs tableaux, filtrables par projet et par niveau S/C/X. |
+| [Fonctionnalités](features.html) | Les **116 exigences** des cinq cahiers, extraites automatiquement de leurs tableaux, filtrables par projet et par niveau S/C/X. |
 | [Inventaire officiel](inventaire.html) | Ce que QNX SDP 8.0 **fournit déjà** (IDE Momentics, SAT, chaîne `secpol`, HAM, QPLMS, QFS, hyperviseur et ses 20 vdev, io-sock, conteneurs, ports open source) et les **~74 trous documentés**, chacun avec la page de documentation source. |
 | [Classement](classement.html) | 169 idées nommées, 140 notées sur une grille explicite, 29 éliminées avec motif. |
 | [100 idées détaillées](idees.html) | Les 100 idées retenues à l'étape précédente, chacune rattachée au trou qu'elle exploite. |
 | [Tamis](tamis.html) | Cahier des charges complet — analyse statique et preuve des politiques de sécurité `secpol`. |
 | [Glane](glane.html) | Cahier des charges complet — couche capteurs et publication de périphériques. |
+| [Toile](toile.html) | Cahier des charges complet — pilote virtio-gpu 2D pour QNX 8.0. |
+| [Toile — en direct](toile-demo.html) | L'invité QNX 8.0 de Toile, affichage virtio-gpu et console série. |
 | [Éclat](eclat.html) | Cahier des charges complet — portage de WAMR (WebAssembly) et courtier de capacités. |
 | [Veille](veille.html) | Cahier des charges complet — moniteur patient à latence d'alarme bornée et prouvée. |
 | [Codelab Veille](codelab-veille.html) | Codelab en 5 parties — prouver la latence d'une alarme médicale sur QNX 8.0. |
 
-## Les quatre sujets poussés jusqu'au cahier des charges
+## Les cinq sujets poussés jusqu'au cahier des charges
 
 **Tamis** — *Developer Tooling & Host Tools*. La documentation QNX reconnaît que la revue des
 règles inutiles est manuelle, que la politique générée n'est pas utilisable telle quelle, et
@@ -35,6 +37,20 @@ officiel ne nécessite aucune cible.
 **un seul** publisher (`usblauncher_otg`, orienté USB/stockage/média). Aucune API pour en écrire
 un, aucune simulation sans matériel, aucun validateur de schéma, aucune mesure de latence, et
 aucune abstraction capteur au-dessus des frameworks GPIO et SPI pourtant documentés.
+
+**Toile** — *Low-level Software*. Le SDP 8.0 livre une vingtaine de périphériques
+virtuels pour son hyperviseur — `virtio-blk`, `virtio-net`, `virtio-snd` — mais
+**aucun pour le GPU** : dans une machine virtuelle QNX, l'écran est inutilisable
+sans passe-plat, et le SDP ne livre pas de pilote d'écran tiers exploitable hors
+« Screen Board Support packages ». Toile écrit le **pilote virtio-gpu 2D** qui
+manque — énumération PCI, transport virtio, controlq, scanout, framebuffer, `flush` —
+et le publie comme gestionnaire de ressources `/dev/gpu0`. Le cœur (machine à
+commandes, invariants, verdicts) est portable et testé sur PC, avec jumeau Python et
+différentiel ; la cible apporte la preuve que ce cœur pilote un vrai périphérique.
+L'essai E4 — accès au DDK hyperviseur sous licence non commerciale — a été **tranché
+négativement** : le volet hôte est abandonné, le projet reste faisable en invité QEMU.
+Le dépôt est public et la [vitrine en direct](toile-demo.html) montre l'invité QNX 8.0
+affichant la mire peinte par un client dans le framebuffer virtio-gpu.
 
 **Éclat** — *Open-Source Contribution & Ports*. Aucun runtime WebAssembly n'est porté sur QNX
 (absence vérifiée dans l'index officiel des ports). WAMR porté, plus un courtier de capacités :

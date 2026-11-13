@@ -30,6 +30,8 @@ NAV = [
     ("tamis-demo", "Tamis — émulateur QNX 8.0 en direct"),
     ("glane", "Glane"),
     ("glane-demo", "Glane — émulateur QNX 8.0 en direct"),
+    ("toile", "Toile"),
+    ("toile-demo", "Toile — émulateur QNX 8.0 en direct"),
     ("eclat", "Éclat"),
     ("veille", "Veille"),
     ("veille-demo", "Veille — émulateur QNX 8.0 en direct"),
@@ -42,6 +44,7 @@ PAGES = [
     ("index.md", "index"),
     ("src/TAMIS-cahier-des-charges.md", "tamis"),
     ("src/GLANE-cahier-des-charges.md", "glane"),
+    ("src/TOILE-cahier-des-charges.md", "toile"),
     ("src/ECLAT-cahier-des-charges.md", "eclat"),
     ("src/VEILLE-cahier-des-charges.md", "veille"),
     ("src/qnx-classement-final.md", "classement"),
@@ -53,6 +56,9 @@ PROJETS = [
      "Analyse statique et preuve des politiques de sécurité secpol, avant déploiement."),
     ("glane", "Glane", "Low-level Software",
      "Couche capteurs, publication de périphériques, simulateur et banc de latence."),
+    ("toile", "Toile", "Low-level Software",
+     "Pilote virtio-gpu 2D pour QNX 8.0 : le périphérique virtuel que le SDP ne "
+     "livre pas, et le premier écran de l'invité."),
     ("eclat", "Éclat", "Open-Source Contribution & Ports",
      "Portage de WAMR (WebAssembly) et courtier de capacités à refus par défaut."),
     ("veille", "Veille", "Robotics & Medical",
@@ -60,7 +66,8 @@ PROJETS = [
      "exploration exhaustive des états de défaillance (IEC 62304 / IEC 60601-1-8)."),
 ]
 SRC = {"tamis": "TAMIS-cahier-des-charges.md", "glane": "GLANE-cahier-des-charges.md",
-       "eclat": "ECLAT-cahier-des-charges.md", "veille": "VEILLE-cahier-des-charges.md"}
+       "eclat": "ECLAT-cahier-des-charges.md", "veille": "VEILLE-cahier-des-charges.md",
+       "toile": "TOILE-cahier-des-charges.md"}
 # Pages composées de plusieurs Markdown concaténés (slug → sources, dans l'ordre).
 # Pages statiques (HTML écrit tel quel, injecté dans le gabarit du site).
 STATIQUES = [
@@ -68,6 +75,7 @@ STATIQUES = [
     ("src/tamis-demo.html", "tamis-demo"),
     ("src/glane-demo.html", "glane-demo"),
     ("src/veille-demo.html", "veille-demo"),
+    ("src/toile-demo.html", "toile-demo"),
 ]
 # Fragments de vitrine ajoutés en fin d'une page existante (page -> source).
 DEMOS = {
@@ -88,7 +96,7 @@ RE_EX = re.compile(r"^\|\s*([A-Z]{3}-\d{2})\s*\|\s*([SCX])\s*\|\s*(.+?)\s*\|\s*(
 RE_EX3 = re.compile(r"^\|\s*([SCX]\d+)\s*\|\s*([^|]+?)\s*\|\s*([SCX])\s*\|$")
 RE_ESSAI = re.compile(r"^\|\s*(E\d)\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|$")
 # Essais à 3 colonnes du cahier Veille : | E1 | question | bloquant |.
-RE_ESSAI3 = re.compile(r"^\|\s*(E\d+)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|$")
+RE_ESSAI3 = re.compile(r"^\|\s*\*{0,2}(E\d+)\*{0,2}\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|$")
 RE_LOT = re.compile(r"^\|\s*(L\d+)\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|$")
 CSS = pathlib.Path(__file__).with_name("style.css").read_text(encoding="utf-8")
 
@@ -103,7 +111,7 @@ def gabarit(titre: str, corps: str, actif: str) -> str:
             f"<title>{titre} — Dossier QNX</title>\n<style>{CSS}</style>\n</head>\n<body>\n"
             "<header>\n<h1>Dossier QNX — Global Hackathon 2026</h1>\n"
             "<p>Inventaire documenté des manques de QNX SDP 8.0, classement de 140 idées, "
-            "quatre cahiers des charges.</p>\n</header>\n<nav>\n" + "\n".join(liens) +
+            "cinq cahiers des charges.</p>\n</header>\n<nav>\n" + "\n".join(liens) +
             f"\n</nav>\n<main>\n{corps}\n</main>\n"
             "<footer>Généré depuis les sources Markdown du dépôt. Licence MIT.</footer>\n"
             "</body>\n</html>\n")
@@ -245,7 +253,7 @@ def page_features() -> str:
         d = extraire(RACINE / "src" / SRC[slug])
         total += len(d["exigences"])
         blocs.append(bloc_projet(slug, nom, cat, desc, d))
-    entete = ("<h1>Fonctionnalités des quatre projets</h1>"
+    entete = ("<h1>Fonctionnalités des cinq projets</h1>"
               "<p>Page générée automatiquement depuis les tableaux d'exigences des cahiers "
               "des charges : elle ne peut pas diverger du texte source. Les niveaux "
               "<b>S</b> (socle, indispensable à une soumission), <b>C</b> (complet, la "

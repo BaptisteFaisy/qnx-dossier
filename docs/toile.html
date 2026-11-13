@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Toile — Dossier QNX</title>
+<style>:root{--fg:#e6e6e6;--bg:#12141a;--card:#1b1f28;--acc:#7fd1c1;--mut:#9aa3b2;--bd:#2a3040}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+ font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{padding:1.4rem 1.2rem;border-bottom:1px solid var(--bd);background:var(--card)}
+header h1{margin:0;font-size:1.25rem}
+header p{margin:.3rem 0 0;color:var(--mut);font-size:.9rem}
+nav{display:flex;flex-wrap:wrap;gap:.4rem;padding:.8rem 1.2rem;border-bottom:1px solid var(--bd)}
+nav a{color:var(--mut);text-decoration:none;font-size:.85rem;padding:.3rem .6rem;
+ border:1px solid var(--bd);border-radius:999px}
+nav a:hover{color:var(--fg)}
+nav a.actif{color:#12141a;background:var(--acc);border-color:var(--acc);font-weight:600}
+main{padding:1.2rem;max-width:60rem;margin:0 auto}
+main h1{font-size:1.6rem;border-bottom:1px solid var(--bd);padding-bottom:.4rem}
+main h2{font-size:1.25rem;margin-top:2rem;color:var(--acc)}
+main h3{font-size:1.05rem;margin-top:1.6rem}
+a{color:var(--acc)}
+code{background:#0d0f14;padding:.1rem .35rem;border-radius:4px;font-size:.88em}
+pre{background:#0d0f14;padding:.9rem;border-radius:8px;overflow-x:auto;border:1px solid var(--bd)}
+pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.9rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--bd);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--card);white-space:nowrap}
+blockquote{border-left:3px solid var(--acc);margin:1rem 0;padding:.2rem 1rem;color:var(--mut)}
+footer{padding:1.2rem;color:var(--mut);font-size:.85rem;border-top:1px solid var(--bd);text-align:center}
+main h1 small,main h2 small{display:block;font-size:.8rem;color:var(--mut);font-weight:400}
+.desc{color:var(--mut);margin:.2rem 0 .6rem}
+.chiffres{font-size:.9rem;color:var(--mut);margin:.2rem 0 1rem}
+.chiffres b{color:var(--fg)}
+.filtres{position:sticky;top:0;background:var(--bg);padding:.6rem 0;display:flex;
+ flex-wrap:wrap;gap:.4rem;border-bottom:1px solid var(--bd);z-index:2}
+.filtres button{background:var(--card);color:var(--mut);border:1px solid var(--bd);
+ border-radius:999px;padding:.3rem .7rem;font-size:.82rem;cursor:pointer}
+.filtres button:hover{color:var(--fg)}
+.filtres button.actif{background:var(--acc);color:#12141a;border-color:var(--acc);font-weight:600}
+#compte{margin-left:auto;color:var(--mut);font-size:.82rem;align-self:center}
+.projet{margin:1.6rem 0}
+.ex{background:var(--card);border:1px solid var(--bd);border-radius:8px;
+ padding:.7rem .85rem;margin:.55rem 0}
+.ex header{display:flex;gap:.55rem;align-items:center;flex-wrap:wrap}
+.ex header b{font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--acc)}
+.ex p{margin:.45rem 0}
+.ex footer{color:var(--mut);font-size:.85rem;border-top:1px dashed var(--bd);padding-top:.4rem}
+.niv{font-size:.72rem;font-weight:700;border-radius:4px;padding:.1rem .4rem;color:#12141a}
+.niv-S{background:#7fd1c1}.niv-C{background:#f0c674}.niv-X{background:#e58fb0}
+.proj{margin-left:auto;font-size:.75rem;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+.bandeau{background:var(--card);border:1px solid var(--bd);border-left:3px solid var(--acc);
+ border-radius:6px;padding:.55rem .8rem;color:var(--mut);font-size:.9rem}
+.sommaire{background:var(--card);border:1px solid var(--bd);border-radius:8px;
+ padding:.6rem 1rem;margin:1rem 0}
+.sommaire h2{margin:.3rem 0 .4rem;font-size:1rem}
+.sommaire ol{margin:.2rem 0 .4rem;padding-left:1.3rem}
+/* --- vitrine : ecran de l'invite + console + touches (partage par les pages demo) --- */
+.demo{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:1rem;margin:1.2rem 0}
+@media(max-width:860px){.demo{grid-template-columns:1fr}}
+.box{background:var(--card);border:1px solid var(--bd);border-radius:10px;overflow:hidden}
+.box h3{margin:0;padding:.6rem .8rem;font-size:.9rem;background:#1f2432;border-bottom:1px solid var(--bd)}
+#screen{width:100%;height:290px;object-fit:contain;background:#000;display:block}
+#console{height:330px;overflow:auto;margin:0;border:0;border-radius:0;
+ font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;padding:.6rem;color:#cfe8c8}
+.keys{display:flex;flex-wrap:wrap;gap:.35rem;padding:.55rem .8rem;border-top:1px solid var(--bd)}
+.keys button{background:#232a3c;color:var(--fg);border:1px solid var(--bd);border-radius:6px;
+ padding:.3rem .55rem;cursor:pointer;font:inherit;font-size:.85rem}
+.keys button:hover{background:#2c3549;border-color:var(--acc)}
+.note{color:var(--mut);font-size:.85rem;padding:.5rem .8rem}
+.pill{display:inline-block;font-size:.75rem;padding:.1rem .5rem;border-radius:999px;
+ border:1px solid var(--bd);color:var(--mut)}
+.pill.ok{color:var(--acc);border-color:var(--acc)}
+pre.cmd{background:#0e1016;border:1px solid var(--bd);border-radius:8px;padding:.6rem .8rem;
+ overflow:auto;font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;color:#cfe8c8}
+</style>
+</head>
+<body>
+<header>
+<h1>Dossier QNX — Global Hackathon 2026</h1>
+<p>Inventaire documenté des manques de QNX SDP 8.0, classement de 140 idées, cinq cahiers des charges.</p>
+</header>
+<nav>
+<a href="index.html">Accueil</a>
+<a href="replique.html">Réplique — émulateur QNX 8.0</a>
+<a href="features.html">Fonctionnalités</a>
+<a href="tamis.html">Tamis</a>
+<a href="tamis-demo.html">Tamis — émulateur QNX 8.0 en direct</a>
+<a href="glane.html">Glane</a>
+<a href="glane-demo.html">Glane — émulateur QNX 8.0 en direct</a>
+<a href="toile.html" class="actif">Toile</a>
+<a href="toile-demo.html">Toile — émulateur QNX 8.0 en direct</a>
+<a href="eclat.html">Éclat</a>
+<a href="veille.html">Veille</a>
+<a href="veille-demo.html">Veille — émulateur QNX 8.0 en direct</a>
+<a href="codelab-veille.html">Codelab Veille</a>
+<a href="classement.html">Classement</a>
+<a href="inventaire.html">Inventaire QNX</a>
+<a href="idees.html">100 idées</a>
+</nav>
+<main>
+<h1 id="toile-pilote-virtio-gpu-et-integration-screen-pour-qnx-80-en-invite">Toile — pilote virtio-gpu et intégration Screen pour QNX 8.0 en invité</h1>
+<p><strong>Nom de travail : « Toile »</strong> (la surface sur laquelle l'invité QNX peint son bureau, tendue entre le guest et l'hôte).
+Version 0.1 — 12 novembre 2026 — projet candidat au QNX Global Hackathon, catégorie <strong>Low-level Software</strong>.
+Classement interne : <strong>1ᵉʳ du reclassement à 3 mois</strong> (v4 du dossier <code>qnx-dossier</code>), originalité 5, trou le plus cité de tout l'inventaire.
+Calibre : <strong>3 mois</strong> (13 semaines), avec un <strong>sous-ensemble livrable au 15/12/2026</strong> pour le concours.
+Visé explicitement : <strong>Best of Low-level Software</strong>, bonus <strong>Best use of QNX-specific Technologies</strong> (resource managers, DDK, microkernel, Screen).</p>
+<blockquote>
+<p>Note de nommage : « Toile » est un nom commun français, aucune marque de tiers. Le règlement proscrit les marques de tiers dans les supports de soumission (vidéo comprise) — aucun nom de produit GPU réel (Intel, NVIDIA, AMD, ARM, Virtio est un standard ouvert OASIS, pas une marque) n'apparaît dans les supports de soumission.</p>
+</blockquote>
+<hr>
+<h2 id="0-lecture-rapide">0. Lecture rapide</h2>
+<p><strong>Ce que c'est.</strong> Un <strong>pilote virtio-gpu 2D</strong> pour QNX 8.0 en <strong>invité</strong> (VM sous QEMU ou sous QNX Hypervisor), accompagné d'un <strong>display driver Screen</strong> qui s'appuie dessus. Résultat : <code>Screen</code> — le serveur graphique de QNX — fonctionne dans une VM <strong>sans passthrough matériel de GPU</strong>, ce qui est impossible aujourd'hui.</p>
+<p><strong>La promesse, en une phrase.</strong> Un développeur QNX démarre une VM sur son portable, et voit un <strong>bureau QNX complet</strong> s'afficher dans une fenêtre — sans carte graphique dédiée, sans passthrough, sans seconde machine.</p>
+<p><strong>Trois idées qui portent le projet.</strong></p>
+<ol>
+<li><strong>Le transport virtio existe déjà dans le portefeuille ; le périphérique virtio-gpu, non.</strong> Passerelle (projet frère) a déjà écrit un transport virtio (PCI moderne MSI-X et MMIO v1/v2) pour QNX 8.0. Toile <strong>réutilise ce transport</strong> et n'écrit que la couche spécifique virtio-gpu (files d'attente <code>controlq</code>/<code>cursorq</code>, commandes 2D, scanout). On ne réinvente pas virtio ; on ajoute le périphérique manquant.</li>
+<li><strong>Deux volets, un seul risque à trancher tôt.</strong> <em>Volet A</em> (QEMU hôte) : QEMU fournit déjà le périphérique <code>virtio-gpu-pci</code> ; il ne manque que le <strong>driver invité QNX</strong> → pas besoin du DDK hyperviseur. <em>Volet B</em> (QNX Hypervisor hôte) : il faut <strong>aussi</strong> écrire le <strong>vdev</strong> côté hôte, ce qui exige le DDK hyperviseur dont l'accès en licence non commerciale n'est <strong>pas vérifié</strong> (essai E4, bloquant pour B seulement). Le sous-ensemble 15/12 = volet A.</li>
+<li><strong>Le protocole virtio-gpu est modélisable en C11 pur sur PC.</strong> Le cœur du projet — la machine à commandes virtio-gpu (création de ressources, attachement de backing, scanout, flush, transfert hôte) — est une logique portable qui se teste <strong>sans QNX, sans QEMU, sans GPU</strong> : on alimente le modèle avec des séquences de commandes et on vérifie les états produits. Le driver réel n'est que la colle au-dessus de ce modèle. C'est la méthode « cœur portable + jumeau » déjà éprouvée sur Ambre, Passerelle, Tamis et Veille.</li>
+</ol>
+<p><strong>Trois niveaux d'ambition.</strong> <strong>S</strong> (socle : virtio-gpu 2D minimal, scanout unique, flush, Screen basique en invité QEMU — livrable 15/12), <strong>C</strong> (complet : multi-scanout, curseur matériel, suivi de dommages, double tampon, vsync, virtio-input clavier/souris, intégration Screen complète), <strong>X</strong> (extrême : vdev virtio-gpu côté hôte QNX Hypervisor, accélération 2D côté hôte, piste 3D virgl/venus documentée).</p>
+<p><strong>À valider avant d'écrire la moindre ligne de produit</strong> (section 10) : cinq essais, dont E1 — un invité QNX sous QEMU énumère-t-il le périphérique <code>virtio-gpu-pci</code> sur son bus PCI ? — et E2 — Screen accepte-t-il un display driver tiers via son interface documentée ?</p>
+<p><strong>Statut des affirmations.</strong> Section 13 : l'interface exacte du display driver Screen et le format des structures virtio-gpu de QEMU doivent être relus page à page dans le SDP et les sources QEMU avant d'être gelés. Ce sont les premiers travaux, pas des hypothèses de plus.</p>
+<hr>
+<h2 id="1-contexte-et-cas-dusage">1. Contexte et cas d'usage</h2>
+<h3 id="11-qui-a-ce-probleme">1.1 Qui a ce problème</h3>
+<table>
+<thead>
+<tr>
+<th>Acteur</th>
+<th>Besoin</th>
+<th>Ce qu'il fait aujourd'hui</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Développeur QNX sans matériel cible</td>
+<td>Développer et déboguer une IHM Screen sur son portable</td>
+<td>Pas de solution graphique en VM : console série uniquement, ou achat d'une carte</td>
+</tr>
+<tr>
+<td>Intégrateur cockpit/cluster (automotive)</td>
+<td>Tester une stack graphique complète avant d'avoir l'ECU</td>
+<td>Passthrough GPU lourd et spécifique à l'hyperviseur, ou matériel dédié</td>
+</tr>
+<tr>
+<td>Enseignant / étudiant QNX</td>
+<td>Montrer Screen et les applications graphiques dans un TP</td>
+<td>Impossible en VM standard ; QNX reste « l'OS qu'on ne voit pas tourner »</td>
+</tr>
+<tr>
+<td>Ingénieur test/CI</td>
+<td>Exécuter des tests d'IHM Screen dans une ferme de VM</td>
+<td>Aucun affichage ; les tests graphiques exigent du matériel</td>
+</tr>
+<tr>
+<td>Fabricant de dispositif médical</td>
+<td>Valider une IHM certifiable en environnement isolé</td>
+<td>Pas de graphique en VM = pas de validation sur poste standard</td>
+</tr>
+</tbody>
+</table>
+<h3 id="12-pourquoi-cest-un-vrai-marche">1.2 Pourquoi c'est un vrai marché</h3>
+<p>QNX équipe des cockpits numériques, des clusters, des IHM médicales et industrielles — <strong>toutes</strong> ces applications utilisent Screen. Or le cycle de développement moderne passe par la VM (QEMU, hyperviseur) pour itérer vite, faire de la CI, et développer sans matériel. Aujourd'hui, dès qu'on a besoin de graphique, la VM ne suit pas : il faut du passthrough (complexe, lié à l'hôte, non portable) ou du matériel physique. <strong>Toile lève ce blocage</strong> : le graphique QNX devient disponible en VM, sur n'importe quel poste, avec le périphérique virtuel standard de l'industrie (virtio-gpu).</p>
+<p>C'est aussi un <strong>prérequis</strong> pour d'autres projets du portefeuille : une VM QNX avec affichage permet de démontrer Veille (alarmes visuelles), Ambre (outils de lecture), Tamis (visualiseur de graphes) directement en invité.</p>
+<h3 id="13-pourquoi-maintenant">1.3 Pourquoi maintenant</h3>
+<ul>
+<li>QNX 8.0 est gratuit en usage non commercial (QNX Everywhere, licence en ~1 h).</li>
+<li>QEMU fournit un périphérique <code>virtio-gpu-pci</code> mature (utilisé par Linux, BSD) : la moitié hôte du volet A existe déjà.</li>
+<li>Le transport virtio pour QNX 8.0 est déjà écrit et validé dans <strong>Passerelle</strong> : la brique la plus difficile (PCI moderne, MSI-X, files virtio) est disponible.</li>
+<li>Le concours cible explicitement QEMU et Raspberry Pi 5 : la démo en VM est dans le cadre.</li>
+</ul>
+<h3 id="14-ce-que-toile-nest-pas">1.4 Ce que Toile n'est pas</h3>
+<p>Ni un pilote de GPU physique (Intel/NVIDIA/AMD/ARM), ni une implémentation 3D complète (virgl/venus sont hors socle, documentés en piste X), ni un serveur d'affichage à distance (cf. l'idée « Vitrine » du lot D), ni un compositeur Wayland (cf. « Compositeur », lot D). Toile est le <strong>maillon manquant</strong> entre le périphérique virtuel virtio-gpu et le serveur Screen de QNX.</p>
+<hr>
+<h2 id="2-ancrage-documentaire">2. Ancrage documentaire</h2>
+<h3 id="21-ce-que-qnx-fournit-deja-a-ne-pas-reinventer">2.1 Ce que QNX fournit déjà (à ne pas réinventer)</h3>
+<table>
+<thead>
+<tr>
+<th>Élément</th>
+<th>Rôle pour Toile</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Screen</strong> (<code>libscreen</code>, serveur Screen, <code>io-display</code>)</td>
+<td>Le serveur graphique cible ; expose une interface de display driver à implémenter</td>
+</tr>
+<tr>
+<td><strong>DDK</strong> (Driver Development Kit)</td>
+<td>Kit pour écrire le pilote de périphérique virtio-gpu côté invité</td>
+</tr>
+<tr>
+<td><strong>Transport virtio de Passerelle</strong> (projet frère)</td>
+<td>virtio-pci moderne (MSI-X) + virtio-mmio v1/v2 déjà écrits et testés pour QNX 8.0</td>
+</tr>
+<tr>
+<td><strong>Resource managers</strong> (<code>resmgr_*</code>)</td>
+<td>Pour exposer le périphérique dans l'espace de noms (<code>/dev/gpu*</code>) et dialoguer avec Screen</td>
+</tr>
+<tr>
+<td><strong><code>pci</code> / <code>libpci</code></strong></td>
+<td>Énumération et configuration du périphérique PCI virtio-gpu en invité</td>
+</tr>
+<tr>
+<td><strong>QNX Hypervisor + vdev</strong></td>
+<td>Côté hôte (volet B) : le framework de périphériques virtuels (~20 vdev livrés, <strong>virtio-gpu absent</strong>)</td>
+</tr>
+<tr>
+<td><strong>QEMU</strong></td>
+<td>Hôte du volet A : fournit <code>virtio-gpu-pci</code> et <code>virtio-gpu-device</code> (MMIO) prêts à l'emploi</td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-les-trous-exploites-a-sourcer-page-a-page-section-13">2.2 Les trous exploités (à sourcer page à page — section 13)</h3>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Trou, tel que formulé dans l'inventaire</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>G1</strong></td>
+<td><strong>virtio-gpu absent</strong> des ~20 vdev livrés avec QNX Hypervisor</td>
+<td>Inventaire lot D (liste des vdev vérifiée)</td>
+</tr>
+<tr>
+<td><strong>G2</strong></td>
+<td><strong>Aucun display driver Screen pour virtio-gpu</strong> en invité : Screen ne sait pas parler à un GPU virtuel</td>
+<td>Inventaire lot D</td>
+</tr>
+<tr>
+<td><strong>G3</strong></td>
+<td><strong>Screen inutilisable en invité sans passthrough</strong> matériel — le trou le plus cité de l'inventaire</td>
+<td>Inventaire lot D</td>
+</tr>
+<tr>
+<td><strong>G4</strong></td>
+<td><strong>virtio-input absent</strong> (clavier/souris en VM) : même avec l'affichage, les entrées manquent</td>
+<td>Inventaire lot D (idée « Main »)</td>
+</tr>
+<tr>
+<td><strong>G5</strong></td>
+<td><strong>Aucune virtualisation GPU documentée</strong> dans la doc publique QNX 8.0</td>
+<td>Inventaire</td>
+</tr>
+<tr>
+<td><strong>G6</strong></td>
+<td>Pas de multi-écran virtuel : un invité ne peut pas piloter plusieurs têtes sans matériel</td>
+<td>Conséquence de G1–G3</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Honnêteté : G1–G6 sont des affirmations d'<strong>absence</strong> dans la documentation publique et la liste des vdev livrés. Comme pour Tamis et Veille, elles doivent être revérifiées page à page dans le SDP installé avant d'être gravées dans la soumission. Section 13.</p>
+</blockquote>
+<h3 id="23-le-standard-virtio-gpu-reference-externe">2.3 Le standard virtio-gpu (référence externe)</h3>
+<p>Le protocole virtio-gpu est spécifié par OASIS (virtio 1.x, section « GPU Device »). Points clés utilisés par Toile :
+- Files virtuelles : <code>controlq</code> (commandes), <code>cursorq</code> (curseur), et en 3D <code>virgl</code> (hors socle).
+- Commandes 2D : <code>RESOURCE_CREATE_2D</code>, <code>RESOURCE_UNREF</code>, <code>RESOURCE_ATTACH_BACKING</code>, <code>RESOURCE_DETACH_BACKING</code>, <code>SET_SCANOUT</code>, <code>RESOURCE_FLUSH</code>, <code>TRANSFER_TO_HOST_2D</code>, <code>TRANSFER_FROM_HOST_2D</code>, <code>RESOURCE_CREATE_BLOB</code>/<code>RESOURCE_MAP_BLOB</code> (virtio-gpu moderne, blob resources).
+- Le guest crée des <strong>ressources</strong> (surfaces) identifiées par <code>resource_id</code>, y attache son <strong>backing storage</strong> (pages invité), définit le <strong>scanout</strong> (quelle ressource va sur quelle tête, à quelle position), puis demande des <strong>flush</strong>/transferts pour que l'hôte affiche.</p>
+<hr>
+<h2 id="3-perimetre">3. Périmètre</h2>
+<h3 id="31-dans-le-perimetre">3.1 Dans le périmètre</h3>
+<ul>
+<li><strong>Cœur portable</strong> (<code>core/</code>, C11 pur) : modèle de la machine à commandes virtio-gpu 2D — état des ressources, scanouts, backing, flush/transferts ; validation de séquences de commandes ; générateur de traces de commandes pour tests.</li>
+<li><strong>Driver invité</strong> (<code>guest/</code>, QNX) : énumération PCI du virtio-gpu, initialisation du transport (réutilisé de Passerelle), files <code>controlq</code>/<code>cursorq</code>, gestion des ressources et du scanout, exposition en resource manager.</li>
+<li><strong>Display driver Screen</strong> (<code>guest/display/</code>) : implémentation de l'interface display driver de Screen au-dessus du pilote virtio-gpu ; framebuffer, flip/blit, vsync (niveau C).</li>
+<li><strong>virtio-input minimal</strong> (niveau C) : clavier + souris en invité, pour que le bureau soit utilisable (sinon affichage seul).</li>
+<li><strong>Volet B (niveau X)</strong> : vdev virtio-gpu côté hôte QNX Hypervisor (si E4 concluant).</li>
+<li><strong>Jumeau Python</strong> (<code>host/</code>) : modèle indépendant de la machine à commandes + différentiel C↔Python.</li>
+<li><strong>Codelab</strong> : « Donner un affichage à une VM QNX ».</li>
+</ul>
+<h3 id="32-hors-perimetre-assume">3.2 Hors périmètre (assumé)</h3>
+<p>3D accélérée (virgl/venus) — documentée en piste X, non implémentée ; pilotes de GPU physique ; passthrough PCI ; compositeur Wayland (idée distincte) ; diffusion d'écran vers navigateur (idée « Vitrine ») ; le transport virtio lui-même (fourni par Passerelle, Toile le consomme).</p>
+<hr>
+<h2 id="4-architecture">4. Architecture</h2>
+<pre><code>toile/
+├── CONTRACT.md                  # contrat gelé : commandes virtio-gpu acceptées, états, formats
+├── TOILE-cahier-des-charges.md  # ce document
+├── README.md
+├── Makefile
+├── LICENSE                      # MIT
+├── core/                        # C11 PUR : ni horloge, ni fichier, ni socket, ni QNX
+│   ├── include/toile/           #   vgproto.h resource.h scanout.h cmdproc.h verdict.h report.h
+│   ├── src/                     #   vgproto.c resource.c scanout.c cmdproc.c verdict.c report.c
+│   └── tests/                   #   test_cmdproc.c test_resource.c test_scanout.c test_verdict.c
+├── host/                        # Python stdlib : jumeau indépendant + CLI + visualiseur
+│   ├── toile/                   #   vgproto.py resource.py cmdproc.py replay.py cli.py report.py
+│   └── tests/
+├── guest/                       # code QNX invité (DDK, compilé avec qcc)
+│   ├── virtio/                  #   lien/adaptation du transport virtio de Passerelle
+│   ├── gpu/                     #   pilote virtio-gpu : files, ressources, scanout (resmgr /dev/gpu0)
+│   ├── display/                 #   display driver Screen au-dessus du pilote
+│   └── input/                   #   virtio-input minimal (niveau C)
+├── host-qnx/                    # volet B (niveau X) : vdev virtio-gpu côté hôte QNX Hypervisor
+├── qemu/                        # scripts de lancement QEMU (volet A) : -device virtio-gpu-pci, etc.
+├── fixtures/                    # séquences de commandes virtio-gpu de référence (créées/validées sur PC)
+├── scenarios/                   # cas d'usage : boot graphique, multi-scanout, resize, curseur
+├── tests/                       # différentiel C↔Python, validation du modèle contre QEMU (trace)
+├── codelab/                     # « donner un affichage à une VM QNX »
+├── image/                       # buildfile mkifs pour une image QNX invitée graphique
+└── docs/                        # SAFETY? (non critique) → DESIGN.md, GAP.md, DECISIONS.md, VALIDATION.md, VIRTIO-GPU.md
+</code></pre>
+<p><strong>Règle de portabilité.</strong> <code>core/</code> ne lit aucun fichier, ne consulte aucune horloge, n'appelle aucune API QNX : l'appelant fournit les séquences de commandes et les tampons. Le même noyau s'exécute depuis un test unitaire sur PC, depuis le jumeau Python, et plus tard depuis le pilote invité. La double implémentation (C dans <code>core/</code>, Python dans <code>host/</code>) est un <strong>jumeau de vérification</strong> indépendant, comme sur Ambre, Passerelle, Tamis et Veille.</p>
+<p><strong>Règle de réutilisation.</strong> Le transport virtio (PCI moderne MSI-X, MMIO v1/v2) <strong>n'est pas réécrit</strong> : il est repris de Passerelle (même auteur, licence compatible MIT/Apache-2.0 à confirmer). Toile n'écrit que la couche virtio-gpu au-dessus. Zéro duplication (règle AGENTS.md).</p>
+<p><strong>Règle de taille.</strong> Tout fichier &lt; 500 lignes, toute fonction &lt; 50 lignes, vérifié en CI.</p>
+<hr>
+<h2 id="5-contrat">5. Contrat</h2>
+<h3 id="51-chaine-de-traitement-figee">5.1 Chaîne de traitement (figée)</h3>
+<pre><code>commande virtio-gpu (guest) → parser → valider → appliquer à l'état (ressources/scanouts/backing) → effet hôte (flush/transfer) → acquittement
+</code></pre>
+<p>Aucune étape ne remonte. Toute commande invalide produit un verdict <code>TOILE_CMD_INVALID</code> avec l'identifiant de commande et la cause — jamais d'application partielle silencieuse.</p>
+<h3 id="52-etat-du-modele-ce-que-le-cur-maintient">5.2 État du modèle (ce que le cœur maintient)</h3>
+<ul>
+<li><strong>Ressources</strong> : table <code>resource_id → {format, width, height, backing attaché?, pages}</code>.</li>
+<li><strong>Scanouts</strong> : table <code>scanout_id → {resource_id, x, y, width, height}</code>.</li>
+<li><strong>Backings</strong> : pour chaque ressource, la liste des pages invité attachées.</li>
+<li>Invariants : un scanout ne peut référencer qu'une ressource existante ; <code>RESOURCE_FLUSH</code> n'est valide que sur une ressource attachée à un scanout ; <code>TRANSFER_TO_HOST_2D</code> exige un backing.</li>
+</ul>
+<h3 id="53-verdicts-enum-toile_verdict_code">5.3 Verdicts (enum <code>toile_verdict_code</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Code</th>
+<th>Sévérité</th>
+<th>Porteur</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td><code>TOILE_OK</code></td>
+<td>info</td>
+<td>cmd_id</td>
+</tr>
+<tr>
+<td>1</td>
+<td><code>TOILE_CMD_INVALID</code></td>
+<td>error</td>
+<td>cmd_id, cause</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>TOILE_RESOURCE_EXISTS</code></td>
+<td>warning</td>
+<td>resource_id</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>TOILE_RESOURCE_MISSING</code></td>
+<td>error</td>
+<td>resource_id, cmd_id</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>TOILE_BACKING_MISSING</code></td>
+<td>error</td>
+<td>resource_id, cmd_id</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>TOILE_SCANOUT_INVALID</code></td>
+<td>error</td>
+<td>scanout_id, resource_id</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>TOILE_FLUSH_NO_SCANOUT</code></td>
+<td>warning</td>
+<td>resource_id</td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>TOILE_TRANSFER_OK</code></td>
+<td>info</td>
+<td>resource_id, rect</td>
+</tr>
+<tr>
+<td>8</td>
+<td><code>TOILE_MODEL_CONSISTENT</code></td>
+<td>info</td>
+<td>resources, scanouts</td>
+</tr>
+<tr>
+<td>9</td>
+<td><code>TOILE_MODEL_COUNTEREXAMPLE</code></td>
+<td>error</td>
+<td>cmd_id, état fautif</td>
+</tr>
+</tbody>
+</table>
+<h3 id="54-api-c-en-tetes-sous-coreincludetoile">5.4 API C (en-têtes sous <code>core/include/toile/</code>)</h3>
+<pre><code class="language-c">/* cmdproc.h — applique une séquence de commandes à l'état du modèle */
+int toile_cmdproc_run(const toile_cmd *cmds, size_t n,
+                      toile_model *model,            /* état, fourni par l'appelant */
+                      toile_verdict *out, size_t cap, size_t *n_out);
+
+/* resource.h / scanout.h — accès à l'état */
+int toile_resource_create(toile_model *m, uint32_t id, toile_fmt fmt, uint32_t w, uint32_t h);
+int toile_resource_attach_backing(toile_model *m, uint32_t id, const toile_page *pages, size_t n);
+int toile_scanout_set(toile_model *m, uint32_t scanout, uint32_t resource_id,
+                      uint32_t x, uint32_t y, uint32_t w, uint32_t h);
+int toile_resource_flush(toile_model *m, uint32_t id, toile_rect rect);
+</code></pre>
+<h3 id="55-formats-de-sortie">5.5 Formats de sortie</h3>
+<p>Identiques en structure à ceux de Veille/Tamis (texte une ligne par verdict, JSON compact à ordre de clés figé, Markdown d'audit). Le contrat octet-pour-octet est précisé dans <code>CONTRACT.md</code> (à écrire, étape S1).</p>
+<hr>
+<h2 id="6-exigences-s-c-x">6. Exigences (S / C / X)</h2>
+<h3 id="61-socle-s-le-sous-ensemble-livrable-au-1512">6.1 Socle (S) — le sous-ensemble livrable au 15/12</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Exigence</th>
+<th>Niveau</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S1</td>
+<td><code>CONTRACT.md</code> gelé : commandes virtio-gpu 2D acceptées, états du modèle, verdicts, formats</td>
+<td>S</td>
+</tr>
+<tr>
+<td>S2</td>
+<td>Cœur C11 pur : machine à commandes (create/attach/scanout/flush/transfer), invariants</td>
+<td>S</td>
+</tr>
+<tr>
+<td>S3</td>
+<td>Jumeau Python indépendant + différentiel C↔Python vert</td>
+<td>S</td>
+</tr>
+<tr>
+<td>S4</td>
+<td>Fixtures : séquences de commandes de référence (boot graphique, resize, multi-ressource)</td>
+<td>S</td>
+</tr>
+<tr>
+<td>S5</td>
+<td>Réutilisation du transport virtio de Passerelle (PCI moderne) — adapté, non réécrit</td>
+<td>S</td>
+</tr>
+<tr>
+<td>S6</td>
+<td>Driver invité minimal : énumération PCI virtio-gpu, init transport, controlq, scanout unique, flush</td>
+<td>S</td>
+</tr>
+<tr>
+<td>S7</td>
+<td>Display driver Screen minimal : un framebuffer, une tête, affichage d'une mire statique puis du bureau</td>
+<td>S</td>
+</tr>
+<tr>
+<td>S8</td>
+<td>Démo QEMU : image invitée QNX qui démarre Screen et affiche dans la fenêtre QEMU</td>
+<td>S</td>
+</tr>
+<tr>
+<td>S9</td>
+<td><code>make test</code> vert <strong>sans QNX, sans QEMU, sans GPU</strong> (cœur + jumeau + fixtures)</td>
+<td>S</td>
+</tr>
+<tr>
+<td>S10</td>
+<td>CI : build C <code>-Werror</code>, tests, différentiel, garde taille, budget ≤ 5 min</td>
+<td>S</td>
+</tr>
+</tbody>
+</table>
+<h3 id="62-complet-c-la-version-visee-a-3-mois">6.2 Complet (C) — la version visée à 3 mois</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Exigence</th>
+<th>Niveau</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C1</td>
+<td>Multi-scanout : plusieurs têtes virtuelles, positionnement</td>
+<td>C</td>
+</tr>
+<tr>
+<td>C2</td>
+<td>Curseur matériel via <code>cursorq</code></td>
+<td>C</td>
+</tr>
+<tr>
+<td>C3</td>
+<td>Suivi de dommages (damage tracking) : ne transférer que les rectangles modifiés</td>
+<td>C</td>
+</tr>
+<tr>
+<td>C4</td>
+<td>Double tampon (page flipping) + vsync</td>
+<td>C</td>
+</tr>
+<tr>
+<td>C5</td>
+<td>virtio-input minimal : clavier + souris en invité (rend le bureau utilisable)</td>
+<td>C</td>
+</tr>
+<tr>
+<td>C6</td>
+<td>Intégration Screen complète : fenêtres, applications Screen réelles lancées en invité</td>
+<td>C</td>
+</tr>
+<tr>
+<td>C7</td>
+<td>Resource manager <code>/dev/gpu0</code> avec API typée (ioctl/devctl)</td>
+<td>C</td>
+</tr>
+<tr>
+<td>C8</td>
+<td>Validation du modèle contre QEMU réel : capture des commandes émises par le driver, comparaison au modèle C</td>
+<td>C</td>
+</tr>
+<tr>
+<td>C9</td>
+<td>Codelab 4 chapitres : « donner un affichage à une VM QNX »</td>
+<td>C</td>
+</tr>
+<tr>
+<td>C10</td>
+<td>Image mkifs reproductible + scripts QEMU documentés</td>
+<td>C</td>
+</tr>
+</tbody>
+</table>
+<h3 id="63-extreme-x-documente-hors-concours">6.3 Extrême (X) — documenté, hors concours</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Exigence</th>
+<th>Niveau</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>X1</td>
+<td><strong>Volet B</strong> : vdev virtio-gpu côté hôte QNX Hypervisor (DDK hyperviseur, si E4 concluant)</td>
+<td>X</td>
+</tr>
+<tr>
+<td>X2</td>
+<td>Accélération 2D côté hôte (blits matériels, formats YUV)</td>
+<td>X</td>
+</tr>
+<tr>
+<td>X3</td>
+<td>Piste 3D : virgl (OpenGL invité) ou venus (Vulkan) — étude de faisabilité documentée</td>
+<td>X</td>
+</tr>
+<tr>
+<td>X4</td>
+<td>blob resources + host-visible memory (virtio-gpu moderne) pour performances</td>
+<td>X</td>
+</tr>
+<tr>
+<td>X5</td>
+<td>Contribution amont : patchs QNX au transport virtio, retour à Passerelle</td>
+<td>X</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="7-methode-et-preuve">7. Méthode et preuve</h2>
+<h3 id="71-preuve-par-modele-sans-cible">7.1 Preuve par modèle (sans cible)</h3>
+<p>Le cœur est un <strong>modèle exécutable</strong> de la machine à commandes virtio-gpu. On le prouve sur des séquences de référence :
+- <strong>P1 (cohérence).</strong> Après toute séquence valide, le modèle est cohérent : chaque scanout référence une ressource existante, chaque flush porte sur une ressource attachée. Verdict <code>TOILE_MODEL_CONSISTENT</code>.
+- <strong>P2 (rejet).</strong> Toute commande invalide est rejetée avec un verdict précis, sans application partielle (ressource inexistante, flush sans scanout, transfer sans backing).
+- <strong>P3 (déterminisme).</strong> La même séquence de commandes produit exactement le même état final et les mêmes verdicts, octet pour octet (hachage de l'état).</p>
+<h3 id="72-validation-contre-qemu-reel-avec-cible">7.2 Validation contre QEMU réel (avec cible)</h3>
+<p>Sur une VM QEMU : le driver invité émet des commandes virtio-gpu. On les <strong>capture</strong> (instrumentation du driver ou trace côté QEMU) et on les <strong>rejoue</strong> dans le modèle C. Le modèle doit produire le même état que QEMU (mêmes ressources, mêmes scanouts). L'écart est un bug du modèle ou du driver. C'est le pendant « empirique » de la preuve par modèle — la même double preuve que Veille (modèle + trace).</p>
+<h3 id="73-apport-specifique-de-qnx">7.3 Apport spécifique de QNX</h3>
+<table>
+<thead>
+<tr>
+<th>Mécanisme QNX</th>
+<th>Rôle dans Toile</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DDK + <code>libpci</code></td>
+<td>Énumération et pilotage du périphérique PCI virtio-gpu en invité</td>
+</tr>
+<tr>
+<td>Resource managers</td>
+<td><code>/dev/gpu0</code> : un propriétaire, API typée, isolation</td>
+</tr>
+<tr>
+<td>Microkernel + message passing</td>
+<td>Le display driver Screen et le pilote GPU sont des processus séparés ; priority inheritance sur les flush critiques (pas de tearing sous charge)</td>
+</tr>
+<tr>
+<td>Screen / <code>io-display</code></td>
+<td>L'interface display driver à implémenter</td>
+</tr>
+<tr>
+<td>Adaptive partitioning</td>
+<td>Le serveur Screen et les applis graphiques en partition best-effort, le pilote en partition critique</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="8-tests">8. Tests</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>But</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Différentiel C↔Python</td>
+<td>Même état final et mêmes verdicts sur les fixtures</td>
+</tr>
+<tr>
+<td>Fixtures de commandes</td>
+<td>Boot graphique, resize, multi-ressource, multi-scanout, séquences fautives</td>
+</tr>
+<tr>
+<td>Invariants du modèle</td>
+<td>P1/P2/P3 sur toutes les fixtures</td>
+</tr>
+<tr>
+<td>Mutants</td>
+<td>Injection de fautes dans <code>core/</code> pour vérifier que les tests les attrapent</td>
+</tr>
+<tr>
+<td>Validation QEMU (C8)</td>
+<td>Commandes réelles du driver == modèle C</td>
+</tr>
+<tr>
+<td>Démo bout-en-bout (S8)</td>
+<td>Image invitée qui démarre Screen dans QEMU</td>
+</tr>
+<tr>
+<td>Garde taille</td>
+<td>CI : fichiers &lt; 500 lignes, fonctions &lt; 50 lignes</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="9-demo-et-video-3-min">9. Démo et vidéo (&lt; 3 min)</h2>
+<ol>
+<li><strong>(0:00–0:25)</strong> Le problème : une VM QNX sous QEMU démarre, mais <strong>aucun affichage</strong> — console série seulement. Screen est inutilisable sans passthrough (G3).</li>
+<li><strong>(0:25–1:00)</strong> Toile : la même VM, avec le pilote virtio-gpu → <strong>le bureau QNX s'affiche dans la fenêtre QEMU</strong>. Une application Screen réelle est lancée.</li>
+<li><strong>(1:00–1:40)</strong> Le cœur portable : sur PC, sans QNX, <code>make test</code> rejoue des séquences de commandes virtio-gpu, prouve la cohérence du modèle (P1–P3), différentiel C↔Python vert.</li>
+<li><strong>(1:40–2:20)</strong> Validation croisée : les commandes émises par le driver réel dans QEMU sont capturées et rejouées dans le modèle C — même état. Double preuve.</li>
+<li><strong>(2:20–3:00)</strong> Niveau C : multi-écran virtuel, curseur, suivi de dommages (ne transférer que ce qui change). Codelab.</li>
+</ol>
+<p>Visuel : fenêtre QEMU avec le bureau QNX + terminal hôte montrant les tests. Pas de musique sous copyright, pas de marque tierce.</p>
+<hr>
+<h2 id="10-a-valider-avant-decrire-la-moindre-ligne-de-produit">10. À valider avant d'écrire la moindre ligne de produit</h2>
+<table>
+<thead>
+<tr>
+<th>Essai</th>
+<th>Question</th>
+<th>Bloquant</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>E1</strong></td>
+<td>Un invité QNX 8.0 sous QEMU (<code>-device virtio-gpu-pci</code>) <strong>énumère-t-il</strong> le périphérique sur son bus PCI (visible via le driver PCI / <code>pci</code> ou <code>libpci</code>) ?</td>
+<td>oui (volet A)</td>
+</tr>
+<tr>
+<td><strong>E2</strong></td>
+<td>Screen accepte-t-il un <strong>display driver tiers</strong> via son interface documentée (quel est le contrat exact : <code>io-display</code>, bibliothèque de display driver, points d'entrée) ?</td>
+<td>oui (S7)</td>
+</tr>
+<tr>
+<td><strong>E3</strong></td>
+<td>Le transport virtio de <strong>Passerelle</strong> est-il réutilisable tel quel pour virtio-gpu (files multiples, controlq/cursorq, MSI-X) ? licence compatible ?</td>
+<td>oui (S5)</td>
+</tr>
+<tr>
+<td><strong>E4</strong></td>
+<td>L'accès au <strong>DDK hyperviseur</strong> QNX est-il permis sous licence non commerciale (QNX Everywhere) ?</td>
+<td>oui pour <strong>volet B seulement</strong> (X1)</td>
+</tr>
+<tr>
+<td><strong>E5</strong></td>
+<td>Les performances d'un flush 2D via virtio-gpu (copie du framebuffer vers l'hôte) sont-elles suffisantes pour un bureau utilisable (≥ 15–20 images/s en 1080p) ?</td>
+<td>non (ajuste les ambitions C)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>E1 et E2 sont les deux essais critiques du volet A.</strong> S'ils passent, le socle S est réalisable. E4 ne bloque que le volet B (X).</p>
+<hr>
+<h2 id="11-planning-13-semaines-12-nov-11-fev-avec-jalon-1512">11. Planning (13 semaines, 12 nov → ~11 fév, avec jalon 15/12)</h2>
+<table>
+<thead>
+<tr>
+<th>Semaines</th>
+<th>Livrable</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S1 (12–18 nov)</td>
+<td>E1, E2, E3 tranchés. <code>CONTRACT.md</code> gelé. Cœur C11 (machine à commandes) + fixtures.</td>
+</tr>
+<tr>
+<td>S2 (19–25 nov)</td>
+<td>Jumeau Python + différentiel vert. Modèle validé sur toutes les fixtures (P1–P3).</td>
+</tr>
+<tr>
+<td>S3 (26 nov–2 déc)</td>
+<td>Driver invité minimal : énumération PCI, transport Passerelle adapté, controlq, scanout unique.</td>
+</tr>
+<tr>
+<td>S4 (3–9 déc)</td>
+<td>Display driver Screen minimal. <strong>Image invitée qui affiche dans QEMU.</strong></td>
+</tr>
+<tr>
+<td><strong>Jalon 15/12</strong></td>
+<td><strong>Sous-ensemble S livré et soumis</strong> : bureau QNX basique en VM QEMU, cœur portable testé, CI verte, codelab amorcé.</td>
+</tr>
+<tr>
+<td>S5–S7 (17 déc–6 janv)</td>
+<td>Niveau C : multi-scanout, curseur, suivi de dommages, double tampon/vsync.</td>
+</tr>
+<tr>
+<td>S8–S9 (7–20 janv)</td>
+<td>virtio-input (clavier/souris), intégration Screen complète, applis réelles.</td>
+</tr>
+<tr>
+<td>S10 (21–27 janv)</td>
+<td>Validation contre QEMU réel (C8), capture/rejeu des commandes.</td>
+</tr>
+<tr>
+<td>S11–S12 (28 janv–10 fév)</td>
+<td>Volet B si E4 OK (vdev hôte QNX Hypervisor) <strong>ou</strong> piste 3D virgl documentée.</td>
+</tr>
+<tr>
+<td>S13 (avant ~11 fév)</td>
+<td>Codelab complet, docs (DESIGN, GAP, DECISIONS, VALIDATION, VIRTIO-GPU), polissage, marge.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="12-risques">12. Risques</h2>
+<table>
+<thead>
+<tr>
+<th>Risque</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>E1 échoue : invité QNX n'énumère pas virtio-gpu sous QEMU</td>
+<td>Volet A bloqué</td>
+<td>Tester plusieurs variantes QEMU (<code>virtio-gpu-pci</code>, <code>virtio-gpu-device</code> MMIO, <code>virtio-vga</code>) ; vérifier le support PCI de l'invité QNX ; au pire, volet B ou repli Réplique/Mouleur</td>
+</tr>
+<tr>
+<td>E2 échoue : Screen n'accepte pas de display driver tiers</td>
+<td>Pas d'intégration Screen</td>
+<td>Documenter l'interface réelle ; au pire, fournir un framebuffer <code>/dev/gpu0</code> utilisable par une appli de démo directe (sans Screen) et livrer le pilote seul</td>
+</tr>
+<tr>
+<td>E4 : DDK hyperviseur inaccessible en licence non commerciale</td>
+<td>Volet B (X) bloqué</td>
+<td>Le volet A (QEMU) n'en a pas besoin ; B est un bonus X</td>
+</tr>
+<tr>
+<td>Performances insufisantes (flush 2D trop lent)</td>
+<td>Bureau inutilisable</td>
+<td>Suivi de dommages (C3), double tampon (C4), blob resources (X4) ; mesurer tôt (E5)</td>
+</tr>
+<tr>
+<td>Réutilisation du transport Passerelle impossible</td>
+<td>Réécrire virtio (cher)</td>
+<td>E3 tôt ; sinon réutiliser au moins la couche PCI/MMIO et réécrire les files virtio</td>
+</tr>
+<tr>
+<td>Chevauchement avec Passerelle (même transport virtio)</td>
+<td>Jugé « pas substantiellement différent »</td>
+<td>Toile = virtio-gpu + Screen (graphique) ; Passerelle = virtio-fs/9P (fichiers). Périphériques, domaines et démos distincts. Le transport partagé est cité explicitement (prior art, comme Passerelle cite ses prédécesseurs).</td>
+</tr>
+<tr>
+<td>3 mois &gt; deadline concours</td>
+<td>Soumission partielle</td>
+<td>Le sous-ensemble S (bureau basique en VM) est livrable au 15/12 ; C/X après</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="13-statut-des-affirmations">13. Statut des affirmations</h2>
+<table>
+<thead>
+<tr>
+<th>Affirmation</th>
+<th>Statut</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>virtio-gpu absent des ~20 vdev QNX Hypervisor (G1)</td>
+<td>À revérifier page à page dans le SDP installé</td>
+</tr>
+<tr>
+<td>Aucun display driver Screen virtio-gpu en invité (G2)</td>
+<td>À revérifier</td>
+</tr>
+<tr>
+<td>Screen inutilisable en invité sans passthrough (G3)</td>
+<td>Vérifié dans l'inventaire lot D ; à confirmer sur QEMU (E1/E2)</td>
+</tr>
+<tr>
+<td>QEMU fournit <code>virtio-gpu-pci</code> mature</td>
+<td>Vrai (standard, utilisé par Linux/BSD) ; à confirmer côté invité QNX (E1)</td>
+</tr>
+<tr>
+<td>Transport virtio réutilisable depuis Passerelle</td>
+<td>À valider (E3)</td>
+</tr>
+<tr>
+<td>DDK hyperviseur accessible en licence non commerciale</td>
+<td><strong>Non vérifié</strong> (E4) — bloque le volet B seulement</td>
+</tr>
+<tr>
+<td>Interface display driver Screen</td>
+<td>À relire dans le Screen Developer's Guide (E2)</td>
+</tr>
+<tr>
+<td>Structures virtio-gpu de QEMU</td>
+<td>À relire dans les sources QEMU (<code>hw/display/virtio-gpu.c</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>Comme Tamis et Veille : toute correction d'affirmation est consignée ici.</p>
+<hr>
+<h2 id="14-references">14. Références</h2>
+<ul>
+<li>Inventaire des vdev QNX Hypervisor (lot D du dossier <code>qnx-dossier</code>) — liste vérifiée des ~20 périphériques virtuels livrés.</li>
+<li>Spécification virtio (OASIS), section « GPU Device » : commandes 2D, files, blob resources.</li>
+<li>QEMU : <code>hw/display/virtio-gpu.c</code>, <code>-device virtio-gpu-pci</code>, <code>virtio-vga</code>.</li>
+<li>QNX SDP 8.0 : Screen Developer's Guide (interface display driver), DDK, <code>libpci</code>, Resource Manager Library, Hypervisor documentation (vdev, DDK hyperviseur).</li>
+<li>Projet frère <strong>Passerelle</strong> : transport virtio (PCI moderne MSI-X, MMIO v1/v2) pour QNX 8.0 — <code>github.com/BaptisteFaisy/passerelle</code>.</li>
+<li>Idées voisines du lot D : Main (virtio-input), Onde (virtio-snd), Ballon (virtio-balloon), Veine (vsock), Vitrine (diffusion d'écran), Compositeur (Wayland).</li>
+<li>QNX Global Hackathon 2026 : https://qnx.devpost.com/ — règles, catégories, bonus.</li>
+</ul>
+<hr>
+<h2 id="15-decisions-de-conception">15. Décisions de conception</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Décision</th>
+<th>Justification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D1</td>
+<td>Cœur C11 pur modélisant la machine à commandes, séparé du driver</td>
+<td>Testable sans QNX/QEMU/GPU ; jumeau Python comparable ; le driver n'est que la colle</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>Réutiliser le transport virtio de Passerelle, ne pas le réécrire</td>
+<td>Zéro duplication ; la brique la plus difficile est déjà validée</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>Deux volets A (QEMU) / B (QNX Hypervisor), A d'abord</td>
+<td>A ne dépend pas du DDK hyperviseur (risque E4) ; A est livrable au 15/12</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>Le sous-ensemble 15/12 = volet A minimal (scanout unique, mire puis bureau)</td>
+<td>Tient dans 4 semaines ; démo spectaculaire (bureau QNX en VM)</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>2D d'abord, 3D (virgl/venus) documentée en piste X</td>
+<td>La 3D triple l'effort ; le besoin réel (Screen, IHM) est 2D</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>Validation du modèle contre QEMU réel (capture/rejeu des commandes)</td>
+<td>Double preuve : modèle portable + comportement réel, comme Veille/Ambre</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>virtio-input en niveau C, pas S</td>
+<td>Sans entrées, l'affichage seul démontre déjà le trou comblé ; les entrées rendent le bureau utilisable</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>MIT, cohérent avec le portefeuille</td>
+<td>—</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>Codelab inclus</td>
+<td>Bonus Best Codelab/Tutorial ; pédagogie « VM QNX graphique » forte</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="16-lots-delegables-pour-orchestrateur">16. Lots délégables (pour orchestrateur)</h2>
+<table>
+<thead>
+<tr>
+<th>Lot</th>
+<th>Contenu</th>
+<th>Dépend de</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L1</td>
+<td>Cœur C11 : machine à commandes + invariants + verdicts</td>
+<td>CONTRAT gelé</td>
+</tr>
+<tr>
+<td>L2</td>
+<td>Jumeau Python + différentiel</td>
+<td>L1</td>
+</tr>
+<tr>
+<td>L3</td>
+<td>Fixtures + scénarios (séquences de commandes de référence)</td>
+<td>L1</td>
+</tr>
+<tr>
+<td>L4</td>
+<td>Driver invité : énumération PCI + transport Passerelle adapté</td>
+<td>E1, E3</td>
+</tr>
+<tr>
+<td>L5</td>
+<td>Driver invité : controlq, ressources, scanout, flush</td>
+<td>L4</td>
+</tr>
+<tr>
+<td>L6</td>
+<td>Display driver Screen minimal</td>
+<td>E2, L5</td>
+</tr>
+<tr>
+<td>L7</td>
+<td>Image mkifs + scripts QEMU + démo bout-en-bout</td>
+<td>L6</td>
+</tr>
+<tr>
+<td>L8</td>
+<td>virtio-input (clavier/souris)</td>
+<td>L5</td>
+</tr>
+<tr>
+<td>L9</td>
+<td>Multi-scanout, curseur, dommages, double tampon</td>
+<td>L6</td>
+</tr>
+<tr>
+<td>L10</td>
+<td>Validation contre QEMU réel (capture/rejeu)</td>
+<td>L5, L6</td>
+</tr>
+<tr>
+<td>L11</td>
+<td>Volet B : vdev hôte QNX Hypervisor</td>
+<td>E4</td>
+</tr>
+<tr>
+<td>L12</td>
+<td>Codelab + docs</td>
+<td>L1–L7</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><em>Fin du cahier des charges — Toile v0.1.</em></p>
+</main>
+<footer>Généré depuis les sources Markdown du dépôt. Licence MIT.</footer>
+</body>
+</html>

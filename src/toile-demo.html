@@ -1,0 +1,102 @@
+<h2>Toile — l'invité QNX 8.0, en direct</h2>
+<p>Toile est un <strong>pilote virtio-gpu 2D pour QNX 8.0</strong>. Sans lui, l'écran de
+l'invité est inutilisable : le SDP livre vingt périphériques virtuels pour
+l'hyperviseur — dont <code>virtio-blk</code>, <code>virtio-net</code>,
+<code>virtio-snd</code> — mais <strong>aucun pour le GPU</strong>, et aucun pilote pour
+publish <em>Screen</em> sans passe-plat. Le pilote <code>toile-gpu</code> est
+<strong>compilé par <code>qcc</code> pour QNX 8.0</strong> et embarqué dans une image
+invitée : ci-dessous il s'exécute dans QNX, pas dans une simulation sur l'hôte.</p>
+
+<h3>L'invité, en direct</h3>
+<p>Voici un <strong>invité QNX 8.0</strong> sous QEMU
+(<code>-vga none -device virtio-gpu-pci</code>) : au démarrage il énumère le
+périphérique virtio-gpu, négocie un <strong>scanout 1280×800</strong>, publie
+<code>/dev/gpu0</code> par un gestionnaire de ressources QNX, puis un client ordinaire
+l'ouvre et peint une mire — que QEMU affiche. L'écran de gauche est l'affichage de
+l'invité (les boutons injectent des touches) ; la console de droite est le port série,
+où se déroule la boucle.</p>
+<div class="demo">
+<div class="box">
+<h3>Écran de l'invité QNX 8.0 (sortie virtio-gpu)</h3>
+<img id="screen" src="https://baptiste-ms-7d18.tail3a8bdf.ts.net:8443/toile/screen.png" alt="écran de l'invité QNX 8.0 de Toile">
+<div class="keys">
+<button data-k="ret">Entrée</button><button data-k="spc">Espace</button>
+<button data-k="up">↑</button><button data-k="down">↓</button>
+<button data-k="l">l</button><button data-k="c">c</button>
+<button data-k="tab">Tab</button><button data-k="cr">Ctrl-C</button>
+</div>
+<div class="note">Capture rafraîchie toutes les 2 s ; les touches vont à l'invité via le
+moniteur QEMU. Essayez : <code>pidin</code>, <code>ls /proc/boot</code>.</div>
+</div>
+<div class="box">
+<h3>Console série — la boucle invité → émulateur</h3>
+<pre id="console">connexion…</pre>
+</div>
+</div>
+<p><span class="pill ok">en direct</span>
+<span class="pill">invité QNX 8.0, QEMU, virtio-gpu</span>
+<span class="pill">pilote et cœur compilés par qcc pour QNX 8.0</span>
+<span class="pill">le dépôt est public : <a href="https://github.com/Tradoooo/toile">Tradoooo/toile</a></span></p>
+
+<h3>Ce qui s'exécute dans l'invité</h3>
+<pre class="cmd">TOILE: virtio-gpu trouve (1af4/1050) sur B000:D03:F00
+toile-gpu: device up: 0 queues, msix=yes, features=0x100000000
+toile-gpu: no cursorq: hardware cursor disabled (level C)
+toile-gpu: scanout 0 mode 1280x800 (enabled)
+toile-gpu: framebuffer 1280x800 fmt=2 stride=5120 pa=0x5e003000
+toile-gpu: scanout 0 &lt;- resource 1 (1280x800)
+toile-gpu: 1280x800 fmt=2 scanouts=1 stride=5120 res=1 fb=4096000
+toile-gpu: serving /dev/gpu0
+toile-gpu: resmgr: open -&gt; rc=0
+CLIENT: info 1280x800 fmt=2 scanouts=1 stride=5120 res=1 fb=4096000
+CLIENT: framebuffer paddr=0x5e003000 bytes=4096000 stride=5120 1280x800</pre>
+<p>Sortie réelle relevée dans l'invité (console série) :</p>
+<pre class="cmd">--- bilan ---
+périphérique virtio-gpu enumeré  : 1af4/1050 sur B000:D03:F00
+scanout                          : 0, 1280x800, fmt=2, stride 5120
+framebuffer                      : 4096000 octets, paddr 0x5e003000
+ressource QNX                    : /dev/gpu0 ouvert par le client, rc=0
+mire peinte par le client         : visible dans l'affichage QEMU
+analyse de la capture             : 8 barres pures, rampe continue, damier,
+                                   90,6 % de pixels non noirs</pre>
+
+<h3>Ce qui est vérifié, ce qui ne l'est pas</h3>
+<table>
+<thead><tr><th>Essai</th><th>Question</th><th>Résultat</th></tr></thead>
+<tbody>
+<tr><td><strong>E1</strong></td><td>L'invité QNX 8.0 énumère-t-il <code>virtio-gpu-pci</code> sur son bus PCI&nbsp;?</td><td><strong>réussi</strong> — 1af4/1050 trouvé au démarrage</td></tr>
+<tr><td><strong>E2</strong></td><td><em>Screen</em> accepte-t-il un display driver tiers&nbsp;?</td><td><strong>partiellement tranché</strong> — le contrat réel est un driver OpenWF Display (WFD) + <code>Wfdcfg</code>, pas « io-display » (absent du SDP 8.0) ; l'interface est identifiée et compilable, la partie serveur + plateforme est hors SDP libre, donc l'intégration n'a pas pu être testée</td></tr>
+<tr><td><strong>E3</strong></td><td>Le transport virtio de Passerelle est-il réutilisable tel quel&nbsp;?</td><td><strong>partiellement tranché</strong> — réutilisable après un patch d'une centaine de lignes, dont 6 corrections d'API QNX 8.0 découvertes à la compilation</td></tr>
+<tr><td><strong>E4</strong></td><td>Le DDK hyperviseur est-il accessible sous licence non commerciale&nbsp;?</td><td><strong>non</strong> — le volet B (vdev hôte pour QNX Hypervisor) est abandonné ; le projet reste faisable en invité QEMU</td></tr>
+<tr><td><strong>E5</strong></td><td>15–20 images/s en 1080p via un flush 2D&nbsp;?</td><td><strong>non mesuré</strong> — aucune mesure de débit n'est revendiquée</td></tr>
+<tr><td><strong>E6</strong></td><td>Le pilote démarre-t-il dans l'invité, trouve-t-il le <code>virtio-gpu</code>, crée-t-il <code>/dev/gpu0</code>&nbsp;?</td><td><strong>réussi</strong> — et la boucle est fermée : la mire peinte par le client dans l'invité est visible dans l'affichage de QEMU, contrôlée par analyse numérique de la capture</td></tr>
+<tr><td>Multi-scanout, curseur matériel (<code>cursorq</code>), 3D / <code>virgl</code></td><td>niveau C et X</td><td><strong>non démontré</strong> — l'invité refuse la série 3D (<code>0x1200</code> = <code>ERR_UNSPEC</code> sur <code>TRANSFER_FROM_HOST_3D</code>), le curseur est désactivé, un seul scanout</td></tr>
+<tr><td>Bureau complet, matériel physique, image flashed sur ECU</td><td>au-delà du socle</td><td><strong>non démontré</strong> — ce qui est ici est un invité QEMU, pas un écran réel</td></tr>
+</tbody>
+</table>
+<blockquote>Le cœur du pilote (machine à commandes virtio-gpu, invariants, verdicts) est
+<strong>portable et testé sur PC</strong> : même séquence de commandes, mêmes octets,
+vérifiés par un jumeau Python et un différentiel C↔Python. La cible QNX apporte la
+preuve que ce cœurpilote un vrai périphérique.</blockquote>
+
+<h3>Où aller voir la suite</h3>
+<ul>
+<li><a href="https://github.com/Tradoooo/toile">Le dépôt du projet</a> — cœur C11, jumeau Python, pilote invité, CI</li>
+<li><a href="https://tradoooo.github.io/toile/">Le site du projet</a> — architecture, contrat, état d'avancement</li>
+<li><a href="https://github.com/Tradoooo/toile/blob/main/docs/TRIALS-E1-E6.md">TRIALS-E1-E6</a> — le compte rendu des six essais, sorties brutes à l'appui</li>
+<li><a href="https://github.com/Tradoooo/toile/blob/main/docs/DEMO-EMULATEUR.md">DEMO-EMULATEUR</a> — la preuve visuelle, méthode d'analyse de la capture</li>
+<li><a href="https://github.com/Tradoooo/toile/blob/main/docs/VIRTIO-GPU.md">VIRTIO-GPU</a> — le contrat des commandes, le piège du 3D refusé</li>
+</ul>
+<script>
+var API="https://baptiste-ms-7d18.tail3a8bdf.ts.net:8443/toile";
+function tick(){
+  var i=document.getElementById("screen");
+  i.src=API+"/screen.png?t="+Date.now();
+  fetch(API+"/console").then(function(r){return r.text();}).then(function(t){
+    var c=document.getElementById("console");c.textContent=t;c.scrollTop=c.scrollHeight;});
+}
+document.querySelectorAll(".keys button").forEach(function(b){
+  b.onclick=function(){fetch(API+"/key?k="+encodeURIComponent(b.dataset.k));};
+});
+setInterval(tick,2000);tick();
+</script>

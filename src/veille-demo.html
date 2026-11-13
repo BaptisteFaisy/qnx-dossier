@@ -1,22 +1,3 @@
-<style>
-.demo{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:1rem;margin:1.2rem 0}
-@media(max-width:860px){.demo{grid-template-columns:1fr}}
-.box{background:var(--card);border:1px solid var(--bd);border-radius:10px;overflow:hidden}
-.box h3{margin:0;padding:.6rem .8rem;font-size:.9rem;background:#1f2432;border-bottom:1px solid var(--bd)}
-#screen{width:100%;height:290px;object-fit:contain;background:#000;display:block}
-#console{height:330px;overflow:auto;margin:0;border:0;border-radius:0;
- font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;padding:.6rem;color:#cfe8c8}
-.keys{display:flex;flex-wrap:wrap;gap:.35rem;padding:.55rem .8rem;border-top:1px solid var(--bd)}
-.keys button{background:#232a3c;color:var(--fg);border:1px solid var(--bd);border-radius:6px;
- padding:.3rem .55rem;cursor:pointer;font:inherit;font-size:.85rem}
-.keys button:hover{background:#2c3549;border-color:var(--acc)}
-.note{color:var(--mut);font-size:.85rem;padding:.5rem .8rem}
-.pill{display:inline-block;font-size:.75rem;padding:.1rem .5rem;border-radius:999px;
- border:1px solid var(--bd);color:var(--mut)}
-.pill.ok{color:var(--acc);border-color:var(--acc)}
-pre.cmd{background:#0e1016;border:1px solid var(--bd);border-radius:8px;padding:.6rem .8rem;
- overflow:auto;font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;color:#cfe8c8}
-</style>
 <h2>Veille — l'invité QNX 8.0, en direct</h2>
 <p>Veille est un moniteur patient dont la <strong>latence capteur→alarme est bornée et
 prouvée</strong> par exploration exhaustive des états de défaillance (IEC 62304,

@@ -56,12 +56,30 @@ main h1 small,main h2 small{display:block;font-size:.8rem;color:var(--mut);font-
  padding:.6rem 1rem;margin:1rem 0}
 .sommaire h2{margin:.3rem 0 .4rem;font-size:1rem}
 .sommaire ol{margin:.2rem 0 .4rem;padding-left:1.3rem}
+/* --- vitrine : ecran de l'invite + console + touches (partage par les pages demo) --- */
+.demo{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:1rem;margin:1.2rem 0}
+@media(max-width:860px){.demo{grid-template-columns:1fr}}
+.box{background:var(--card);border:1px solid var(--bd);border-radius:10px;overflow:hidden}
+.box h3{margin:0;padding:.6rem .8rem;font-size:.9rem;background:#1f2432;border-bottom:1px solid var(--bd)}
+#screen{width:100%;height:290px;object-fit:contain;background:#000;display:block}
+#console{height:330px;overflow:auto;margin:0;border:0;border-radius:0;
+ font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;padding:.6rem;color:#cfe8c8}
+.keys{display:flex;flex-wrap:wrap;gap:.35rem;padding:.55rem .8rem;border-top:1px solid var(--bd)}
+.keys button{background:#232a3c;color:var(--fg);border:1px solid var(--bd);border-radius:6px;
+ padding:.3rem .55rem;cursor:pointer;font:inherit;font-size:.85rem}
+.keys button:hover{background:#2c3549;border-color:var(--acc)}
+.note{color:var(--mut);font-size:.85rem;padding:.5rem .8rem}
+.pill{display:inline-block;font-size:.75rem;padding:.1rem .5rem;border-radius:999px;
+ border:1px solid var(--bd);color:var(--mut)}
+.pill.ok{color:var(--acc);border-color:var(--acc)}
+pre.cmd{background:#0e1016;border:1px solid var(--bd);border-radius:8px;padding:.6rem .8rem;
+ overflow:auto;font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;color:#cfe8c8}
 </style>
 </head>
 <body>
 <header>
 <h1>Dossier QNX — Global Hackathon 2026</h1>
-<p>Inventaire documenté des manques de QNX SDP 8.0, classement de 140 idées, quatre cahiers des charges.</p>
+<p>Inventaire documenté des manques de QNX SDP 8.0, classement de 140 idées, cinq cahiers des charges.</p>
 </header>
 <nav>
 <a href="index.html">Accueil</a>
@@ -71,6 +89,8 @@ main h1 small,main h2 small{display:block;font-size:.8rem;color:var(--mut);font-
 <a href="tamis-demo.html">Tamis — émulateur QNX 8.0 en direct</a>
 <a href="glane.html" class="actif">Glane</a>
 <a href="glane-demo.html">Glane — émulateur QNX 8.0 en direct</a>
+<a href="toile.html">Toile</a>
+<a href="toile-demo.html">Toile — émulateur QNX 8.0 en direct</a>
 <a href="eclat.html">Éclat</a>
 <a href="veille.html">Veille</a>
 <a href="veille-demo.html">Veille — émulateur QNX 8.0 en direct</a>
@@ -725,23 +745,6 @@ Deux calendriers possibles : <strong>5 semaines</strong> (soumission au concours
 </tbody>
 </table>
 <p>Chaque brief de sous-agent doit rappeler : contexte complet (l'agent ne partage aucune mémoire), critère de succès mesurable, bornes (temps, nombre d'essais, comportement en cas d'échec), règles shell (jamais <code>node -e</code>, <code>timeout</code> devant les commandes longues), et « fais-le toi-même, sans déléguer ».</p>
-<style>
-.demo{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:1rem;margin:1.2rem 0}
-@media(max-width:860px){.demo{grid-template-columns:1fr}}
-.box{background:var(--card);border:1px solid var(--bd);border-radius:10px;overflow:hidden}
-.box h3{margin:0;padding:.6rem .8rem;font-size:.9rem;background:#1f2432;border-bottom:1px solid var(--bd)}
-#screen{width:100%;height:290px;object-fit:contain;background:#000;display:block}
-#console{height:330px;overflow:auto;margin:0;border:0;border-radius:0;
- font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;padding:.6rem;color:#cfe8c8}
-.keys{display:flex;flex-wrap:wrap;gap:.35rem;padding:.55rem .8rem;border-top:1px solid var(--bd)}
-.keys button{background:#232a3c;color:var(--fg);border:1px solid var(--bd);border-radius:6px;
- padding:.3rem .55rem;cursor:pointer;font:inherit;font-size:.85rem}
-.keys button:hover{background:#2c3549;border-color:var(--acc)}
-.note{color:var(--mut);font-size:.85rem;padding:.5rem .8rem}
-.pill{display:inline-block;font-size:.75rem;padding:.1rem .5rem;border-radius:999px;
- border:1px solid var(--bd);color:var(--mut)}
-.pill.ok{color:var(--acc);border-color:var(--acc)}
-</style>
 <h2>L'invité QNX 8.0 de Glane, en direct</h2>
 <p>Voici un <strong>invité QNX 8.0</strong> qui tourne réellement sur le poste de travail
 (<code>pc</code>, SDP 8.0 installé, QEMU en TCG) : au démarrage il publie le
