@@ -159,6 +159,22 @@ servi à choisir un sujet. Il est publié parce que l'inventaire qu'il contient 
 <td><a href="codelab-veille.html">Codelab Veille</a></td>
 <td>Codelab en 5 parties — prouver la latence d'une alarme médicale sur QNX 8.0.</td>
 </tr>
+<tr>
+<td><a href="replique.html">Réplique — en direct</a></td>
+<td>L'invité QNX 8.0 de la démo Déclic : la trace noyau figée au crash, décodée par l'oracle <code>traceprinter</code>.</td>
+</tr>
+<tr>
+<td><a href="tamis-demo.html">Tamis — en direct</a></td>
+<td>Le cœur C de Tamis compilé par <code>qcc</code>, tournant dans l'invité QNX 8.0 sur une politique <code>secpol</code> réelle.</td>
+</tr>
+<tr>
+<td><a href="glane-demo.html">Glane — en direct</a></td>
+<td>L'invité publie ses capteurs dans <code>/dev/shmem</code> et expose <code>/dev/sensors</code>, gestionnaire de ressources QNX.</td>
+</tr>
+<tr>
+<td><a href="veille-demo.html">Veille — en direct</a></td>
+<td>Le cœur C de Veille dans QNX : 4 800 états explorés, 600 échantillons rejoués, <code>/dev/veille</code> en service.</td>
+</tr>
 </tbody>
 </table>
 <h2 id="les-cinq-sujets-pousses-jusquau-cahier-des-charges">Les cinq sujets poussés jusqu'au cahier des charges</h2>
@@ -200,6 +216,52 @@ cible) et rapport d'audit empreinté SHA-256 exploitable en IEC 62304. Le projet
 <a href="https://github.com/BaptisteFaisy/veille">son propre dépôt</a> et se visite en ligne sur
 <a href="https://baptistefaisy.github.io/veille/">son site</a> — chiffres calculés depuis le code,
 preuves réellement rejouées au build ; le codelab qui l'accompagne est publié ici.</p>
+<h2 id="les-vitrines-en-direct">Les vitrines en direct</h2>
+<p>Quatre des cinq sujets — Tamis, Glane, Toile, Veille — et Réplique ne sont pas seulement des
+documents : <strong>leur code tourne dans de vrais invités QNX 8.0</strong> (SDP 8.0 installé, QEMU sur le
+r630), et les cinq invites sont ouvertes au public. Éclat n'a pas d'invité : son runtime WAMR
+compile et se lie bien pour QNX (<code>qcc</code>, <code>nto x86_64</code> et <code>nto aarch64le</code>), mais la démo
+reste sur l'hôte Linux.</p>
+<table>
+<thead>
+<tr>
+<th>Sujet</th>
+<th>Invité en direct</th>
+<th>Ce que la page montre</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="replique.html">Réplique</a></td>
+<td><a href="https://r630-debian.tail3a8bdf.ts.net:8091/">r630:8091</a></td>
+<td>L'invité QNX 8.0 de la démo Déclic ; la trace noyau décodée par l'oracle officiel <code>traceprinter</code>.</td>
+</tr>
+<tr>
+<td><a href="tamis-demo.html">Tamis</a></td>
+<td><a href="https://r630-debian.tail3a8bdf.ts.net:8092/">r630:8092</a></td>
+<td>Le cœur C, compilé par <code>qcc</code>, rend ses verdicts <strong>dans QNX</strong> : <code>TAMIS_PATH_FOUND</code>, correctif minimal, trou de lint.</td>
+</tr>
+<tr>
+<td><a href="glane-demo.html">Glane</a></td>
+<td><a href="https://r630-debian.tail3a8bdf.ts.net:8091/glane">r630:8091/glane</a></td>
+<td><code>glaned</code> publie les capteurs dans <code>/dev/shmem</code> et <code>/dev/sensors</code>, en boucle, dans l'invité.</td>
+</tr>
+<tr>
+<td><a href="toile-demo.html">Toile</a></td>
+<td><a href="https://r630-debian.tail3a8bdf.ts.net:8091/toile">r630:8091/toile</a></td>
+<td>Le pilote <code>toile-gpu</code> scanoute en 1280×800 et présente des images à 30 im/s (<code>present_ko=0</code>).</td>
+</tr>
+<tr>
+<td><a href="veille-demo.html">Veille</a></td>
+<td><a href="https://r630-debian.tail3a8bdf.ts.net:8091/veille">r630:8091/veille</a></td>
+<td>4 800 états explorés, 600 échantillons rejoués, <code>/dev/veille</code> en service (SCHED_FIFO 62), alarme à la déconnexion.</td>
+</tr>
+</tbody>
+</table>
+<p>L'écran de gauche est la console VGA de l'invité — les boutons injectent des touches ; la
+console de droite est le port série. <strong>Chaque invite s'arrête après 5 minutes sans visite</strong>
+et se relance tout seul à la visite suivante : un écran « INVITÉ ARRÊTÉ » ou
+« INVITÉ EN DÉMARRAGE » est normal, la cible démarre en une quarantaine de secondes.</p>
 <h2 id="methode-et-ses-limites">Méthode, et ses limites</h2>
 <p>Le classement est né d'un constat : le facteur limitant n'est pas le nombre d'idées mais le
 nombre de <strong>manques documentés</strong>. Une boîte combinatoire de 10 000 cellules ne produit que
@@ -217,9 +279,11 @@ invalidé rétroactivement cinq « trous » supposés.</p>
   (dans <code>libfsnotify.so</code>) ; l'IDE Momentics fournit déjà un profileur, l'analyse mémoire, le
   debug d'interblocage et l'analyse des temps de démarrage ; QFS fournit déjà un système de
   fichiers à protection d'intégrité. Les idées fondées sur ces affirmations ont été écartées.</li>
-<li>Aucun des trois sujets n'a encore été exécuté sur QNX : la licence QNX Everywhere n'était pas
-  installée au moment de la rédaction. Les cahiers distinguent donc ce qui est démontrable sur
-  un poste Linux de ce qui exige la cible.</li>
+<li>Cette limite a été levée depuis la rédaction : <strong>les cinq sujets s'exécutent sur de vrais
+  invités QNX 8.0</strong> (SDP 8.0 installé, QEMU sur le r630) et leurs vitrines sont ouvertes au
+  public — voir « Les vitrines en direct » plus haut. Ce qui n'est pas démontré reste écrit
+  noir sur blanc dans chaque vitrine (ce qui tourne, ce qui n'est pas démontré, ce qui n'est
+  pas mesuré).</li>
 </ul>
 <h2 id="regenerer-le-site">Régénérer le site</h2>
 <pre><code>pip install 'markdown==3.5.2'

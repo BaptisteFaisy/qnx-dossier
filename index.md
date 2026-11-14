@@ -22,6 +22,10 @@ servi à choisir un sujet. Il est publié parce que l'inventaire qu'il contient 
 | [Éclat](eclat.html) | Cahier des charges complet — portage de WAMR (WebAssembly) et courtier de capacités. |
 | [Veille](veille.html) | Cahier des charges complet — moniteur patient à latence d'alarme bornée et prouvée. |
 | [Codelab Veille](codelab-veille.html) | Codelab en 5 parties — prouver la latence d'une alarme médicale sur QNX 8.0. |
+| [Réplique — en direct](replique.html) | L'invité QNX 8.0 de la démo Déclic : la trace noyau figée au crash, décodée par l'oracle `traceprinter`. |
+| [Tamis — en direct](tamis-demo.html) | Le cœur C de Tamis compilé par `qcc`, tournant dans l'invité QNX 8.0 sur une politique `secpol` réelle. |
+| [Glane — en direct](glane-demo.html) | L'invité publie ses capteurs dans `/dev/shmem` et expose `/dev/sensors`, gestionnaire de ressources QNX. |
+| [Veille — en direct](veille-demo.html) | Le cœur C de Veille dans QNX : 4 800 états explorés, 600 échantillons rejoués, `/dev/veille` en service. |
 
 ## Les cinq sujets poussés jusqu'au cahier des charges
 
@@ -68,6 +72,27 @@ cible) et rapport d'audit empreinté SHA-256 exploitable en IEC 62304. Le projet
 [son site](https://baptistefaisy.github.io/veille/) — chiffres calculés depuis le code,
 preuves réellement rejouées au build ; le codelab qui l'accompagne est publié ici.
 
+## Les vitrines en direct
+
+Quatre des cinq sujets — Tamis, Glane, Toile, Veille — et Réplique ne sont pas seulement des
+documents : **leur code tourne dans de vrais invités QNX 8.0** (SDP 8.0 installé, QEMU sur le
+r630), et les cinq invites sont ouvertes au public. Éclat n'a pas d'invité : son runtime WAMR
+compile et se lie bien pour QNX (`qcc`, `nto x86_64` et `nto aarch64le`), mais la démo
+reste sur l'hôte Linux.
+
+| Sujet | Invité en direct | Ce que la page montre |
+|---|---|---|
+| [Réplique](replique.html) | [r630:8091](https://r630-debian.tail3a8bdf.ts.net:8091/) | L'invité QNX 8.0 de la démo Déclic ; la trace noyau décodée par l'oracle officiel `traceprinter`. |
+| [Tamis](tamis-demo.html) | [r630:8092](https://r630-debian.tail3a8bdf.ts.net:8092/) | Le cœur C, compilé par `qcc`, rend ses verdicts **dans QNX** : `TAMIS_PATH_FOUND`, correctif minimal, trou de lint. |
+| [Glane](glane-demo.html) | [r630:8091/glane](https://r630-debian.tail3a8bdf.ts.net:8091/glane) | `glaned` publie les capteurs dans `/dev/shmem` et `/dev/sensors`, en boucle, dans l'invité. |
+| [Toile](toile-demo.html) | [r630:8091/toile](https://r630-debian.tail3a8bdf.ts.net:8091/toile) | Le pilote `toile-gpu` scanoute en 1280×800 et présente des images à 30 im/s (`present_ko=0`). |
+| [Veille](veille-demo.html) | [r630:8091/veille](https://r630-debian.tail3a8bdf.ts.net:8091/veille) | 4 800 états explorés, 600 échantillons rejoués, `/dev/veille` en service (SCHED_FIFO 62), alarme à la déconnexion. |
+
+L'écran de gauche est la console VGA de l'invité — les boutons injectent des touches ; la
+console de droite est le port série. **Chaque invite s'arrête après 5 minutes sans visite**
+et se relance tout seul à la visite suivante : un écran « INVITÉ ARRÊTÉ » ou
+« INVITÉ EN DÉMARRAGE » est normal, la cible démarre en une quarantaine de secondes.
+
 ## Méthode, et ses limites
 
 Le classement est né d'un constat : le facteur limitant n'est pas le nombre d'idées mais le
@@ -87,9 +112,11 @@ Limites assumées :
   (dans `libfsnotify.so`) ; l'IDE Momentics fournit déjà un profileur, l'analyse mémoire, le
   debug d'interblocage et l'analyse des temps de démarrage ; QFS fournit déjà un système de
   fichiers à protection d'intégrité. Les idées fondées sur ces affirmations ont été écartées.
-- Aucun des trois sujets n'a encore été exécuté sur QNX : la licence QNX Everywhere n'était pas
-  installée au moment de la rédaction. Les cahiers distinguent donc ce qui est démontrable sur
-  un poste Linux de ce qui exige la cible.
+- Cette limite a été levée depuis la rédaction : **les cinq sujets s'exécutent sur de vrais
+  invités QNX 8.0** (SDP 8.0 installé, QEMU sur le r630) et leurs vitrines sont ouvertes au
+  public — voir « Les vitrines en direct » plus haut. Ce qui n'est pas démontré reste écrit
+  noir sur blanc dans chaque vitrine (ce qui tourne, ce qui n'est pas démontré, ce qui n'est
+  pas mesuré).
 
 ## Régénérer le site
 
